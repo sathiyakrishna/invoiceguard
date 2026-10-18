@@ -170,12 +170,12 @@ export function bandFor(score: number): Band | null {
   return null;
 }
 
-export type SuggestedAction = 'Block invoice B' | 'Check with supplier';
+export type SuggestedAction = 'Block the open invoice' | 'Check with supplier';
 
 /** Decided by the rules that fired, never by the AI. */
 export function suggestedAction(rules: string[]): SuggestedAction {
   const has = (r: RuleId) => rules.includes(r);
-  if (has('R1') && (has('R3') || has('R4')) && !has('R8')) return 'Block invoice B';
+  if (has('R1') && (has('R3') || has('R4')) && !has('R8')) return 'Block the open invoice';
   return 'Check with supplier'; // R2 (typo), R8 (alias vendor) and everything else
 }
 

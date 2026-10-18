@@ -39,7 +39,7 @@ export default function AiPanel({ flagId, initial }: { flagId: string; initial: 
     return () => { live = false; };
   }, [flagId, initial]);
 
-  const actionStyle = data?.action === 'Block invoice B' ? 'bg-high-bg text-high-fg' : data?.action === 'Likely valid' ? 'bg-low-bg text-low-fg' : 'bg-med-bg text-med-fg';
+  const actionStyle = (data?.action === 'Block the open invoice' || data?.action === 'Block invoice B') ? 'bg-high-bg text-high-fg' : data?.action === 'Likely valid' ? 'bg-low-bg text-low-fg' : 'bg-med-bg text-med-fg';
 
   return (
     <section aria-labelledby="ai" aria-busy={loading} className="flex flex-col gap-2.5 rounded-xl border border-[#D6E1FB] bg-[#F5F8FF] px-5 py-4">

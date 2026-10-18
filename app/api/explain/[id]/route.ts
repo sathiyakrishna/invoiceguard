@@ -18,7 +18,7 @@ const ddmmyyyy = (iso: string | null | undefined) => {
 // Amounts and dates are pre-formatted so the AI copies them instead of reformatting.
 const pick = (i: Flag['a']) => ({
   vendor_id: i.vendor_id ?? '', vendor_name: i.vendor_name ?? '', invoice_no: i.invoice_ref ?? '', invoice_date: ddmmyyyy(i.invoice_date),
-  amount: rupees(i.amount), company_code: i.company_code ?? '', po_number: i.po_number ?? '', doc_number: i.doc_number ?? ''
+  amount: rupees(i.amount), cleared_on: ddmmyyyy(i.clearing_date), company_code: i.company_code ?? '', po_number: i.po_number ?? '', doc_number: i.doc_number ?? ''
 });
 
 type Reply = { status: number; body: Record<string, unknown> };

@@ -37,10 +37,15 @@ export default async function ReviewPage({ params }: { params: { id: string } })
 
   const hasClearing = (clearedInScan ?? 0) > 0;
   const dmy = (iso: string) => iso.slice(0, 10).split('-').reverse().join('/');
-  const labelA = f.a.clearing_date ? `Paid on ${dmy(f.a.clearing_date)}` : 'Earlier';
-  const labelB = hasClearing && !f.b.clearing_date ? 'Open, in this payment run' : 'Later';
   const sameRef = f.a.invoice_ref === f.b.invoice_ref;
+  const paidThenOpen = !!f.a.clearing_date && !f.b.clearing_date; // A paid, B open
+  // payment rows only when this scan carries clearing data; the Match column of 'Payment date' is empty
+  const payment: [string, string, string, string, boolean][] = hasClearing ? [
+    ['Status', f.a.clearing_date ? 'Already paid' : 'Open', f.b.clearing_date ? 'Already paid' : 'Open', paidThenOpen ? 'One paid, one open' : 'Both open', paidThenOpen],
+    ['Payment date', f.a.clearing_date ? dmy(f.a.clearing_date) : 'NA', f.b.clearing_date ? dmy(f.b.clearing_date) : 'NA', '', false]
+  ] : [];
   const cmp: [string, string, string, string, boolean][] = [
+    ...payment,
     ['Vendor', `${f.a.vendor_id} · ${f.a.vendor_name ?? ''}`, `${f.b.vendor_id} · ${f.b.vendor_name ?? ''}`, f.a.vendor_id === f.b.vendor_id ? 'Exact' : f.rules_fired.includes('R8') ? 'Same supplier (AI)' : 'Different', f.a.vendor_id === f.b.vendor_id || f.rules_fired.includes('R8')],
     ['Invoice no.', f.a.invoice_ref ?? '', f.b.invoice_ref ?? '', sameRef ? 'Exact' : f.rules_fired.includes('R1') ? 'Normalized match' : f.rules_fired.includes('R2') ? 'Similar' : 'Different', sameRef || f.rules_fired.includes('R1') || f.rules_fired.includes('R2')],
     ['Gross amount', rupees(f.a.amount), rupees(f.b.amount), f.rules_fired.includes('R3') ? 'Exact' : f.rules_fired.includes('R4') ? 'Within 1%' : 'Different', f.rules_fired.includes('R3') || f.rules_fired.includes('R4')],
@@ -76,7 +81,7 @@ export default async function ReviewPage({ params }: { params: { id: string } })
             <h2 id="cmp" className="border-b border-line px-5 py-4 text-[15px] font-semibold">Side-by-side comparison</h2>
             <div className="overflow-x-auto">
               <table className="w-full min-w-[560px] text-sm">
-                <thead className="bg-[#F8F9FB]"><tr><th className="th pl-5">Field</th><th className="th">Invoice A · {labelA}</th><th className="th">Invoice B · {labelB}</th><th className="th pr-5">Match</th></tr></thead>
+                <thead className="bg-[#F8F9FB]"><tr><th className="th pl-5">Field</th><th className="th">Invoice A</th><th className="th">Invoice B</th><th className="th pr-5">Match</th></tr></thead>
                 <tbody>
                   {cmp.map(([label, a, b, m, hit]) => (
                     <tr key={label} className={`border-t border-line-soft ${hit ? 'bg-high-row' : ''}`}>
@@ -98,20 +103,27 @@ export default async function ReviewPage({ params }: { params: { id: string } })
             </div>
             <div className="overflow-x-auto">
               <table className="w-full min-w-[640px] text-[13px]">
-                <thead><tr><th className="th pl-5">Vendor</th><th className="th">CC</th><th className="th">Invoice no.</th><th className="th">Doc no.</th><th className="th">Invoice date</th><th className="th pr-5 text-right">Amount</th></tr></thead>
+                <thead><tr><th className="th pl-5">Vendor</th><th className="th">CC</th><th className="th">Invoice no.</th><th className="th">Doc no.</th><th className="th">Invoice date</th>{hasClearing && <th className="th">Status</th>}<th className="th pr-5 text-right">Amount</th></tr></thead>
                 <tbody>
                   {ledger.map((l) => {
                     const hit = l.id === f.a.id || l.id === f.b.id;
+                    const reversedTag = <span title="Booked and reversed. Not compared as a duplicate." className="rounded-full bg-line-soft px-2 py-0.5 font-sans text-[11px] font-semibold text-ink-500">Reversed</span>;
                     return (
                       <tr key={l.id} className={`border-t border-line-soft ${hit ? 'bg-high-bg font-semibold shadow-[inset_3px_0_0_#B42318]' : ''}`}>
                         <td className="px-5 py-2 font-mono">{l.vendor_id}</td>
                         <td className="px-3 py-2 font-mono">{l.company_code}</td>
                         <td className="px-3 py-2 font-mono">
                           {l.invoice_ref}
-                          {l.is_reversed && <span title="Booked and reversed. Not compared as a duplicate." className="ml-2 rounded-full bg-line-soft px-2 py-0.5 font-sans text-[11px] font-semibold text-ink-500">Reversed</span>}
+                          {/* with payment history the Status column carries the tag; without it the tag stays next to the number */}
+                          {!hasClearing && l.is_reversed && <span className="ml-2">{reversedTag}</span>}
                         </td>
                         <td className="px-3 py-2 font-mono">{l.doc_number || '—'}</td>
                         <td className="px-3 py-2 font-mono">{shortDate(l.invoice_date)}</td>
+                        {hasClearing && (
+                          <td className="whitespace-nowrap px-3 py-2 font-mono">
+                            {l.is_reversed ? reversedTag : l.clearing_date ? <>Paid {shortDate(l.clearing_date)}</> : <span className="font-sans font-semibold text-accent-text">Open</span>}
+                          </td>
+                        )}
                         <td className="px-3 py-2 pr-5 text-right font-mono">{rupees(l.amount)}</td>
                       </tr>
                     );

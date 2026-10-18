@@ -105,10 +105,10 @@ describe('detect', () => {
 
 describe('suggestedAction', () => {
   it('blocks a same-number, same-amount pair across company codes (DP-0002: R1 R3 R5 R6)', () => {
-    expect(suggestedAction(['R1', 'R3', 'R5', 'R6'])).toBe('Block invoice B');
+    expect(suggestedAction(['R1', 'R3', 'R5', 'R6'])).toBe('Block the open invoice');
   });
   it('blocks a same-number pair with an amount within 1%', () => {
-    expect(suggestedAction(['R1', 'R4', 'R5'])).toBe('Block invoice B');
+    expect(suggestedAction(['R1', 'R4', 'R5'])).toBe('Block the open invoice');
   });
   it('checks with the supplier for a typo pair (R2)', () => {
     expect(suggestedAction(['R2', 'R3', 'R5'])).toBe('Check with supplier');
