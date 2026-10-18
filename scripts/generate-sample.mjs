@@ -36,12 +36,13 @@ function base(v, extra = {}) {
     currency: 'INR',
     po_number: hasPO ? `45000${pad(Math.floor(rnd() * 99999), 5)}` : '',
     doc_number: String(hasPO ? docFI++ : docMM++),
+    reversed_with: '',
     ...extra
   };
 }
 
-const TARGET = 2000, PLANTED = 25, TRAPS = 5;
-for (let i = 0; i < TARGET - PLANTED - TRAPS * 2 - 3; i++) addRow(base(pick(vendors)));
+const TARGET = 2000, PLANTED = 25, TRAPS = 5, REVERSED_TRAPS = 3;
+for (let i = 0; i < TARGET - PLANTED - TRAPS * 2 - 3 - REVERSED_TRAPS * 3; i++) addRow(base(pick(vendors)));
 
 const key = [];
 const later = (d, n) => iso(Date.parse(d) + n * day);
@@ -69,12 +70,25 @@ for (let i = 0; i < TRAPS; i++) {
   key.push({ type: 'Trap: recurring charge', vendor: v.id, original_ref: a.invoice_ref, duplicate_ref: a.invoice_ref.replace('AUG', 'SEP'), amount: amt, expected: 'No (should not be flagged, or dismiss)' });
 }
 
+// traps: booked, reversed and re-posted. Original invoice, its reversal credit, then the corrected re-posting
+// with the same number and amount. None of the three may be flagged. Traps 1 and 2 carry reversed_with (SAP
+// STBLG) on the original; trap 3 has only the offsetting credit.
+for (let i = 0; i < REVERSED_TRAPS; i++) {
+  const v = vendors[40 + i];
+  const o = addRow(base(v));
+  const creditDoc = String(docFI++);
+  if (i < 2) o.reversed_with = creditDoc;
+  addRow({ ...o, amount: -o.amount, invoice_date: later(o.invoice_date, 2), doc_number: creditDoc, reversed_with: '' });
+  addRow({ ...o, invoice_date: later(o.invoice_date, 6), doc_number: String(docFI++), reversed_with: '' });
+  key.push({ type: 'Trap: booked, reversed and re-posted', vendor: v.id, original_ref: o.invoice_ref, duplicate_ref: o.invoice_ref, amount: o.amount, expected: i < 2 ? 'No (reversed_with on the original)' : 'No (offsetting credit only)' });
+}
+
 // shuffle
 for (let i = rows.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [rows[i], rows[j]] = [rows[j], rows[i]]; }
 
-const cols = ['company_code', 'vendor_id', 'vendor_name', 'invoice_ref', 'invoice_date', 'amount', 'currency', 'po_number', 'doc_number'];
+const cols = ['company_code', 'vendor_id', 'vendor_name', 'invoice_ref', 'invoice_date', 'amount', 'currency', 'po_number', 'doc_number', 'reversed_with'];
 const esc = (v) => (/[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : String(v));
-writeFileSync('public/sample_register.csv', [cols.join(','), ...rows.map((r) => cols.map((c) => esc(c === 'amount' ? r[c].toFixed(2) : r[c])).join(','))].join('\n') + '\n');
+writeFileSync('public/sample_register.csv', [cols.join(','), ...rows.map((r) => cols.map((c) => esc(c === 'amount' ? r[c].toFixed(2) : (r[c] ?? ''))).join(','))].join('\n') + '\n');
 const kc = ['type', 'vendor', 'original_ref', 'duplicate_ref', 'amount', 'expected'];
 writeFileSync('answer_key.csv', [kc.join(','), ...key.map((k) => kc.map((c) => esc(k[c])).join(','))].join('\n') + '\n');
-console.log(`sample_register.csv: ${rows.length} invoices, ${key.filter((k) => k.expected === 'Yes').length} planted duplicates, ${TRAPS} traps`);
+console.log(`sample_register.csv: ${rows.length} invoices, ${key.filter((k) => k.expected === 'Yes').length} planted duplicates, ${TRAPS} recurring traps, ${REVERSED_TRAPS} reversed-and-reposted traps`);

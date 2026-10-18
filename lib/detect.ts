@@ -13,6 +13,7 @@ export type InvoiceRow = {
   currency: string;
   po_number: string;
   doc_number: string;
+  reversed_with?: string; // SAP STBLG: the document this one was reversed with (blank if not reversed)
 };
 
 export type RuleId = 'R1' | 'R2' | 'R3' | 'R4' | 'R5' | 'R6' | 'R7' | 'R8';
@@ -177,6 +178,58 @@ export function suggestedAction(rules: string[]): SuggestedAction {
 }
 
 /**
+ * Booked-and-reversed invoices must never be flagged as duplicates.
+ * Returns one boolean per row: true for an invoice that was reversed and for the credit line that reverses it.
+ *
+ * An invoice is reversed when
+ *  - reversed_with is filled (the credit whose doc number matches it is its reversal), or
+ *  - a credit line has the same vendor, the same normalized invoice number and the exact negative amount,
+ *    dated on or after the invoice. The earliest matching invoice is the one reversed, so a corrected
+ *    re-posting (same number and amount, later) stays live.
+ * Each credit reverses at most one invoice. Credit lines (amount < 0) are never compared as duplicates.
+ */
+export function findReversals(rows: InvoiceRow[]): boolean[] {
+  const reversed = rows.map(() => false);
+  const refs = rows.map((r) => normalizeRef(r.invoice_ref));
+  const keyOf = (i: number) => `${rows[i].vendor_id}|${refs[i]}|${Math.abs(rows[i].amount).toFixed(2)}`;
+  const creditsByKey = new Map<string, number[]>();
+  rows.forEach((r, i) => {
+    if (r.amount < 0) creditsByKey.set(keyOf(i), [...(creditsByKey.get(keyOf(i)) ?? []), i]);
+  });
+  if (!creditsByKey.size && !rows.some((r) => (r.reversed_with ?? '').trim())) return reversed;
+
+  const used = new Set<number>(); // credits already offsetting an invoice
+  const invoices = rows.map((_, i) => i).filter((i) => rows[i].amount > 0);
+  const byDate = (x: number, y: number) => (rows[x].invoice_date ?? '').localeCompare(rows[y].invoice_date ?? '') || x - y;
+
+  // Pass A: invoices that say they were reversed. Prefer the credit whose doc number is that reversal document.
+  for (const i of invoices) {
+    const doc = (rows[i].reversed_with ?? '').trim();
+    if (!doc) continue;
+    reversed[i] = true;
+    const free = (c: number) => rows[c].amount < 0 && rows[c].vendor_id === rows[i].vendor_id && !used.has(c);
+    const byDoc = rows.map((_, c) => c).find((c) => free(c) && !!rows[c].doc_number && rows[c].doc_number === doc);
+    const credit = byDoc ?? (creditsByKey.get(keyOf(i)) ?? []).find((c) => !used.has(c));
+    if (credit !== undefined) { used.add(credit); reversed[credit] = true; }
+  }
+
+  // Pass B: remaining invoices, earliest first, offset by an exact negative credit dated on or after them.
+  for (const i of invoices.filter((x) => !reversed[x]).sort(byDate)) {
+    const candidates = (creditsByKey.get(keyOf(i)) ?? []).filter((c) => {
+      if (used.has(c)) return false;
+      const a = rows[i].invoice_date, b = rows[c].invoice_date;
+      return !a || !b || b >= a;
+    });
+    if (!candidates.length) continue;
+    const credit = candidates.sort(byDate)[0];
+    used.add(credit);
+    reversed[i] = true;
+    reversed[credit] = true;
+  }
+  return reversed;
+}
+
+/**
  * Vendor-account pairs worth asking the AI about: different vendor accounts with
  * similar names that have an invoice each with the same normalized invoice
  * number and an amount within 1%. A duplicate needs the invoice-number signal
@@ -184,7 +237,8 @@ export function suggestedAction(rules: string[]): SuggestedAction {
  * aliases out of the top `max`.
  */
 export function findVendorCandidates(rows: InvoiceRow[], max = 20): Array<{ a: string; b: string; nameA: string; nameB: string }> {
-  const order = rows.map((_, i) => i).sort((x, y) => rows[x].amount - rows[y].amount);
+  const reversed = findReversals(rows);
+  const order = rows.map((_, i) => i).filter((i) => rows[i].amount > 0 && !reversed[i]).sort((x, y) => rows[x].amount - rows[y].amount);
   const seen = new Map<string, { a: string; b: string; nameA: string; nameB: string; sim: number }>();
   for (let p = 0; p < order.length; p++) {
     const ri = rows[order[p]];
@@ -216,7 +270,9 @@ export function findVendorCandidates(rows: InvoiceRow[], max = 20): Array<{ a: s
  */
 export function detect(rows: InvoiceRow[], sameSupplier: Set<string> = new Set(), ignoredKeys: Set<string> = new Set()): Candidate[] {
   const refs = rows.map((r) => normalizeRef(r.invoice_ref));
-  const order = rows.map((_, i) => i).sort((x, y) => rows[x].amount - rows[y].amount);
+  // reversed invoices, their reversal credits and all other credit lines never take part in a pair
+  const reversed = findReversals(rows);
+  const order = rows.map((_, i) => i).filter((i) => rows[i].amount > 0 && !reversed[i]).sort((x, y) => rows[x].amount - rows[y].amount);
   const out: Candidate[] = [];
 
   for (let p = 0; p < order.length; p++) {

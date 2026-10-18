@@ -1,8 +1,9 @@
 const inr = new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const inr0 = new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 });
 
-export const rupees = (n: number | string | null | undefined) => '₹' + inr.format(Number(n ?? 0));
-export const rupees0 = (n: number | string | null | undefined) => '₹' + inr0.format(Math.round(Number(n ?? 0)));
+// credit lines are negative: show -₹1,000.00 rather than ₹-1,000.00
+export const rupees = (n: number | string | null | undefined) => { const v = Number(n ?? 0); return (v < 0 ? '-₹' : '₹') + inr.format(Math.abs(v)); };
+export const rupees0 = (n: number | string | null | undefined) => { const v = Math.round(Number(n ?? 0)); return (v < 0 ? '-₹' : '₹') + inr0.format(Math.abs(v)); };
 export const count = (n: number) => inr0.format(n);
 
 export function shortDate(iso: string | null | undefined): string {

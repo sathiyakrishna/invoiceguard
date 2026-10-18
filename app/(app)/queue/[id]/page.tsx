@@ -100,7 +100,10 @@ export default async function ReviewPage({ params }: { params: { id: string } })
                       <tr key={l.id} className={`border-t border-line-soft ${hit ? 'bg-high-bg font-semibold shadow-[inset_3px_0_0_#B42318]' : ''}`}>
                         <td className="px-5 py-2 font-mono">{l.vendor_id}</td>
                         <td className="px-3 py-2 font-mono">{l.company_code}</td>
-                        <td className="px-3 py-2 font-mono">{l.invoice_ref}</td>
+                        <td className="px-3 py-2 font-mono">
+                          {l.invoice_ref}
+                          {l.is_reversed && <span title="Booked and reversed. Not compared as a duplicate." className="ml-2 rounded-full bg-line-soft px-2 py-0.5 font-sans text-[11px] font-semibold text-ink-500">Reversed</span>}
+                        </td>
                         <td className="px-3 py-2 font-mono">{l.doc_number || '—'}</td>
                         <td className="px-3 py-2 font-mono">{shortDate(l.invoice_date)}</td>
                         <td className="px-3 py-2 pr-5 text-right font-mono">{rupees(l.amount)}</td>

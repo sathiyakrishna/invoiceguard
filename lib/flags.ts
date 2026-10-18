@@ -11,6 +11,8 @@ export type Invoice = {
   currency: string | null;
   po_number: string | null;
   doc_number: string | null;
+  reversed_with?: string | null;
+  is_reversed?: boolean;
   scan_id: string;
 };
 

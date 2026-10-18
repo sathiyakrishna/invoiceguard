@@ -9,7 +9,8 @@ export const FIELDS = [
   { key: 'amount', label: 'Gross amount', required: true },
   { key: 'currency', label: 'Currency', required: false },
   { key: 'po_number', label: 'PO number', required: false },
-  { key: 'doc_number', label: 'Document number', required: false }
+  { key: 'doc_number', label: 'Document number', required: false },
+  { key: 'reversed_with', label: 'Reversed with', required: false }
 ] as const;
 
 export type FieldKey = (typeof FIELDS)[number]['key'];
@@ -25,7 +26,8 @@ const SYNONYMS: Record<FieldKey, string[]> = {
   amount: ['amount', 'gross amount', 'invoice amount', 'amount in dc', 'amount in lc', 'wrbtr', 'dmbtr', 'value'],
   currency: ['currency', 'curr', 'crcy', 'waers'],
   po_number: ['po_number', 'po number', 'po', 'purchase order', 'ebeln', 'purchasing document'],
-  doc_number: ['doc_number', 'doc number', 'document number', 'document no', 'belnr', 'doc no', 'fi document']
+  doc_number: ['doc_number', 'doc number', 'document number', 'document no', 'belnr', 'doc no', 'fi document'],
+  reversed_with: ['reversed_with', 'reversed with', 'reversal doc', 'reversal document', 'stblg']
 };
 
 const clean = (h: string) => h.toLowerCase().replace(/[_.]/g, ' ').replace(/\s+/g, ' ').trim();
@@ -100,7 +102,7 @@ export function toInvoiceRows(records: Record<string, unknown>[], map: Mapping):
     if (!vendor) { if (errors.length < 50) errors.push({ row: line, message: 'Vendor ID is empty' }); return; }
     if (!ref) { if (errors.length < 50) errors.push({ row: line, message: 'Invoice number is empty' }); return; }
     if (Number.isNaN(amount)) { if (errors.length < 50) errors.push({ row: line, message: `Amount "${String(rawAmount)}" is not a number` }); return; }
-    if (amount <= 0) { skipped++; return; } // credit notes and zero lines are not checked
+    if (amount === 0) { skipped++; return; } // zero lines carry nothing; negative amounts are kept as credit lines (never compared as duplicates)
     const rawDate = get(r, 'invoice_date');
     const date = parseDate(rawDate);
     if (rawDate && String(rawDate).trim() && !date && errors.length < 50) errors.push({ row: line, message: `Date "${String(rawDate)}" not recognised, row kept without a date` });
@@ -113,7 +115,8 @@ export function toInvoiceRows(records: Record<string, unknown>[], map: Mapping):
       amount,
       currency: String(get(r, 'currency') ?? 'INR').trim().slice(0, 5) || 'INR',
       po_number: String(get(r, 'po_number') ?? '').trim().slice(0, 20),
-      doc_number: String(get(r, 'doc_number') ?? '').trim().slice(0, 20)
+      doc_number: String(get(r, 'doc_number') ?? '').trim().slice(0, 20),
+      reversed_with: String(get(r, 'reversed_with') ?? '').trim().slice(0, 20)
     });
   });
   return { rows, errors, skipped };

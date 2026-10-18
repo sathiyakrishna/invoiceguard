@@ -25,6 +25,12 @@ Next.js 14 (App Router, TypeScript) · Tailwind CSS · Supabase (Postgres, row-l
 
 Only pairs with the same vendor (or an AI-confirmed alias) and amounts within 1% are compared, and every pair needs an invoice-number signal. Bands: 80+ High (red), 60–79 Medium (amber), 50–59 Low (green). Recurring charges (RENT-AUG vs RENT-SEP) and consecutive invoices are excluded. Pairs you mark Ignore are not flagged again. Code: `lib/detect.ts`, tests: `tests/`.
 
+**Booked-and-reversed invoices are never flagged.** Negative amounts are kept as credit lines and are never compared as duplicates themselves. An invoice counts as reversed when:
+- its **Reversed with** column (SAP `STBLG`; also matched as "reversal doc" or "reversal document") is filled, in which case the credit line whose document number matches is its reversal; or
+- a credit line has the same vendor, the same normalized invoice number and the exact negative amount, dated on or after the invoice. The earliest matching invoice is the one reversed.
+
+Each credit reverses at most one invoice. Reversed invoices and their reversal credits are excluded from every pair and shown with a grey **Reversed** tag in the ledger preview. A corrected re-posting (same number and amount, booked after the reversal) is a live invoice: it is only compared with other non-reversed invoices. The sample register includes 3 such booked-reversed-and-reposted cases (2 using `reversed_with`, 1 using only the offsetting credit), and none are flagged. If your export has no credit lines or reversal column, nothing changes.
+
 AI never changes a score or a status. Explanations are generated only when you open a pair, and cached.
 
 ## Set up (about 30 minutes)
@@ -38,7 +44,8 @@ npm test          # 20 tests, should all pass
 
 ### 2. Supabase
 1. Create a project at supabase.com (region: Mumbai).
-2. **SQL Editor › New query**: paste all of `supabase/migrations/001_init.sql` and click **Run**.
+2. **SQL Editor › New query**: paste all of `supabase/migrations/001_init.sql` and click **Run**. Then run `supabase/migrations/002_tighten_rls.sql` the same way (it makes invoices and flags accept only your own scans), and `supabase/migrations/004_reversals.sql` (adds the reversal columns to invoices).
+   Upgrading a database from before the rename? Also run: `update public.flags set dup_type = 'Alternate vendor account' where dup_type = 'Alternate vendor ID';`
 3. **Project Settings › API**: copy the Project URL, `anon` key and `service_role` key into `.env.local`.
 4. **Authentication › Providers › Email**: turn **off** "Allow new users to sign up" (demo accounts are created by script; the public uses Google).
 5. **Authentication › URL Configuration**: set Site URL to your Vercel URL later; add redirect URLs `http://localhost:3000/auth/callback` and `https://YOUR-APP.vercel.app/auth/callback`.
@@ -56,6 +63,8 @@ Create a separate project at platform.openai.com for InvoiceGuard, set a monthly
 npm run dev       # http://localhost:3000
 ```
 Upload `public/sample_register.csv` (2,000 invoices, 25 planted duplicates). `answer_key.csv` lists them (not pushed to GitHub).
+
+3 of the 25 are alternate vendor accounts (the same supplier under two vendor IDs). They are only flagged when the AI vendor matching runs, so `OPENAI_API_KEY` must be set; without it a scan finds 22.
 
 ### 6. Judge demo accounts
 Set `DEMO_PASSWORD_1..3` in `.env.local` (12+ characters), then:
