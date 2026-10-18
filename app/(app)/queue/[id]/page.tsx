@@ -102,8 +102,8 @@ export default async function ReviewPage({ params }: { params: { id: string } })
               <span className="text-[13px] text-ink-500">{vendors.join(' and ')} · latest invoices across your scans · the pair is highlighted</span>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[640px] text-[13px]">
-                <thead><tr><th className="th pl-5">Vendor</th><th className="th">CC</th><th className="th">Invoice no.</th><th className="th">Doc no.</th><th className="th">Invoice date</th>{hasClearing && <th className="th">Status</th>}<th className="th pr-5 text-right">Amount</th></tr></thead>
+              <table className="w-full min-w-[720px] text-[13px]">
+                <thead><tr><th className="th pl-5">Vendor</th><th className="th">CC</th><th className="th">Invoice no.</th><th className="th">Doc no.</th><th className="th">Invoice date</th>{hasClearing && <><th className="th">Status</th><th className="th">Payment date</th></>}<th className="th pr-5 text-right">Amount</th></tr></thead>
                 <tbody>
                   {ledger.map((l) => {
                     const hit = l.id === f.a.id || l.id === f.b.id;
@@ -120,9 +120,13 @@ export default async function ReviewPage({ params }: { params: { id: string } })
                         <td className="px-3 py-2 font-mono">{l.doc_number || '—'}</td>
                         <td className="px-3 py-2 font-mono">{shortDate(l.invoice_date)}</td>
                         {hasClearing && (
-                          <td className="whitespace-nowrap px-3 py-2 font-mono">
-                            {l.is_reversed ? reversedTag : l.clearing_date ? <>Paid {shortDate(l.clearing_date)}</> : <span className="font-sans font-semibold text-accent-text">Open</span>}
-                          </td>
+                          <>
+                            {/* same wording and DD/MM/YYYY format as the side-by-side comparison */}
+                            <td className="whitespace-nowrap px-3 py-2 font-sans">
+                              {l.is_reversed ? reversedTag : l.clearing_date ? 'Already paid' : <span className="font-semibold text-accent-text">Open</span>}
+                            </td>
+                            <td className="whitespace-nowrap px-3 py-2 font-mono">{!l.is_reversed && l.clearing_date ? dmy(l.clearing_date) : 'NA'}</td>
+                          </>
                         )}
                         <td className="px-3 py-2 pr-5 text-right font-mono">{rupees(l.amount)}</td>
                       </tr>
