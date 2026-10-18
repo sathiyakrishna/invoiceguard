@@ -90,7 +90,7 @@ export default async function QueuePage({ searchParams }: { searchParams: SP }) 
         </p>
       )}
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Kpi label="Invoices scanned" value={count(scanned)} />
         <Kpi label="Pairs pending review" value={count(pending.length)} sub={`${highPending} high risk`} subClass="text-high-fg" />
         <Kpi label="Confirmed duplicates" value={count(yes.length)} sub={`${all.filter((f) => f.status === 'no').length} not duplicates`} />
@@ -125,38 +125,49 @@ export default async function QueuePage({ searchParams }: { searchParams: SP }) 
           <p className="px-5 py-12 text-center text-[15px] text-ink-500">No pairs match these filters. <Link href="/queue?status=all" className="text-accent underline">Show all pairs</Link></p>
         ) : (
           <div className="max-h-[70vh] overflow-auto">
-            <table className="w-full min-w-[1080px] text-sm">
+            {/* Fits 1280px and wider without scrolling. Age and Doc no. appear from 1440px; below md the table scrolls inside the card. */}
+            <table className="w-full min-w-[720px] text-[13px] md:min-w-0">
               <thead className="sticky top-0 z-10 bg-white shadow-[0_1px_0_#E2E5EA]">
                 <tr>
-                  <th className="th pl-5">Pair ID</th>
+                  <th className="th pl-4">Pair ID</th>
                   <th className="th"><Link href={href(searchParams, { sort: 'score' })} className={sort === 'score' ? 'text-ink' : ''}>Risk {sort === 'score' && '↓'}</Link></th>
-                  <th className="th"><Link href={href(searchParams, { sort: 'age' })} className={sort === 'age' ? 'text-ink' : ''}>Age {sort === 'age' && '↓'}</Link></th>
+                  <th className="th hidden wide:table-cell"><Link href={href(searchParams, { sort: 'age' })} className={sort === 'age' ? 'text-ink' : ''}>Age {sort === 'age' && '↓'}</Link></th>
                   <th className="th">Vendor</th>
-                  <th className="th">Invoice no.</th>
-                  <th className="th">Invoice date</th>
-                  <th className="th">Doc no.</th>
+                  <th className="th">Invoice no. · date</th>
+                  <th className="th hidden wide:table-cell">Doc no.</th>
                   <th className="th text-right"><Link href={href(searchParams, { sort: 'amount' })} className={sort === 'amount' ? 'text-ink' : ''}>Amount {sort === 'amount' && '↓'}</Link></th>
-                  <th className="th">Duplicate type</th>
+                  <th className="th">Type</th>
                   <th className="th">Status</th>
-                  <th className="th pr-5"><span className="sr-only">Action</span></th>
+                  <th className="th pr-4"><span className="sr-only">Action</span></th>
                 </tr>
               </thead>
               <tbody>
-                {shown.map((f) => (
-                  <tr key={f.id} className="border-t border-line-soft hover:bg-[#FAFBFC]">
-                    <td className="td pl-5 mono text-ink-700">{f.pair_code}</td>
-                    <td className="td"><RiskBadge band={f.risk_band} score={f.score} /></td>
-                    <td className="td whitespace-nowrap text-[13px] text-ink-700">{ageLabel(f.created_at)}</td>
-                    <td className="td"><div className="font-medium">{f.a.vendor_name || f.a.vendor_id}</div><div className="text-xs text-ink-500">{f.a.vendor_id === f.b.vendor_id ? f.a.vendor_id : `${f.a.vendor_id} vs ${f.b.vendor_id}`} · CC {f.a.company_code === f.b.company_code ? f.a.company_code : `${f.a.company_code} / ${f.b.company_code}`}</div></td>
-                    <td className="td mono leading-relaxed"><div>{f.a.invoice_ref}</div><div>{f.b.invoice_ref}</div></td>
-                    <td className="td mono whitespace-nowrap leading-relaxed"><div>{shortDate(f.a.invoice_date)}</div><div>{shortDate(f.b.invoice_date)}</div></td>
-                    <td className="td mono leading-relaxed"><div>{f.a.doc_number || '—'}</div><div>{f.b.doc_number || '—'}</div></td>
-                    <td className="td mono whitespace-nowrap text-right">{rupees(f.amount)}</td>
-                    <td className="td text-ink-700">{f.dup_type}</td>
-                    <td className="td"><StatusBadge status={f.status} /></td>
-                    <td className="td pr-5 text-right"><Link href={`/queue/${f.id}`} className="btn-secondary min-h-9">Review</Link></td>
-                  </tr>
-                ))}
+                {shown.map((f) => {
+                  const vendor = f.a.vendor_name || f.a.vendor_id || '';
+                  const ids = `${f.a.vendor_id === f.b.vendor_id ? f.a.vendor_id : `${f.a.vendor_id} vs ${f.b.vendor_id}`} · CC ${f.a.company_code === f.b.company_code ? f.a.company_code : `${f.a.company_code} / ${f.b.company_code}`}`;
+                  return (
+                    <tr key={f.id} className="border-t border-line-soft hover:bg-[#FAFBFC]">
+                      <td className="td whitespace-nowrap py-2.5 pl-4 mono text-ink-700">{f.pair_code}</td>
+                      <td className="td py-2.5"><RiskBadge band={f.risk_band} score={f.score} /></td>
+                      <td className="td hidden whitespace-nowrap py-2.5 text-ink-700 wide:table-cell">{ageLabel(f.created_at)}</td>
+                      <td className="td py-2.5">
+                        <div title={`${vendor}\n${ids}`} className="max-w-[10.5rem] wide:max-w-[12.5rem]">
+                          <div className="truncate font-medium">{vendor}</div>
+                          <div className="truncate text-xs text-ink-500">{ids}</div>
+                        </div>
+                      </td>
+                      <td className="td mono whitespace-nowrap py-2.5 leading-relaxed">
+                        <div>{f.a.invoice_ref} <span className="text-ink-500">{shortDate(f.a.invoice_date)}</span></div>
+                        <div>{f.b.invoice_ref} <span className="text-ink-500">{shortDate(f.b.invoice_date)}</span></div>
+                      </td>
+                      <td className="td mono hidden py-2.5 leading-relaxed wide:table-cell"><div>{f.a.doc_number || '—'}</div><div>{f.b.doc_number || '—'}</div></td>
+                      <td className="td mono whitespace-nowrap py-2.5 text-right">{rupees(f.amount)}</td>
+                      <td className="td max-w-[7.5rem] py-2.5 text-ink-700">{f.dup_type}</td>
+                      <td className="td py-2.5"><StatusBadge status={f.status} compact /></td>
+                      <td className="td py-2.5 pr-4 text-right"><Link href={`/queue/${f.id}`} className="btn-secondary min-h-9 px-3">Review</Link></td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -178,9 +189,9 @@ export default async function QueuePage({ searchParams }: { searchParams: SP }) 
 
 function Kpi({ label, value, sub, subClass, valueClass }: { label: string; value: string; sub?: string; subClass?: string; valueClass?: string }) {
   return (
-    <div className="card flex flex-col gap-1.5 px-5 py-4">
+    <div className="card flex flex-col gap-1 px-4 py-3">
       <div className="text-[13px] text-ink-500">{label}</div>
-      <div className={`font-mono text-2xl tnum ${valueClass ?? ''}`}>{value}</div>
+      <div className={`font-mono text-xl tnum ${valueClass ?? ''}`}>{value}</div>
       {sub && <div className={`text-xs ${subClass ?? 'text-ink-500'}`}>{sub}</div>}
     </div>
   );

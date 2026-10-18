@@ -3,6 +3,8 @@ import type { Config } from 'tailwindcss';
 const config: Config = {
   content: ['./app/**/*.{ts,tsx}', './components/**/*.{ts,tsx}'],
   theme: {
+    // defaults plus `wide` (1440px), kept in ascending order so min-width variants cascade correctly
+    screens: { sm: '640px', md: '768px', lg: '1024px', xl: '1280px', wide: '1440px', '2xl': '1536px' },
     extend: {
       colors: {
         navy: { DEFAULT: '#14213D', 700: '#1B2B4F', 600: '#22325A', 500: '#2E3F66' },

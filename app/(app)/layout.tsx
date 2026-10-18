@@ -13,9 +13,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     usageSummary(user.id)
   ]);
   return (
-    <div className="flex min-h-screen flex-wrap">
+    <div className="flex min-h-screen flex-col md:flex-row">
       <Sidebar pending={count ?? 0} usage={usage} email={user.email ?? ''} />
-      <main className="min-w-0 flex-[999_1_560px] px-5 py-7 sm:px-10 sm:py-8">
+      <main className="min-w-0 flex-1 px-4 py-6 sm:px-6 sm:py-7 xl:px-8">
         <div className="mx-auto flex max-w-[1320px] flex-col gap-6">{children}</div>
       </main>
     </div>

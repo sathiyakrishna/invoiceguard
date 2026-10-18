@@ -30,7 +30,10 @@ const STATUS: Record<string, { label: string; cls: string }> = {
   ignore: { label: 'Ignored', cls: 'border-line-input bg-ground text-ink-500' }
 };
 
-export function StatusBadge({ status }: { status: string }) {
+const SHORT: Record<string, string> = { pending: 'Pending', yes: 'Yes', no: 'No', ignore: 'Ignored' };
+
+/** `compact` shows the short label (full label as a tooltip) for dense tables. */
+export function StatusBadge({ status, compact }: { status: string; compact?: boolean }) {
   const s = STATUS[status] ?? STATUS.pending;
-  return <span className={`inline-block whitespace-nowrap rounded-full border px-2.5 py-0.5 text-xs font-semibold ${s.cls}`}>{s.label}</span>;
+  return <span title={compact ? s.label : undefined} className={`inline-block whitespace-nowrap rounded-full border px-2.5 py-0.5 text-xs font-semibold ${s.cls}`}>{compact ? SHORT[status] ?? s.label : s.label}</span>;
 }
