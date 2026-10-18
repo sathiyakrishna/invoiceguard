@@ -8,7 +8,7 @@ const config: Config = {
     screens: { sm: '640px', md: '768px', lg: '1024px', xl: '1280px', wide: '1440px', '2xl': '1536px' },
     extend: {
       colors: {
-        navy: { DEFAULT: '#14213D', 700: '#1B2B4F', 600: '#22325A', 500: '#2E3F66' },
+        navy: { DEFAULT: '#0B1F4D', 700: '#1B2B4F', 600: '#22325A', 500: '#2E3F66' },
         ink: { DEFAULT: '#141A26', 700: '#2F3846', 500: '#4B5565' },
         line: { DEFAULT: '#E2E5EA', soft: '#EEF0F3', input: '#CBD2DC' },
         ground: '#F3F4F6',
@@ -19,8 +19,7 @@ const config: Config = {
         sky: { 300: '#7DA2FF' }
       },
       fontFamily: {
-        sans: ['"IBM Plex Sans"', 'system-ui', 'sans-serif'],
-        landing: ['Barlow', 'system-ui', 'sans-serif'], // public landing page only
+        sans: ['Barlow', 'system-ui', 'sans-serif'],
         mono: ['"IBM Plex Mono"', 'ui-monospace', 'monospace']
       }
     }

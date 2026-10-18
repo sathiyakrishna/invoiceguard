@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   }
 };
 
-export const viewport: Viewport = { themeColor: '#14213D', width: 'device-width', initialScale: 1 };
+export const viewport: Viewport = { themeColor: '#0B1F4D', width: 'device-width', initialScale: 1 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -24,7 +24,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: "try{var v=localStorage.getItem('ig-sidebar');if(v==='rail'||v==='full')document.documentElement.dataset.sb=v}catch(e){}" }} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500;600;700&family=Barlow:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet" />
       </head>
       <body>{children}</body>
     </html>

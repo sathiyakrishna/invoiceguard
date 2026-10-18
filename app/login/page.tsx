@@ -18,8 +18,8 @@ export default function LoginPage({ searchParams }: { searchParams: { error?: st
       <section aria-label="About InvoiceGuard" className="flex flex-[1_1_520px] flex-col gap-10 bg-navy px-8 py-10 text-[#E6EAF2] sm:px-14 sm:py-12">
         <Link href="/" className="self-start"><Logo /></Link>
         <div className="mt-auto flex max-w-xl flex-col gap-4">
-          <h1 className="text-4xl font-bold leading-[1.1] tracking-tight text-white sm:text-[44px]">Stop duplicate payments before the payment run.</h1>
-          <p className="text-[17px] leading-relaxed text-[#C9D2E3]">InvoiceGuard checks your payment-run register for the duplicates SAP’s standard check misses: reference format changes, the same invoice in two company codes, and alternate vendor accounts. Every flag comes with its evidence.</p>
+          <h1 className="text-[40px] font-extrabold leading-[1.05] tracking-[-1.5px] text-white sm:text-[52px]">Stop duplicate payments before the payment run.</h1>
+          <p className="text-[17px] leading-[1.6] text-[#DBEAFE] sm:text-[19px]">InvoiceGuard checks your payment-run register for the duplicates SAP’s standard check misses: reference format changes, the same invoice in two company codes, and alternate vendor accounts. Every flag comes with its evidence.</p>
         </div>
         <div aria-hidden="true" className="flex max-w-xl flex-col gap-2.5 rounded-xl border border-navy-500 bg-navy-700 p-4">
           {PREVIEW.map((p) => (
@@ -37,24 +37,24 @@ export default function LoginPage({ searchParams }: { searchParams: { error?: st
             ['You decide', 'Yes, No or Ignore, with a full audit trail']
           ].map(([t, d]) => (
             <li key={t} className="flex flex-col gap-1.5">
-              <span className="text-[15px] font-semibold text-white">{t}</span>
-              <span className="text-sm leading-snug text-[#C9D2E3]">{d}</span>
+              <span className="text-lg font-bold text-white">{t}</span>
+              <span className="text-[15px] leading-snug text-[#DBEAFE]">{d}</span>
             </li>
           ))}
         </ul>
       </section>
-      <main className="flex flex-[1_1_440px] flex-col items-center justify-center gap-6 px-6 py-12">
-        <div className="card flex w-full max-w-[400px] flex-col gap-5 rounded-2xl p-8">
+      <main className="flex flex-[1_1_440px] flex-col items-center justify-center gap-6 bg-gradient-to-b from-[#EEF3FF] to-white px-6 py-12">
+        <div className="flex w-full max-w-[420px] flex-col gap-5 rounded-3xl bg-white p-8 shadow-[0_12px_32px_rgba(11,31,77,0.10)] sm:p-10">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight">Sign in</h2>
-            <p className="mt-1 text-sm text-ink-500">Free during the beta. No credit card.</p>
+            <h2 className="text-[32px] font-extrabold leading-[1.1] tracking-[-0.5px]">Sign in</h2>
+            <p className="mt-1 text-[15px] text-ink-500">Free during the beta. No credit card.</p>
           </div>
           <LoginForm googleError={searchParams.error === 'google'} />
           <p className="text-[13px] leading-relaxed text-ink-500">Your data is private to your account and deleted after 30 days. Please use anonymized data, not live company files.</p>
         </div>
         <div className="flex flex-col items-center gap-1.5 text-center text-[13px] text-ink-500">
           <span>Built for the HelloPM AI Product Management buildathon</span>
-          <span><Link href="/privacy" className="text-accent">Privacy</Link> · <Link href="/terms" className="text-accent">Terms</Link></span>
+          <span><Link href="/privacy" className="text-accent underline">Privacy</Link> · <Link href="/terms" className="text-accent underline">Terms</Link></span>
         </div>
       </main>
     </div>

@@ -18,7 +18,7 @@ export function RiskBadge({ band, score, large }: { band: Band; score?: number; 
     <span className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full font-semibold ${STYLE[band]} ${large ? 'px-3 py-1 text-[13px]' : 'px-2.5 py-0.5 text-xs'}`}>
       <RiskIcon band={band} size={large ? 15 : 13} />
       {band}
-      {score !== undefined && <span className="tnum font-mono">· {score}</span>}
+      {score !== undefined && <span className="tnum">· {score}</span>}
     </span>
   );
 }

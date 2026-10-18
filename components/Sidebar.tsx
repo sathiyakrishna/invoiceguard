@@ -16,7 +16,7 @@ function Meter({ label, used, max }: { label: string; used: number; max: number 
   const pct = Math.min(100, max ? Math.round((used / max) * 100) : 0);
   return (
     <div className="flex flex-col gap-1.5">
-      <div className="flex justify-between text-[13px]"><span>{label}</span><span className="font-mono tnum">{used} / {max}</span></div>
+      <div className="flex justify-between text-[13px]"><span>{label}</span><span className="tnum">{used} / {max}</span></div>
       <div role="progressbar" aria-label={`${label} used`} aria-valuenow={used} aria-valuemin={0} aria-valuemax={max} className="h-1.5 rounded bg-navy-500">
         <div className="h-1.5 rounded" style={{ width: `${pct}%`, background: pct >= 80 ? '#F5B83D' : '#7DA2FF' }} />
       </div>
@@ -82,7 +82,7 @@ export default function Sidebar({ pending, usage, email }: { pending: number; us
           const active = path === it.href || path.startsWith(it.href + '/');
           return (
             <li key={it.href}>
-              <Link href={it.href} title={it.label} aria-label={it.badge ? `${it.label}, ${it.badge} pending` : it.label} aria-current={active ? 'page' : undefined} className={`relative flex min-h-11 items-center gap-2.5 rounded-lg px-3 text-sm rail:justify-center rail:px-0 ${active ? 'bg-navy-600 font-semibold text-white' : 'text-[#C9D2E3] hover:bg-navy-700 hover:text-white'}`}>
+              <Link href={it.href} title={it.label} aria-label={it.badge ? `${it.label}, ${it.badge} pending` : it.label} aria-current={active ? 'page' : undefined} className={`relative flex min-h-11 items-center gap-2.5 rounded-lg px-3 text-[15px] rail:justify-center rail:px-0 ${active ? 'bg-navy-600 font-semibold text-white' : 'text-[#C9D2E3] hover:bg-navy-700 hover:text-white'}`}>
                 <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">{ICONS[it.icon]}</svg>
                 <span className="rail:sr-only">{it.label}</span>
                 {!!it.badge && <span aria-hidden="true" className="ml-auto rounded-full bg-high-fg px-2 py-0.5 text-xs font-semibold text-white rail:absolute rail:right-0.5 rail:top-0.5 rail:ml-0 rail:px-1.5 rail:py-0 rail:text-[10px] rail:leading-4">{it.badge}</span>}
@@ -94,8 +94,8 @@ export default function Sidebar({ pending, usage, email }: { pending: number; us
       {/* compact credit meter for the icon rail; hover for the full numbers */}
       <div title={usageTip} className="mt-auto hidden flex-col items-center gap-2 rounded-lg bg-navy-700 px-1 py-2 text-center rail:flex">
         <span className="sr-only">{usageTip}</span>
-        <div aria-hidden="true" className="flex flex-col items-center gap-0.5 leading-tight"><span className="text-[10px] text-[#A9B3C6]">Scans</span><span className="font-mono text-[11px] tnum">{usage.scansToday}/{l.scansDay}</span></div>
-        <div aria-hidden="true" className="flex flex-col items-center gap-0.5 leading-tight"><span className="text-[10px] text-[#A9B3C6]">AI</span><span className="font-mono text-[11px] tnum">{usage.aiToday}/{l.aiDay}</span></div>
+        <div aria-hidden="true" className="flex flex-col items-center gap-0.5 leading-tight"><span className="text-[10px] text-[#A9B3C6]">Scans</span><span className="text-[11px] tnum">{usage.scansToday}/{l.scansDay}</span></div>
+        <div aria-hidden="true" className="flex flex-col items-center gap-0.5 leading-tight"><span className="text-[10px] text-[#A9B3C6]">AI</span><span className="text-[11px] tnum">{usage.aiToday}/{l.aiDay}</span></div>
       </div>
       <div className="mt-auto flex flex-col gap-2.5 rounded-xl bg-navy-700 p-4 rail:hidden">
         <div className="text-xs font-semibold text-[#A9B3C6]">Today</div>
@@ -104,8 +104,8 @@ export default function Sidebar({ pending, usage, email }: { pending: number; us
         <div className="text-xs text-[#A9B3C6]">Resets at midnight IST</div>
         <div className="h-px bg-navy-500" />
         <div className="text-xs font-semibold text-[#A9B3C6]">This month</div>
-        <div className="flex justify-between gap-3 text-[13px]"><span>Scans</span><span className="text-right font-mono tnum">{usage.isDemo ? 'No limit' : `${usage.scansMonth} / ${l.scansMonth}`}</span></div>
-        <div className="flex justify-between gap-3 text-[13px]"><span>AI calls</span><span className="text-right font-mono tnum">{usage.isDemo ? 'No limit' : `${usage.aiMonth} / ${l.aiMonth}`}</span></div>
+        <div className="flex justify-between gap-3 text-[13px]"><span>Scans</span><span className="text-right tnum">{usage.isDemo ? 'No limit' : `${usage.scansMonth} / ${l.scansMonth}`}</span></div>
+        <div className="flex justify-between gap-3 text-[13px]"><span>AI calls</span><span className="text-right tnum">{usage.isDemo ? 'No limit' : `${usage.aiMonth} / ${l.aiMonth}`}</span></div>
         <div className="text-xs text-[#A9B3C6]">Rule checks never use credits</div>
       </div>
       <div className="truncate px-2 text-xs text-[#A9B3C6] rail:hidden" title={email}>{email}</div>

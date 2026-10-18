@@ -87,7 +87,7 @@ export default function UploadFlow() {
       <ol className="flex flex-wrap gap-2 text-[13px]">
         {['Upload file', 'Check columns', 'Run scan'].map((s, i) => (
           <li key={s} className={`flex items-center gap-2 rounded-full px-3.5 py-1.5 font-medium ${i === step ? 'bg-navy text-white' : i < step ? 'bg-accent-soft text-accent-text' : 'bg-[#E5E8ED] text-ink-700'}`}>
-            <span className="font-mono">{i + 1}</span>{s}
+            <span className="tnum">{i + 1}</span>{s}
           </li>
         ))}
       </ol>
@@ -113,11 +113,11 @@ export default function UploadFlow() {
       {loaded && (
         <section aria-labelledby="map" className="card flex flex-col">
           <div className="flex flex-wrap items-baseline gap-2 border-b border-line px-5 py-4">
-            <h2 id="map" className="text-base font-semibold">Check column mapping</h2>
+            <h2 id="map">Check column mapping</h2>
             <span className="text-[13px] text-ink-500">{FIELDS.filter((f) => map[f.key]).length} of {FIELDS.length} fields matched</span>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[560px] text-sm">
+            <table className="w-full min-w-[560px] text-[15px]">
               <thead><tr><th className="th pl-5">Field</th><th className="th">Your column</th><th className="th pr-5">Example</th></tr></thead>
               <tbody>
                 {FIELDS.map((f) => (
@@ -129,7 +129,7 @@ export default function UploadFlow() {
                         {loaded.headers.map((h) => <option key={h} value={h}>{h}</option>)}
                       </select>
                     </td>
-                    <td className="td pr-5 font-mono text-[13px] text-ink-500">{map[f.key] ? String(loaded.records[0]?.[map[f.key] as string] ?? '') : '—'}</td>
+                    <td className="td pr-5 text-[13px] text-ink-500">{map[f.key] ? String(loaded.records[0]?.[map[f.key] as string] ?? '') : '—'}</td>
                   </tr>
                 ))}
               </tbody>
@@ -148,7 +148,7 @@ export default function UploadFlow() {
 
       {rowErrors.length > 0 && (
         <section className="card p-5">
-          <h2 className="text-sm font-semibold">Rows with problems ({rowErrors.length}{rowErrors.length === 50 ? '+' : ''})</h2>
+          <h2>Rows with problems ({rowErrors.length}{rowErrors.length === 50 ? '+' : ''})</h2>
           <ul className="mt-2 max-h-48 overflow-y-auto text-[13px] text-ink-700">
             {rowErrors.map((e, i) => <li key={i}>Row {e.row}: {e.message}</li>)}
           </ul>

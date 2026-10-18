@@ -4,7 +4,11 @@
 
 @layer base {
   html { -webkit-text-size-adjust: 100%; }
-  body { @apply bg-ground font-sans text-ink antialiased; }
+  body { @apply bg-ground font-sans text-[15px] text-ink antialiased; }
+  /* Page titles 32px/800, section and card titles 18px/700, both in the landing-page navy. Pages that need a
+     different size (landing, sign-in) set their own utility classes, which win over these base rules. */
+  h1 { @apply text-[32px] font-extrabold leading-[1.15] tracking-[-0.5px] text-navy; }
+  h2 { @apply text-lg font-bold text-navy; }
   .tnum { font-variant-numeric: tabular-nums; }
   :focus-visible { outline: 2px solid #1D4ED8; outline-offset: 2px; }
   @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
@@ -27,9 +31,9 @@
 @layer components {
   .card { @apply rounded-xl border border-line bg-white; }
   .btn-primary { @apply inline-flex items-center justify-center rounded-lg bg-accent px-5 text-[15px] font-semibold text-white hover:bg-accent-dark disabled:cursor-not-allowed disabled:opacity-60; min-height: 44px; }
-  .btn-secondary { @apply inline-flex items-center justify-center gap-2 rounded-lg border border-line-input bg-white px-4 text-sm font-medium text-ink hover:bg-ground disabled:opacity-60; min-height: 40px; }
+  .btn-secondary { @apply inline-flex items-center justify-center gap-2 rounded-lg border border-line-input bg-white px-4 text-[15px] font-medium text-ink hover:bg-ground disabled:opacity-60; min-height: 40px; }
   .input { @apply rounded-lg border border-line-input bg-white px-3 text-[15px] font-normal text-ink; min-height: 44px; }
-  .th { @apply px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-ink-500; }
+  .th { @apply px-3 py-2.5 text-left text-[13px] font-semibold text-ink-500; }
   .td { @apply px-3 py-3.5 align-top; }
   .mono { @apply font-mono text-[13px] tnum; }
   .skeleton { @apply animate-pulse rounded bg-line-soft; }

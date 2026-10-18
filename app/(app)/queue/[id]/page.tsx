@@ -37,6 +37,9 @@ export default async function ReviewPage({ params }: { params: { id: string } })
 
   const hasClearing = (clearedInScan ?? 0) > 0;
   const dmy = (iso: string) => iso.slice(0, 10).split('-').reverse().join('/');
+  // IBM Plex Mono is for invoice numbers, amounts, doc numbers (PO numbers included) and vendor IDs only
+  const MONO_ROWS = ['Invoice no.', 'Gross amount', 'PO number', 'Doc no.'];
+  const vendorCell = (s: string) => { const [id, ...name] = s.split(' · '); return <><span className="mono">{id}</span>{name.length ? <> · {name.join(' · ')}</> : null}</>; };
   const sameRef = f.a.invoice_ref === f.b.invoice_ref;
   const paidThenOpen = !!f.a.clearing_date && !f.b.clearing_date; // A paid, B open
   // payment rows only when this scan carries clearing data; the Match column of 'Payment date' is empty
@@ -64,7 +67,7 @@ export default async function ReviewPage({ params }: { params: { id: string } })
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <div className="flex flex-wrap items-center gap-2.5">
-            <h1 className="text-2xl font-bold tracking-tight">Duplicate pair {f.pair_code} · {f.a.vendor_name || f.a.vendor_id}</h1>
+            <h1>Duplicate pair {f.pair_code} · {f.a.vendor_name || f.a.vendor_id}</h1>
             <RiskBadge band={f.risk_band} score={f.score} large />
           </div>
           <p className="mt-1.5 text-sm text-ink-500">{pos >= 0 ? `${pos + 1} of ${ids.length} pending` : 'Already classified'} · {f.dup_type} · shortcuts: Y yes, N no, I ignore, J/K next/previous</p>
@@ -78,16 +81,16 @@ export default async function ReviewPage({ params }: { params: { id: string } })
       <div className="flex flex-wrap items-start gap-4">
         <div className="flex min-w-0 flex-[999_1_520px] flex-col gap-4">
           <section aria-labelledby="cmp" className="card">
-            <h2 id="cmp" className="border-b border-line px-5 py-4 text-[15px] font-semibold">Side-by-side comparison</h2>
+            <h2 id="cmp" className="border-b border-line px-5 py-4">Side-by-side comparison</h2>
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[560px] text-sm">
+              <table className="w-full min-w-[560px] text-[15px]">
                 <thead className="bg-[#F8F9FB]"><tr><th className="th pl-5">Field</th><th className="th">Invoice A</th><th className="th">Invoice B</th><th className="th pr-5">Match</th></tr></thead>
                 <tbody>
                   {cmp.map(([label, a, b, m, hit]) => (
                     <tr key={label} className={`border-t border-line-soft ${hit ? 'bg-high-row' : ''}`}>
                       <th scope="row" className="px-5 py-2.5 text-left font-medium text-ink-700">{label}</th>
-                      <td className="px-3 py-2.5 mono">{a}</td>
-                      <td className="px-3 py-2.5 mono">{b}</td>
+                      <td className="px-3 py-2.5 tnum">{MONO_ROWS.includes(label) ? <span className="mono">{a}</span> : label === 'Vendor' ? vendorCell(a) : a}</td>
+                      <td className="px-3 py-2.5 tnum">{MONO_ROWS.includes(label) ? <span className="mono">{b}</span> : label === 'Vendor' ? vendorCell(b) : b}</td>
                       <td className={`px-3 py-2.5 pr-5 text-[13px] font-semibold ${hit ? 'text-high-fg' : 'text-ink-500'}`}>{m}</td>
                     </tr>
                   ))}
@@ -98,37 +101,37 @@ export default async function ReviewPage({ params }: { params: { id: string } })
 
           <section aria-labelledby="ledger" className="card">
             <div className="flex flex-wrap items-baseline gap-2 border-b border-line px-5 py-4">
-              <h2 id="ledger" className="text-[15px] font-semibold">Ledger preview</h2>
+              <h2 id="ledger">Ledger preview</h2>
               <span className="text-[13px] text-ink-500">{vendors.join(' and ')} · latest invoices across your scans · the pair is highlighted</span>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[720px] text-[13px]">
-                <thead><tr><th className="th pl-5">Vendor</th><th className="th">CC</th><th className="th">Invoice no.</th><th className="th">Doc no.</th><th className="th">Invoice date</th>{hasClearing && <><th className="th">Status</th><th className="th">Payment date</th></>}<th className="th pr-5 text-right">Amount</th></tr></thead>
+              <table className="w-full min-w-[640px] whitespace-nowrap text-[15px]">
+                <thead><tr><th className="th pl-4 pr-1.5">Vendor</th><th className="th px-1.5">CC</th><th className="th px-1.5">Invoice no.</th><th className="th px-1.5">Doc no.</th><th className="th px-1.5">Invoice date</th>{hasClearing && <><th className="th px-1.5">Status</th><th className="th px-1.5">Payment date</th></>}<th className="th pl-1.5 pr-4 text-right">Amount</th></tr></thead>
                 <tbody>
                   {ledger.map((l) => {
                     const hit = l.id === f.a.id || l.id === f.b.id;
-                    const reversedTag = <span title="Booked and reversed. Not compared as a duplicate." className="rounded-full bg-line-soft px-2 py-0.5 font-sans text-[11px] font-semibold text-ink-500">Reversed</span>;
+                    const reversedTag = <span title="Booked and reversed. Not compared as a duplicate." className="rounded-full bg-line-soft px-1.5 py-0.5 font-sans text-[11px] font-semibold text-ink-500">Reversed</span>;
                     return (
                       <tr key={l.id} className={`border-t border-line-soft ${hit ? 'bg-high-bg font-semibold shadow-[inset_3px_0_0_#B42318]' : ''}`}>
-                        <td className="px-5 py-2 font-mono">{l.vendor_id}</td>
-                        <td className="px-3 py-2 font-mono">{l.company_code}</td>
-                        <td className="px-3 py-2 font-mono">
+                        <td className="py-2 pl-4 pr-1.5 mono">{l.vendor_id}</td>
+                        <td className="px-1.5 py-2 tnum">{l.company_code}</td>
+                        <td className="px-1.5 py-2 mono">
                           {l.invoice_ref}
                           {/* with payment history the Status column carries the tag; without it the tag stays next to the number */}
                           {!hasClearing && l.is_reversed && <span className="ml-2">{reversedTag}</span>}
                         </td>
-                        <td className="px-3 py-2 font-mono">{l.doc_number || '—'}</td>
-                        <td className="px-3 py-2 font-mono">{shortDate(l.invoice_date)}</td>
+                        <td className="px-1.5 py-2 mono">{l.doc_number || '—'}</td>
+                        <td className="px-1.5 py-2 tnum">{shortDate(l.invoice_date)}</td>
                         {hasClearing && (
                           <>
                             {/* same wording and DD/MM/YYYY format as the side-by-side comparison */}
-                            <td className="whitespace-nowrap px-3 py-2 font-sans">
+                            <td className="px-1.5 py-2">
                               {l.is_reversed ? reversedTag : l.clearing_date ? 'Already paid' : <span className="font-semibold text-accent-text">Open</span>}
                             </td>
-                            <td className="whitespace-nowrap px-3 py-2 font-mono">{!l.is_reversed && l.clearing_date ? dmy(l.clearing_date) : 'NA'}</td>
+                            <td className="px-1.5 py-2 tnum">{!l.is_reversed && l.clearing_date ? dmy(l.clearing_date) : 'NA'}</td>
                           </>
                         )}
-                        <td className="px-3 py-2 pr-5 text-right font-mono">{rupees(l.amount)}</td>
+                        <td className="py-2 pl-1.5 pr-4 text-right mono">{rupees(l.amount)}</td>
                       </tr>
                     );
                   })}
@@ -138,7 +141,7 @@ export default async function ReviewPage({ params }: { params: { id: string } })
           </section>
         </div>
 
-        <aside aria-label="Pair details and decision" className="flex min-w-0 flex-[1_1_340px] flex-col gap-4">
+        <aside aria-label="Pair details and decision" className="flex min-w-0 flex-[1_1_310px] flex-col gap-4">
           <section className="card px-5 py-3">
             {[
               ['Risk', `${f.risk_band} · ${f.score}`],
@@ -153,7 +156,7 @@ export default async function ReviewPage({ params }: { params: { id: string } })
               <div className="mb-1 text-ink-500">Rules that fired</div>
               <ul className="flex flex-col gap-1">
                 {f.rules_fired.map((r) => (
-                  <li key={r} className="flex justify-between gap-3"><span>{RULES[r as RuleId]?.label ?? r}</span><span className="font-mono text-ink-500">+{RULES[r as RuleId]?.points}</span></li>
+                  <li key={r} className="flex justify-between gap-3"><span>{RULES[r as RuleId]?.label ?? r}</span><span className="tnum text-ink-500">+{RULES[r as RuleId]?.points}</span></li>
                 ))}
               </ul>
             </div>

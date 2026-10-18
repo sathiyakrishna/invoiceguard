@@ -45,7 +45,7 @@ export default function AiPanel({ flagId, initial }: { flagId: string; initial: 
     <section aria-labelledby="ai" aria-busy={loading} className="flex flex-col gap-2.5 rounded-xl border border-[#D6E1FB] bg-[#F5F8FF] px-5 py-4">
       <div className="flex items-center gap-2">
         <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1D4ED8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 5h16v11H8l-4 4V5z" /><path d="M8 10h8M8 13h5" /></svg>
-        <h2 id="ai" className="text-[15px] font-semibold">AI explanation</h2>
+        <h2 id="ai">AI explanation</h2>
         <span className="ml-auto text-xs text-ink-500">Advisory only</span>
       </div>
       {loading && <div className="flex flex-col gap-2"><div className="skeleton h-3.5 w-full" /><div className="skeleton h-3.5 w-11/12" /><div className="skeleton h-3.5 w-2/3" /></div>}

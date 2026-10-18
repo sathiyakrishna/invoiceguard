@@ -58,9 +58,9 @@ export default async function QueuePage({ searchParams }: { searchParams: SP }) 
   if (!all.length && !scans?.length) {
     return (
       <>
-        <h1 className="text-[28px] font-bold tracking-tight">Risk queue</h1>
+        <h1>Risk queue</h1>
         <div className="card flex flex-col items-center gap-3 px-6 py-16 text-center">
-          <h2 className="text-lg font-semibold">No scans yet</h2>
+          <h2>No scans yet</h2>
           <p className="max-w-md text-[15px] text-ink-500">Upload the invoice register for your next payment run and duplicate pairs will appear here, sorted by risk.</p>
           <Link href="/upload" className="btn-primary mt-2">Upload a payment run</Link>
         </div>
@@ -72,7 +72,7 @@ export default async function QueuePage({ searchParams }: { searchParams: SP }) 
     <>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-[28px] font-bold tracking-tight">Risk queue</h1>
+          <h1>Risk queue</h1>
           {latest && <p className="mt-1.5 text-sm text-ink-500">Latest scan: {latest.file_name}, {count(latest.row_count)} invoices</p>}
         </div>
         <div className="flex flex-wrap gap-2.5">
@@ -126,7 +126,7 @@ export default async function QueuePage({ searchParams }: { searchParams: SP }) 
         ) : (
           <div className="max-h-[70vh] overflow-auto">
             {/* Fits 1280px and wider without scrolling. Age and Doc no. appear from 1440px; below md the table scrolls inside the card. */}
-            <table className="w-full min-w-[720px] text-[13px] md:min-w-0">
+            <table className="w-full min-w-[720px] text-[15px] md:min-w-0">
               <thead className="sticky top-0 z-10 bg-white shadow-[0_1px_0_#E2E5EA]">
                 <tr>
                   <th className="th pl-4">Pair ID</th>
@@ -144,7 +144,9 @@ export default async function QueuePage({ searchParams }: { searchParams: SP }) 
               <tbody>
                 {shown.map((f) => {
                   const vendor = f.a.vendor_name || f.a.vendor_id || '';
-                  const ids = `${f.a.vendor_id === f.b.vendor_id ? f.a.vendor_id : `${f.a.vendor_id} vs ${f.b.vendor_id}`} · CC ${f.a.company_code === f.b.company_code ? f.a.company_code : `${f.a.company_code} / ${f.b.company_code}`}`;
+                  const vendorIds = f.a.vendor_id === f.b.vendor_id ? f.a.vendor_id : `${f.a.vendor_id} vs ${f.b.vendor_id}`;
+                  const cc = f.a.company_code === f.b.company_code ? f.a.company_code : `${f.a.company_code} / ${f.b.company_code}`;
+                  const ids = `${vendorIds} · CC ${cc}`;
                   return (
                     <tr key={f.id} className="border-t border-line-soft hover:bg-[#FAFBFC]">
                       <td className="td whitespace-nowrap py-2.5 pl-4 mono text-ink-700">{f.pair_code}</td>
@@ -153,16 +155,16 @@ export default async function QueuePage({ searchParams }: { searchParams: SP }) 
                       <td className="td py-2.5">
                         <div title={`${vendor}\n${ids}`} className="max-w-[10.5rem] wide:max-w-[12.5rem]">
                           <div className="truncate font-medium">{vendor}</div>
-                          <div className="truncate text-xs text-ink-500">{ids}</div>
+                          <div className="truncate text-xs text-ink-500"><span className="font-mono">{vendorIds}</span> · CC {cc}</div>
                         </div>
                       </td>
-                      <td className="td mono whitespace-nowrap py-2.5 leading-relaxed">
-                        <div>{f.a.invoice_ref} <span className="text-ink-500">{shortDate(f.a.invoice_date)}</span></div>
-                        <div>{f.b.invoice_ref} <span className="text-ink-500">{shortDate(f.b.invoice_date)}</span></div>
+                      <td className="td whitespace-nowrap py-2.5 leading-relaxed">
+                        <div><span className="mono">{f.a.invoice_ref}</span> <span className="tnum text-ink-500">{shortDate(f.a.invoice_date)}</span></div>
+                        <div><span className="mono">{f.b.invoice_ref}</span> <span className="tnum text-ink-500">{shortDate(f.b.invoice_date)}</span></div>
                       </td>
                       <td className="td mono hidden py-2.5 leading-relaxed wide:table-cell"><div>{f.a.doc_number || '—'}</div><div>{f.b.doc_number || '—'}</div></td>
                       <td className="td mono whitespace-nowrap py-2.5 text-right">{rupees(f.amount)}</td>
-                      <td className="td max-w-[7.5rem] py-2.5 text-ink-700">{f.dup_type}</td>
+                      <td className="td max-w-[9.5rem] py-2.5 text-ink-700">{f.dup_type}</td>
                       <td className="td py-2.5"><StatusBadge status={f.status} compact /></td>
                       <td className="td py-2.5 pr-4 text-right"><Link href={`/queue/${f.id}`} className="btn-secondary min-h-9 px-3">Review</Link></td>
                     </tr>
@@ -191,7 +193,7 @@ function Kpi({ label, value, sub, subClass, valueClass }: { label: string; value
   return (
     <div className="card flex flex-col gap-1 px-4 py-3">
       <div className="text-[13px] text-ink-500">{label}</div>
-      <div className={`font-mono text-xl tnum ${valueClass ?? ''}`}>{value}</div>
+      <div className={`text-xl font-medium tnum ${value.startsWith('₹') ? 'font-mono' : ''} ${valueClass ?? ''}`}>{value}</div>
       {sub && <div className={`text-xs ${subClass ?? 'text-ink-500'}`}>{sub}</div>}
     </div>
   );

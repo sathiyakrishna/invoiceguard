@@ -50,7 +50,7 @@ const SOFT_CARD = 'rounded-3xl bg-white p-8 shadow-[0_12px_32px_rgba(11,31,77,0.
 
 export default function Landing() {
   return (
-    <div className="overflow-x-clip bg-white font-landing text-ink">
+    <div className="overflow-x-clip bg-white text-ink">
       <div className="bg-gradient-to-b from-[#EEF3FF] to-white">
         <header className="px-4 pt-4 sm:px-6 sm:pt-6">
           <div className="mx-auto flex max-w-[1240px] items-center gap-4 rounded-2xl bg-[#0B1F4D] px-5 py-3 shadow-[0_12px_28px_rgba(11,31,77,0.30)] sm:gap-6 sm:px-7">
@@ -196,7 +196,7 @@ export default function Landing() {
         <div aria-hidden="true" className="absolute inset-x-[-10%] top-0 h-14 rounded-b-[100%] bg-white sm:h-20" />
         <div className="relative mx-auto flex max-w-[1240px] flex-wrap items-center justify-between gap-8 px-6 pb-20 pt-32 sm:px-8 sm:pt-40">
           <div className="max-w-2xl">
-            <h2 className="text-[34px] font-extrabold leading-[1.05] tracking-[-1.5px] sm:text-[52px]">Check your next payment run before it goes out.</h2>
+            <h2 className="text-[34px] font-extrabold leading-[1.05] tracking-[-1.5px] text-white sm:text-[52px]">Check your next payment run before it goes out.</h2>
             <p className="mt-4 text-[17px] leading-[1.6] text-[#DBEAFE] sm:text-[20px]">Sign in with Google and scan a register in under two minutes.</p>
           </div>
           <Link href="/login" className={`${BTN} bg-white text-[#0B1F4D] hover:bg-[#EEF3FF]`}>Try it free</Link>

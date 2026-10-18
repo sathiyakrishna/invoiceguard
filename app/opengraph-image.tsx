@@ -12,7 +12,7 @@ export default function OG() {
   ];
   return new ImageResponse(
     (
-      <div style={{ width: '100%', height: '100%', display: 'flex', background: '#14213D', padding: 64, color: 'white', fontFamily: 'sans-serif' }}>
+      <div style={{ width: '100%', height: '100%', display: 'flex', background: '#0B1F4D', padding: 64, color: 'white', fontFamily: 'sans-serif' }}>
         <div style={{ display: 'flex', flexDirection: 'column', width: 600, justifyContent: 'space-between' }}>
           <div style={{ fontSize: 34, fontWeight: 700, color: '#7DA2FF' }}>InvoiceGuard</div>
           <div style={{ fontSize: 60, fontWeight: 700, lineHeight: 1.08 }}>Catch duplicate invoices before the payment run.</div>

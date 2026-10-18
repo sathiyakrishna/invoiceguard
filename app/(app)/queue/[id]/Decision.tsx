@@ -59,14 +59,14 @@ export default function Decision({ flagId, amount, initial, nextId, prevId }: {
     const onCls = s === 'yes' ? 'bg-accent-text text-white' : 'bg-ink-700 text-white';
     return (
       <button type="button" onClick={() => decide(s)} disabled={saving} aria-pressed={on} className={`min-h-12 border-r border-line-input text-sm font-semibold last:border-r-0 disabled:opacity-70 ${on ? onCls : 'bg-white text-ink hover:bg-ground'}`}>
-        {label} <span className={`ml-1 font-mono text-xs ${on ? 'opacity-80' : 'text-ink-500'}`}>{key}</span>
+        {label} <span className={`ml-1 text-xs ${on ? 'opacity-80' : 'text-ink-500'}`}>{key}</span>
       </button>
     );
   };
 
   return (
     <section aria-labelledby="dec" className="card flex flex-col gap-3.5 px-5 py-4">
-      <h2 id="dec" className="text-[15px] font-semibold">Is this a duplicate?</h2>
+      <h2 id="dec">Is this a duplicate?</h2>
       <div role="group" aria-label="Duplicate classification" className="grid grid-cols-3 overflow-hidden rounded-lg border border-line-input">
         {btn('yes', 'Yes', 'Y')}
         {btn('no', 'No', 'N')}

@@ -66,7 +66,7 @@ export default async function Dashboard({ searchParams }: { searchParams: { rang
     <>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-[28px] font-bold tracking-tight">Dashboard</h1>
+          <h1>Dashboard</h1>
           <p className="mt-1.5 text-sm text-ink-500">All your scans. Numbers update the moment you classify a pair.</p>
         </div>
         <nav aria-label="Date range" className="flex flex-wrap gap-1.5">
@@ -94,7 +94,7 @@ export default async function Dashboard({ searchParams }: { searchParams: { rang
       </div>
 
       <section aria-labelledby="risk" className="card flex flex-col gap-3.5 p-5">
-        <h2 id="risk" className="text-base font-semibold">Pending pairs by risk</h2>
+        <h2 id="risk">Pending pairs by risk</h2>
         <div className="grid gap-3 sm:grid-cols-3">
           {risk.map((r) => (
             <Link key={r.band} href="/queue" className={`flex items-center gap-3 rounded-lg px-4 py-3.5 ${riskStyle[r.band]}`}>
@@ -110,7 +110,7 @@ export default async function Dashboard({ searchParams }: { searchParams: { rang
       ) : (
         <div className="grid gap-4 xl:grid-cols-2">
           <section aria-labelledby="cls" className="card flex flex-col gap-4 p-5">
-            <h2 id="cls" className="text-base font-semibold">Duplicate pair amount by classification</h2>
+            <h2 id="cls">Duplicate pair amount by classification</h2>
             <div className="flex flex-wrap items-center gap-6">
               <svg role="img" aria-label={classes.map((c) => `${c.label} ${rupees0(c.amt)}`).join('; ')} width="160" height="160" viewBox="0 0 160 160">
                 <circle cx="80" cy="80" r={R} fill="none" stroke="#EEF0F3" strokeWidth="26" />
@@ -123,7 +123,7 @@ export default async function Dashboard({ searchParams }: { searchParams: { rang
                   <div key={c.key} className="grid grid-cols-[14px_1fr_auto_auto] items-center gap-2.5 border-b border-line-soft py-2 text-sm last:border-0">
                     <span className="h-3 w-3 rounded-sm" style={{ background: c.color }} />
                     <span>{c.label}</span>
-                    <span className="font-mono text-[13px] text-ink-500 tnum">{c.n}</span>
+                    <span className="text-[13px] text-ink-500 tnum">{c.n}</span>
                     <span className="min-w-[110px] text-right font-mono text-[13px] tnum">{rupees0(c.amt)}</span>
                   </div>
                 ))}
@@ -132,18 +132,18 @@ export default async function Dashboard({ searchParams }: { searchParams: { rang
           </section>
 
           <section aria-labelledby="types" className="card flex flex-col gap-3.5 p-5">
-            <h2 id="types" className="text-base font-semibold">Confirmed duplicates by type</h2>
+            <h2 id="types">Confirmed duplicates by type</h2>
             {types.length === 0 ? <p className="text-sm text-ink-500">Classify pairs as Yes to see which duplicate types you catch most.</p> : types.map(([t, n]) => (
               <div key={t} className="grid grid-cols-[150px_1fr_32px] items-center gap-3 text-sm">
                 <span>{t}</span>
                 <div className="h-3.5 rounded bg-line-soft"><div className="h-3.5 rounded bg-accent" style={{ width: `${(n / maxType) * 100}%` }} /></div>
-                <span className="text-right font-mono tnum">{n}</span>
+                <span className="text-right tnum">{n}</span>
               </div>
             ))}
           </section>
 
           <section aria-labelledby="recent" className="card xl:col-span-2">
-            <h2 id="recent" className="px-5 pb-3 pt-5 text-base font-semibold">Recent decisions</h2>
+            <h2 id="recent" className="px-5 pb-3 pt-5">Recent decisions</h2>
             {recent.length === 0 ? <p className="px-5 pb-5 text-sm text-ink-500">Your decisions will appear here.</p> : (
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[520px] text-sm">
@@ -155,7 +155,7 @@ export default async function Dashboard({ searchParams }: { searchParams: { rang
                         <td className="td">{f.a.vendor_name || f.a.vendor_id}</td>
                         <td className="td text-right font-mono text-[13px]">{rupees(f.amount)}</td>
                         <td className="td">{CLASSES.find((c) => c.key === f.status)?.label}</td>
-                        <td className="td pr-5 font-mono text-[13px]">{duration(f.review_seconds)}</td>
+                        <td className="td pr-5 text-[13px] tnum">{duration(f.review_seconds)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -174,7 +174,7 @@ function Kpi({ label, value, sub }: { label: string; value: string; sub?: string
   return (
     <div className="card flex flex-col gap-1.5 px-5 py-4">
       <div className="text-[13px] text-ink-500">{label}</div>
-      <div className="font-mono text-2xl tnum">{value}</div>
+      <div className={`text-2xl font-medium tnum ${value.startsWith('₹') ? 'font-mono' : ''}`}>{value}</div>
       {sub && <div className="text-xs text-ink-500">{sub}</div>}
     </div>
   );
