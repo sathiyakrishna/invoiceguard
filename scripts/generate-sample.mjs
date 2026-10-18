@@ -19,14 +19,19 @@ for (let i = 0; i < 160; i++) {
 const start = Date.UTC(2026, 7, 1); // 1 Aug 2026
 const day = 86_400_000;
 const iso = (t) => new Date(t).toISOString().slice(0, 10);
-let docFI = 5100000001, docMM = 1900000001;
+let docFI = 5100000001, docMM = 1900000001, docClr = 2000000001;
 const rows = [];
+
+// Payment history: a paid invoice has a clearing date (10-30 days after the invoice date) and a clearing document.
+const later0 = (d, n) => iso(Date.parse(d) + n * day);
+const markPaid = (r) => { r.clearing_date = later0(r.invoice_date, 10 + Math.floor(rnd() * 21)); r.clearing_document = String(docClr++); return r; };
 
 function addRow(r) { rows.push(r); return r; }
 function base(v, extra = {}) {
   const hasPO = rnd() < 0.7;
   const dateT = start + Math.floor(rnd() * 75) * day;
-  return {
+  const paid = rnd() < 0.7; // about 70% of ordinary invoices were paid in an earlier run, the rest are open
+  const r = {
     company_code: rnd() < 0.8 ? '1000' : '2000',
     vendor_id: v.id,
     vendor_name: v.name,
@@ -37,16 +42,21 @@ function base(v, extra = {}) {
     po_number: hasPO ? `45000${pad(Math.floor(rnd() * 99999), 5)}` : '',
     doc_number: String(hasPO ? docFI++ : docMM++),
     reversed_with: '',
+    clearing_date: '',
+    clearing_document: '',
     ...extra
   };
+  return paid ? markPaid(r) : r;
 }
+const markOpen = (r) => { r.clearing_date = ''; r.clearing_document = ''; return r; };
 
 const TARGET = 2000, PLANTED = 25, TRAPS = 5, REVERSED_TRAPS = 3;
 for (let i = 0; i < TARGET - PLANTED - TRAPS * 2 - 3 - REVERSED_TRAPS * 3; i++) addRow(base(pick(vendors)));
 
 const key = [];
 const later = (d, n) => iso(Date.parse(d) + n * day);
-const plant = (type, orig, dup) => { addRow(dup); key.push({ type, vendor: orig.vendor_id, original_ref: orig.invoice_ref, duplicate_ref: dup.invoice_ref, amount: dup.amount, expected: 'Yes' }); };
+// every planted duplicate: the original was paid in an earlier run, the duplicate is open in this one
+const plant = (type, orig, dup) => { markPaid(orig); addRow(markOpen(dup)); key.push({ type, vendor: orig.vendor_id, original_ref: orig.invoice_ref, duplicate_ref: dup.invoice_ref, amount: dup.amount, expected: 'Yes' }); };
 const sample = () => rows[Math.floor(rnd() * (rows.length - 1))];
 
 for (let i = 0; i < 6; i++) { const o = sample(); plant('Reference format', o, { ...o, invoice_ref: o.invoice_ref.replace('-', pick(['', '/', ' '])), invoice_date: later(o.invoice_date, 2 + i), doc_number: String(docFI++) }); }
@@ -78,15 +88,18 @@ for (let i = 0; i < REVERSED_TRAPS; i++) {
   const o = addRow(base(v));
   const creditDoc = String(docFI++);
   if (i < 2) o.reversed_with = creditDoc;
-  addRow({ ...o, amount: -o.amount, invoice_date: later(o.invoice_date, 2), doc_number: creditDoc, reversed_with: '' });
-  addRow({ ...o, invoice_date: later(o.invoice_date, 6), doc_number: String(docFI++), reversed_with: '' });
+  // the invoice is cleared against its reversal credit on the credit's date; the re-posting is open
+  const creditDate = later(o.invoice_date, 2);
+  Object.assign(o, { clearing_date: creditDate, clearing_document: creditDoc });
+  addRow({ ...o, amount: -o.amount, invoice_date: creditDate, doc_number: creditDoc, reversed_with: '' });
+  addRow(markOpen({ ...o, invoice_date: later(o.invoice_date, 6), doc_number: String(docFI++), reversed_with: '' }));
   key.push({ type: 'Trap: booked, reversed and re-posted', vendor: v.id, original_ref: o.invoice_ref, duplicate_ref: o.invoice_ref, amount: o.amount, expected: i < 2 ? 'No (reversed_with on the original)' : 'No (offsetting credit only)' });
 }
 
 // shuffle
 for (let i = rows.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [rows[i], rows[j]] = [rows[j], rows[i]]; }
 
-const cols = ['company_code', 'vendor_id', 'vendor_name', 'invoice_ref', 'invoice_date', 'amount', 'currency', 'po_number', 'doc_number', 'reversed_with'];
+const cols = ['company_code', 'vendor_id', 'vendor_name', 'invoice_ref', 'invoice_date', 'amount', 'currency', 'po_number', 'doc_number', 'reversed_with', 'clearing_date', 'clearing_document'];
 const esc = (v) => (/[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : String(v));
 writeFileSync('public/sample_register.csv', [cols.join(','), ...rows.map((r) => cols.map((c) => esc(c === 'amount' ? r[c].toFixed(2) : (r[c] ?? ''))).join(','))].join('\n') + '\n');
 const kc = ['type', 'vendor', 'original_ref', 'duplicate_ref', 'amount', 'expected'];

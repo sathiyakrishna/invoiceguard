@@ -13,6 +13,8 @@ export type Invoice = {
   doc_number: string | null;
   reversed_with?: string | null;
   is_reversed?: boolean;
+  clearing_date?: string | null;
+  clearing_document?: string | null;
   scan_id: string;
 };
 

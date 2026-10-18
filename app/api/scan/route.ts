@@ -19,7 +19,9 @@ const Row = z.object({
   currency: z.string().max(5),
   po_number: z.string().max(20),
   doc_number: z.string().max(20),
-  reversed_with: z.string().max(20).default('')
+  reversed_with: z.string().max(20).default(''),
+  clearing_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().default(null), // blank = open, in this payment run
+  clearing_document: z.string().max(20).default('')
 });
 const Body = z.object({ fileName: z.string().min(1).max(120), rows: z.array(Row).min(1).max(20000) });
 
@@ -83,7 +85,7 @@ export async function POST(req: Request) {
   const ids = rows.map(() => randomUUID());
   const reversed = findReversals(rows);
   try {
-    await chunked(rows.map((r, i) => ({ ...r, id: ids[i], user_id: user.id, scan_id: scan.id, invoice_ref_norm: normalizeRef(r.invoice_ref), reversed_with: r.reversed_with || null, is_reversed: reversed[i] })), 1000, async (part) => {
+    await chunked(rows.map((r, i) => ({ ...r, id: ids[i], user_id: user.id, scan_id: scan.id, invoice_ref_norm: normalizeRef(r.invoice_ref), reversed_with: r.reversed_with || null, is_reversed: reversed[i], clearing_date: r.clearing_date, clearing_document: r.clearing_document || null })), 1000, async (part) => {
       const { error } = await supabase.from('invoices').insert(part);
       if (error) throw error;
     });

@@ -18,8 +18,10 @@ export default async function ReviewPage({ params }: { params: { id: string } })
   const f = data as unknown as Flag;
 
   const vendors = Array.from(new Set([f.a.vendor_id, f.b.vendor_id].filter(Boolean))) as string[];
-  const [{ data: ledgerRows }, { data: pendingList }] = await Promise.all([
+  const [{ data: ledgerRows }, { count: clearedInScan }, { data: pendingList }] = await Promise.all([
     supabase.from('invoices').select('*').in('vendor_id', vendors).order('invoice_date', { ascending: false, nullsFirst: false }).limit(12),
+    // does this scan carry payment history at all? Only then can "open" be claimed for an invoice without a clearing date
+    supabase.from('invoices').select('id', { count: 'exact', head: true }).eq('scan_id', f.scan_id).not('clearing_date', 'is', null),
     supabase.from('flags').select('id').eq('status', 'pending').order('score', { ascending: false }).order('created_at', { ascending: false }).limit(2000)
   ]);
 
@@ -33,6 +35,10 @@ export default async function ReviewPage({ params }: { params: { id: string } })
   const nextId = pos >= 0 ? ids[pos + 1] ?? null : ids[0] ?? null;
   const prevId = pos > 0 ? ids[pos - 1] : null;
 
+  const hasClearing = (clearedInScan ?? 0) > 0;
+  const dmy = (iso: string) => iso.slice(0, 10).split('-').reverse().join('/');
+  const labelA = f.a.clearing_date ? `Paid on ${dmy(f.a.clearing_date)}` : 'Earlier';
+  const labelB = hasClearing && !f.b.clearing_date ? 'Open, in this payment run' : 'Later';
   const sameRef = f.a.invoice_ref === f.b.invoice_ref;
   const cmp: [string, string, string, string, boolean][] = [
     ['Vendor', `${f.a.vendor_id} · ${f.a.vendor_name ?? ''}`, `${f.b.vendor_id} · ${f.b.vendor_name ?? ''}`, f.a.vendor_id === f.b.vendor_id ? 'Exact' : f.rules_fired.includes('R8') ? 'Same supplier (AI)' : 'Different', f.a.vendor_id === f.b.vendor_id || f.rules_fired.includes('R8')],
@@ -70,7 +76,7 @@ export default async function ReviewPage({ params }: { params: { id: string } })
             <h2 id="cmp" className="border-b border-line px-5 py-4 text-[15px] font-semibold">Side-by-side comparison</h2>
             <div className="overflow-x-auto">
               <table className="w-full min-w-[560px] text-sm">
-                <thead className="bg-[#F8F9FB]"><tr><th className="th pl-5">Field</th><th className="th">Invoice A · earlier</th><th className="th">Invoice B · later</th><th className="th pr-5">Match</th></tr></thead>
+                <thead className="bg-[#F8F9FB]"><tr><th className="th pl-5">Field</th><th className="th">Invoice A · {labelA}</th><th className="th">Invoice B · {labelB}</th><th className="th pr-5">Match</th></tr></thead>
                 <tbody>
                   {cmp.map(([label, a, b, m, hit]) => (
                     <tr key={label} className={`border-t border-line-soft ${hit ? 'bg-high-row' : ''}`}>

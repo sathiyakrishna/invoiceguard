@@ -10,7 +10,9 @@ export const FIELDS = [
   { key: 'currency', label: 'Currency', required: false },
   { key: 'po_number', label: 'PO number', required: false },
   { key: 'doc_number', label: 'Document number', required: false },
-  { key: 'reversed_with', label: 'Reversed with', required: false }
+  { key: 'reversed_with', label: 'Reversed with', required: false },
+  { key: 'clearing_date', label: 'Clearing date', required: false },
+  { key: 'clearing_document', label: 'Clearing document', required: false }
 ] as const;
 
 export type FieldKey = (typeof FIELDS)[number]['key'];
@@ -27,7 +29,9 @@ const SYNONYMS: Record<FieldKey, string[]> = {
   currency: ['currency', 'curr', 'crcy', 'waers'],
   po_number: ['po_number', 'po number', 'po', 'purchase order', 'ebeln', 'purchasing document'],
   doc_number: ['doc_number', 'doc number', 'document number', 'document no', 'belnr', 'doc no', 'fi document'],
-  reversed_with: ['reversed_with', 'reversed with', 'reversal doc', 'reversal document', 'stblg']
+  reversed_with: ['reversed_with', 'reversed with', 'reversal doc', 'reversal document', 'stblg'],
+  clearing_date: ['clearing_date', 'clearing date', 'clrng date', 'augdt'],
+  clearing_document: ['clearing_document', 'clearing document', 'clearing doc', 'clrng doc', 'augbl']
 };
 
 const clean = (h: string) => h.toLowerCase().replace(/[_.]/g, ' ').replace(/\s+/g, ' ').trim();
@@ -106,6 +110,9 @@ export function toInvoiceRows(records: Record<string, unknown>[], map: Mapping):
     const rawDate = get(r, 'invoice_date');
     const date = parseDate(rawDate);
     if (rawDate && String(rawDate).trim() && !date && errors.length < 50) errors.push({ row: line, message: `Date "${String(rawDate)}" not recognised, row kept without a date` });
+    const rawClearing = get(r, 'clearing_date');
+    const clearingDate = parseDate(rawClearing);
+    if (rawClearing && String(rawClearing).trim() && !clearingDate && errors.length < 50) errors.push({ row: line, message: `Clearing date "${String(rawClearing)}" not recognised, row kept as open` });
     rows.push({
       company_code: String(get(r, 'company_code') ?? '').trim().slice(0, 20),
       vendor_id: vendor.slice(0, 40),
@@ -116,7 +123,9 @@ export function toInvoiceRows(records: Record<string, unknown>[], map: Mapping):
       currency: String(get(r, 'currency') ?? 'INR').trim().slice(0, 5) || 'INR',
       po_number: String(get(r, 'po_number') ?? '').trim().slice(0, 20),
       doc_number: String(get(r, 'doc_number') ?? '').trim().slice(0, 20),
-      reversed_with: String(get(r, 'reversed_with') ?? '').trim().slice(0, 20)
+      reversed_with: String(get(r, 'reversed_with') ?? '').trim().slice(0, 20),
+      clearing_date: clearingDate,
+      clearing_document: String(get(r, 'clearing_document') ?? '').trim().slice(0, 20)
     });
   });
   return { rows, errors, skipped };

@@ -25,9 +25,9 @@ const GAPS = [
 ];
 
 const STEPS = [
-  ['Upload the payment run', 'Drop in the CSV or Excel export of invoices you are about to pay. Columns, including SAP field names, are mapped automatically.'],
+  ['Upload the payment run', 'Drop in the CSV or Excel export of invoices you are about to pay. Include clearing dates and an invoice already paid in an earlier run is checked too. Columns, including SAP field names, are mapped automatically.'],
   ['Prioritise by risk', 'Duplicate pairs are scored and sorted red, amber and green, each with an age and duplicate type.'],
-  ['Review the evidence', 'See both invoices side by side, the vendor’s ledger and a plain-language AI explanation. Classify Yes, No or Ignore.'],
+  ['Review the evidence', 'See both invoices side by side, with the earlier one marked paid or open, the vendor’s ledger and a plain-language AI explanation. Classify Yes, No or Ignore.'],
   ['Track what you prevented', 'Your dashboard shows payment value prevented, pending pairs by risk and your false-positive rate, updated as you decide.']
 ];
 

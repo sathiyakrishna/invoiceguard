@@ -14,6 +14,8 @@ export type InvoiceRow = {
   po_number: string;
   doc_number: string;
   reversed_with?: string; // SAP STBLG: the document this one was reversed with (blank if not reversed)
+  clearing_date?: string | null; // SAP AUGDT, ISO date: when it was paid/cleared. Blank = open, in this payment run
+  clearing_document?: string; // SAP AUGBL: the document that cleared it
 };
 
 export type RuleId = 'R1' | 'R2' | 'R3' | 'R4' | 'R5' | 'R6' | 'R7' | 'R8';
@@ -208,8 +210,8 @@ export function findReversals(rows: InvoiceRow[]): boolean[] {
     if (!doc) continue;
     reversed[i] = true;
     const free = (c: number) => rows[c].amount < 0 && rows[c].vendor_id === rows[i].vendor_id && !used.has(c);
-    const byDoc = rows.map((_, c) => c).find((c) => free(c) && !!rows[c].doc_number && rows[c].doc_number === doc);
-    const credit = byDoc ?? (creditsByKey.get(keyOf(i)) ?? []).find((c) => !used.has(c));
+    const withDoc = (d: string) => (d ? rows.map((_, c) => c).find((c) => free(c) && !!rows[c].doc_number && rows[c].doc_number === d) : undefined);
+    const credit = withDoc(doc) ?? withDoc((rows[i].clearing_document ?? '').trim()) ?? (creditsByKey.get(keyOf(i)) ?? []).find((c) => !used.has(c));
     if (credit !== undefined) { used.add(credit); reversed[credit] = true; }
   }
 
@@ -221,7 +223,10 @@ export function findReversals(rows: InvoiceRow[]): boolean[] {
       return !a || !b || b >= a;
     });
     if (!candidates.length) continue;
-    const credit = candidates.sort(byDate)[0];
+    // when the invoice carries a clearing document, prefer the credit whose doc number is that document
+    const clearing = (rows[i].clearing_document ?? '').trim();
+    const rank = (c: number) => (clearing && rows[c].doc_number === clearing ? 0 : 1);
+    const credit = candidates.sort((x, y) => rank(x) - rank(y) || byDate(x, y))[0];
     used.add(credit);
     reversed[i] = true;
     reversed[credit] = true;
@@ -246,6 +251,7 @@ export function findVendorCandidates(rows: InvoiceRow[], max = 20): Array<{ a: s
       const rj = rows[order[q]];
       if (rj.amount > ri.amount * (1 + AMOUNT_TOLERANCE) + 0.01) break;
       if (!ri.vendor_id || !rj.vendor_id || ri.vendor_id === rj.vendor_id) continue;
+      if (ri.clearing_date && rj.clearing_date) continue; // both already paid: never a pair, so no need to ask the AI
       const key = vendorPairKey(ri.vendor_id, rj.vendor_id);
       if (seen.has(key)) continue;
       const refA = normalizeRef(ri.invoice_ref);
@@ -286,6 +292,12 @@ export function detect(rows: InvoiceRow[], sameSupplier: Set<string> = new Set()
 
       // the same SAP document listed twice is not a duplicate invoice
       if (ri.doc_number && ri.doc_number === rj.doc_number && ri.company_code === rj.company_code) continue;
+
+      // two invoices that are both already paid are outside pre-payment scope. At least one must be open
+      // (files without clearing dates have no cleared rows, so this never fires for them).
+      const iPaid = !!ri.clearing_date;
+      const jPaid = !!rj.clearing_date;
+      if (iPaid && jPaid) continue;
 
       const sameVendor = !!ri.vendor_id && ri.vendor_id === rj.vendor_id;
       const altVendor = !sameVendor && !!ri.vendor_id && !!rj.vendor_id && sameSupplier.has(vendorPairKey(ri.vendor_id, rj.vendor_id));
@@ -337,8 +349,8 @@ export function detect(rows: InvoiceRow[], sameSupplier: Set<string> = new Set()
       else if (rules.includes('R1')) type = ri.invoice_ref.trim() === rj.invoice_ref.trim() ? 'Exact match' : 'Reference format';
       else type = 'Similar reference';
 
-      // A = earlier invoice (or earlier posting), B = later
-      const aFirst = (ri.invoice_date ?? '') <= (rj.invoice_date ?? '');
+      // A = the paid (cleared) invoice if there is one, otherwise the earlier invoice (or earlier posting). B = the other
+      const aFirst = iPaid !== jPaid ? iPaid : (ri.invoice_date ?? '') <= (rj.invoice_date ?? '');
       out.push({ a: aFirst ? i : j, b: aFirst ? j : i, score, band, rules, type, pairKey, refSimilarity: Math.round(refSimilarity * 100) / 100 });
     }
   }

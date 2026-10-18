@@ -29,7 +29,12 @@ Only pairs with the same vendor (or an AI-confirmed alias) and amounts within 1%
 - its **Reversed with** column (SAP `STBLG`; also matched as "reversal doc" or "reversal document") is filled, in which case the credit line whose document number matches is its reversal; or
 - a credit line has the same vendor, the same normalized invoice number and the exact negative amount, dated on or after the invoice. The earliest matching invoice is the one reversed.
 
-Each credit reverses at most one invoice. Reversed invoices and their reversal credits are excluded from every pair and shown with a grey **Reversed** tag in the ledger preview. A corrected re-posting (same number and amount, booked after the reversal) is a live invoice: it is only compared with other non-reversed invoices. The sample register includes 3 such booked-reversed-and-reposted cases (2 using `reversed_with`, 1 using only the offsetting credit), and none are flagged. If your export has no credit lines or reversal column, nothing changes.
+Each credit reverses at most one invoice. Reversed invoices and their reversal credits are excluded from every pair and shown with a grey **Reversed** tag in the ledger preview. A corrected re-posting (same number and amount, booked after the reversal) is a live invoice: it is only compared with other non-reversed invoices. The sample register includes 3 such booked-reversed-and-reposted cases (2 using `reversed_with`, 1 using only the offsetting credit), and none are flagged. If your export has no credit lines or reversal column, nothing changes. When an invoice has a **Clearing document** (SAP `AUGBL`) and several credit lines could offset it, the credit whose document number matches that clearing document is used.
+
+**Payment history: a duplicate of an invoice already paid is caught.** Include the optional **Clearing date** (SAP `AUGDT`, also "clrng date") and **Clearing document** (`AUGBL`, "clearing doc", "clrng doc") columns, for example from an FBL1N export with cleared items, and a new invoice is also compared with invoices paid in earlier payment runs. A blank clearing date means the invoice is open, in this payment run.
+- A pair needs at least one open invoice. Two invoices that are both already paid are skipped, since they are outside pre-payment scope.
+- In every pair the paid invoice is **A** and the open one is **B**, and the case review labels them "Paid on DD/MM/YYYY" and "Open, in this payment run". Pairs with no payment information keep the older rule, A = the earlier invoice.
+- Reversed invoices stay excluded. Files without clearing columns behave exactly as before.
 
 AI never changes a score or a status. Explanations are generated only when you open a pair, and cached.
 
@@ -44,7 +49,7 @@ npm test          # 20 tests, should all pass
 
 ### 2. Supabase
 1. Create a project at supabase.com (region: Mumbai).
-2. **SQL Editor › New query**: paste all of `supabase/migrations/001_init.sql` and click **Run**. Then run `supabase/migrations/002_tighten_rls.sql` the same way (it makes invoices and flags accept only your own scans), and `supabase/migrations/004_reversals.sql` (adds the reversal columns to invoices).
+2. **SQL Editor › New query**: paste all of `supabase/migrations/001_init.sql` and click **Run**. Then run `supabase/migrations/002_tighten_rls.sql` the same way (it makes invoices and flags accept only your own scans), `supabase/migrations/004_reversals.sql` (reversal columns on invoices) and `supabase/migrations/005_payment_history.sql` (clearing date and clearing document on invoices).
    Upgrading a database from before the rename? Also run: `update public.flags set dup_type = 'Alternate vendor account' where dup_type = 'Alternate vendor ID';`
 3. **Project Settings › API**: copy the Project URL, `anon` key and `service_role` key into `.env.local`.
 4. **Authentication › Providers › Email**: turn **off** "Allow new users to sign up" (demo accounts are created by script; the public uses Google).
@@ -62,7 +67,7 @@ Create a separate project at platform.openai.com for InvoiceGuard, set a monthly
 ```bash
 npm run dev       # http://localhost:3000
 ```
-Upload `public/sample_register.csv` (2,000 invoices, 25 planted duplicates). `answer_key.csv` lists them (not pushed to GitHub).
+Upload `public/sample_register.csv` (2,000 invoices, 25 planted duplicates). `answer_key.csv` lists them (not pushed to GitHub). About 70% of the sample invoices carry a clearing date (paid in an earlier run); each planted duplicate is an open invoice whose original was paid.
 
 3 of the 25 are alternate vendor accounts (the same supplier under two vendor IDs). They are only flagged when the AI vendor matching runs, so `OPENAI_API_KEY` must be set; without it a scan finds 22.
 

@@ -11,7 +11,7 @@ describe.runIf(existsSync('public/sample_register.csv') && existsSync('answer_ke
   const { rows, errors } = toInvoiceRows(csv.data, map);
 
   it('maps every column and parses every row', () => {
-    expect(Object.keys(map)).toHaveLength(10);
+    expect(Object.keys(map)).toHaveLength(12);
     expect(errors).toHaveLength(0);
     expect(rows).toHaveLength(2000);
   });
@@ -40,6 +40,39 @@ describe.runIf(existsSync('public/sample_register.csv') && existsSync('answer_ke
       expect(live).toHaveLength(1);
       expect(live[0].r.reversed_with).toBe('');
     }
+  });
+
+  const aliasPairs = () => new Set(key.filter((k) => k.type === 'Alternate vendor account').map((k) => {
+    const alt = rows.find((r) => r.invoice_ref === k.duplicate_ref && r.vendor_id !== k.vendor)!;
+    return vendorPairKey(k.vendor, alt.vendor_id);
+  }));
+
+  it('has about 70% of invoices paid; reversal traps are cleared against their credit', () => {
+    const share = rows.filter((r) => r.clearing_date).length / rows.length;
+    expect(share).toBeGreaterThan(0.6);
+    expect(share).toBeLessThan(0.8);
+    for (const r of rows.filter((x) => x.amount < 0)) expect(r.clearing_date && r.clearing_document).toBeTruthy();
+    const reversed = findReversals(rows);
+    rows.forEach((r, i) => {
+      if (!reversed[i] || r.amount < 0) return;
+      const credit = rows.find((c) => c.amount < 0 && c.vendor_id === r.vendor_id && c.invoice_ref === r.invoice_ref)!;
+      expect(r.clearing_document).toBe(credit.doc_number);
+    });
+  });
+
+  it('every planted pair has the paid original as A and the open duplicate as B', () => {
+    const found = detect(rows, aliasPairs());
+    expect(found).toHaveLength(25);
+    for (const f of found) {
+      expect(rows[f.a].clearing_date).toBeTruthy();
+      expect(rows[f.b].clearing_date).toBeFalsy();
+    }
+  });
+
+  it('a file without the clearing columns finds the same 25 pairs', () => {
+    const pairs = (list: ReturnType<typeof detect>) => list.map((f) => [f.a, f.b].sort((x, y) => x - y).join('-')).sort();
+    const plain = rows.map(({ clearing_date: _d, clearing_document: _c, ...rest }) => rest);
+    expect(pairs(detect(plain, aliasPairs()))).toEqual(pairs(detect(rows, aliasPairs())));
   });
 
   it('finds every planted duplicate and none of the traps', () => {
