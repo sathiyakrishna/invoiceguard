@@ -117,7 +117,7 @@ export default function UploadFlow() {
             <span className="text-[13px] text-ink-500">{FIELDS.filter((f) => map[f.key]).length} of {FIELDS.length} fields matched</span>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[560px] text-[15px]">
+            <table className="data-table w-full min-w-[560px] text-[15px]">
               <thead><tr><th className="th pl-5">Field</th><th className="th">Your column</th><th className="th pr-5">Example</th></tr></thead>
               <tbody>
                 {FIELDS.map((f) => (

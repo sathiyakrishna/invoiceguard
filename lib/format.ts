@@ -9,11 +9,11 @@ export const count = (n: number) => inr0.format(n);
 export function shortDate(iso: string | null | undefined): string {
   if (!iso) return '—';
   const [y, m, d] = iso.slice(0, 10).split('-');
-  return `${d}/${m}/${y.slice(2)}`;
+  return `${d}/${m}/${y}`; // DD/MM/YYYY
 }
 
 export function longDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' });
+  return new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'Asia/Kolkata' }); // DD/MM/YYYY
 }
 
 export function ageLabel(iso: string): string {

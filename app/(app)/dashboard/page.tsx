@@ -146,7 +146,7 @@ export default async function Dashboard({ searchParams }: { searchParams: { rang
             <h2 id="recent" className="px-5 pb-3 pt-5">Recent decisions</h2>
             {recent.length === 0 ? <p className="px-5 pb-5 text-sm text-ink-500">Your decisions will appear here.</p> : (
               <div className="overflow-x-auto">
-                <table className="w-full min-w-[520px] text-sm">
+                <table className="data-table w-full min-w-[520px] text-[15px]">
                   <thead><tr><th className="th pl-5">Pair</th><th className="th">Vendor</th><th className="th text-right">Amount</th><th className="th">Decision</th><th className="th pr-5">Review time</th></tr></thead>
                   <tbody>
                     {recent.map((f) => (

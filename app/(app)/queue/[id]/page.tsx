@@ -83,12 +83,12 @@ export default async function ReviewPage({ params }: { params: { id: string } })
           <section aria-labelledby="cmp" className="card">
             <h2 id="cmp" className="border-b border-line px-5 py-4">Side-by-side comparison</h2>
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[560px] text-[15px]">
-                <thead className="bg-[#F8F9FB]"><tr><th className="th pl-5">Field</th><th className="th">Invoice A</th><th className="th">Invoice B</th><th className="th pr-5">Match</th></tr></thead>
+              <table className="data-table w-full min-w-[560px] text-[15px]">
+                <thead><tr><th className="th pl-5">Field</th><th className="th">Invoice A</th><th className="th">Invoice B</th><th className="th pr-5">Match</th></tr></thead>
                 <tbody>
                   {cmp.map(([label, a, b, m, hit]) => (
-                    <tr key={label} className={`border-t border-line-soft ${hit ? 'bg-high-row' : ''}`}>
-                      <th scope="row" className="px-5 py-2.5 text-left font-medium text-ink-700">{label}</th>
+                    <tr key={label} className={hit ? 'bg-high-bg' : ''}>
+                      <th scope="row" className={`px-5 py-2.5 text-left font-medium ${hit ? 'text-ink' : 'bg-[#EEF3FF] text-[#0B1F4D]'}`}>{label}</th>
                       <td className="px-3 py-2.5 tnum">{MONO_ROWS.includes(label) ? <span className="mono">{a}</span> : label === 'Vendor' ? vendorCell(a) : a}</td>
                       <td className="px-3 py-2.5 tnum">{MONO_ROWS.includes(label) ? <span className="mono">{b}</span> : label === 'Vendor' ? vendorCell(b) : b}</td>
                       <td className={`px-3 py-2.5 pr-5 text-[13px] font-semibold ${hit ? 'text-high-fg' : 'text-ink-500'}`}>{m}</td>
@@ -105,7 +105,7 @@ export default async function ReviewPage({ params }: { params: { id: string } })
               <span className="text-[13px] text-ink-500">{vendors.join(' and ')} · latest invoices across your scans · the pair is highlighted</span>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[640px] whitespace-nowrap text-[15px]">
+              <table className="data-table w-full min-w-[640px] whitespace-nowrap text-[15px]">
                 <thead><tr><th className="th pl-4 pr-1.5">Vendor</th><th className="th px-1.5">CC</th><th className="th px-1.5">Invoice no.</th><th className="th px-1.5">Doc no.</th><th className="th px-1.5">Invoice date</th>{hasClearing && <><th className="th px-1.5">Status</th><th className="th px-1.5">Payment date</th></>}<th className="th pl-1.5 pr-4 text-right">Amount</th></tr></thead>
                 <tbody>
                   {ledger.map((l) => {
@@ -141,7 +141,7 @@ export default async function ReviewPage({ params }: { params: { id: string } })
           </section>
         </div>
 
-        <aside aria-label="Pair details and decision" className="flex min-w-0 flex-[1_1_310px] flex-col gap-4">
+        <aside aria-label="Pair details and decision" className="flex min-w-0 flex-[1_1_300px] flex-col gap-4">
           <section className="card px-5 py-3">
             {[
               ['Risk', `${f.risk_band} · ${f.score}`],

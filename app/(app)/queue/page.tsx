@@ -126,8 +126,8 @@ export default async function QueuePage({ searchParams }: { searchParams: SP }) 
         ) : (
           <div className="max-h-[70vh] overflow-auto">
             {/* Fits 1280px and wider without scrolling. Age and Doc no. appear from 1440px; below md the table scrolls inside the card. */}
-            <table className="w-full min-w-[720px] text-[15px] md:min-w-0">
-              <thead className="sticky top-0 z-10 bg-white shadow-[0_1px_0_#E2E5EA]">
+            <table className="data-table w-full min-w-[720px] text-[15px] md:min-w-0">
+              <thead className="sticky top-0 z-10">
                 <tr>
                   <th className="th pl-4">Pair ID</th>
                   <th className="th"><Link href={href(searchParams, { sort: 'score' })} className={sort === 'score' ? 'text-ink' : ''}>Risk {sort === 'score' && '↓'}</Link></th>
