@@ -1,4 +1,5 @@
 import type { Config } from 'tailwindcss';
+import plugin from 'tailwindcss/plugin';
 
 const config: Config = {
   content: ['./app/**/*.{ts,tsx}', './components/**/*.{ts,tsx}'],
@@ -24,6 +25,15 @@ const config: Config = {
       }
     }
   },
-  plugins: []
+  plugins: [
+    // `rail:` applies when the sidebar is the 64px icon rail (768px and up): the user collapsed it
+    // (<html data-sb="rail">, set before first paint), or has not chosen yet and the screen is under 1280px.
+    plugin(({ addVariant }) => {
+      addVariant('rail', [
+        '@media (min-width: 768px) { html[data-sb="rail"] & }',
+        '@media (min-width: 768px) and (max-width: 1279px) { html:not([data-sb]) & }'
+      ]);
+    })
+  ]
 };
 export default config;

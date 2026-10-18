@@ -10,6 +10,20 @@
   @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 }
 
+/* Sidebar width. Phones (<768px): full-width top bar. 768px and up: 220px sidebar, or the 64px icon rail
+   (collapsed by the user, or no saved choice yet on screens under 1280px). Kept outside @layer so it
+   wins over the padding utilities on the same element. */
+@media (min-width: 768px) {
+  .sb { width: 220px; padding-left: 1rem; padding-right: 1rem; }
+  html[data-sb='rail'] .sb { width: 4rem; padding-left: 0.5rem; padding-right: 0.5rem; }
+}
+@media (min-width: 768px) and (max-width: 1279px) {
+  html:not([data-sb]) .sb { width: 4rem; padding-left: 0.5rem; padding-right: 0.5rem; }
+}
+@media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
+  .sb { transition: width 150ms ease, padding 150ms ease; }
+}
+
 @layer components {
   .card { @apply rounded-xl border border-line bg-white; }
   .btn-primary { @apply inline-flex items-center justify-center rounded-lg bg-accent px-5 text-[15px] font-semibold text-white hover:bg-accent-dark disabled:cursor-not-allowed disabled:opacity-60; min-height: 44px; }
