@@ -13,7 +13,7 @@ export default function Privacy() {
       <h2>Please use anonymized data</h2>
       <p>During the beta, do not upload live company files. Use the sample register or an anonymized export.</p>
       <h2>Contact</h2>
-      <p>Questions or deletion requests: [YOUR CONTACT EMAIL].</p>
+      <p>Questions or deletion requests: sathiyakrishnapo@gmail.com.</p>
     </LegalPage>
   );
 }
