@@ -144,8 +144,11 @@ export default function Landing() {
           <div className={`flex flex-col gap-5 ${SOFT_CARD}`}>
             <p className={EYEBROW}>Financial leakage</p>
             <h2 id="leak" className="text-[30px] font-extrabold leading-[1.08] tracking-[-1px] text-[#0B1F4D] sm:text-[40px]">Duplicate payments are a quiet, expensive leak</h2>
-            <p className={BODY}>Industry research estimates that around $53 billion a year leaks out of accounts payable through duplicate payments, invoice errors and missed credit notes, the kind of errors standard ERP controls struggle to catch. InvoiceGuard checks every payment run before money leaves, so you are not relying on a recovery audit months later.</p>
-            <p className="text-sm text-ink-500">Source: SSON Research &amp; Analytics, Financial Leakage Report 2026.</p>
+            <p className={BODY}>Duplicate payments, invoice errors and missed credit notes slip past standard ERP checks every day. Most are found months later by recovery auditors, who are paid a share of whatever they recover, after the cash has already left.</p>
+            <aside aria-label="Worked example, not a statistic" className="rounded-2xl border-l-4 border-[#1D4ED8] bg-[#EEF3FF] px-5 py-4">
+              <p className="text-sm font-bold uppercase tracking-wide text-[#1D4ED8]">Example</p>
+              <p className="mt-1 text-base leading-relaxed text-ink-700 sm:text-[17px]">If just 0.1% of a <span className="font-mono text-[15px]">₹1,000 crore</span> annual spend is paid twice, that’s <span className="font-mono text-[15px]">₹1 crore</span> leaving the business. InvoiceGuard checks every payment run before it goes out.</p>
+            </aside>
             <Link href="/login" className={`${BTN_PRIMARY} mt-auto self-start`}>Check your payment run</Link>
           </div>
         </div>
