@@ -10,6 +10,14 @@ const PREVIEW = [
   { band: 'Low' as const, vendor: 'Wipro Ltd', refs: 'WI-7730 · WI-7737', amt: '₹36,000.00' }
 ];
 
+// Facts from our own testing on the sample register (tests/sample.test.ts) and the scan flow.
+const PROOF = [
+  ['25 of 25', 'planted duplicates caught'],
+  ['Zero', 'recurring charges falsely flagged'],
+  ['< 2 min', 'to the first flagged pair'],
+  ['Every flag', 'shows its evidence']
+];
+
 const GAPS = [
   ['INV-0012 vs INV0012', 'Reference format changes', 'A hyphen, space or leading zero makes the same invoice look new to a character-by-character check.'],
   ['CC 1000 vs CC 2000', 'Same invoice, two company codes', 'Standard checks run within one company code, so a cross-entity posting slips through.'],
@@ -30,104 +38,167 @@ const WHY = [
   ['Private by design', 'Each account is a private workspace. Files are deleted after 30 days, and you can delete your data any time.']
 ];
 
+// Shared classes. Contrast: #2563EB on white / #EEF3FF is 5.2 / 4.7, #1D4ED8 on white is 6.7, white on #2563EB is 5.2.
+const H2 = 'text-[34px] font-extrabold leading-[1.05] tracking-[-1.5px] text-[#0B1F4D] sm:text-[52px]';
+const CARD_TITLE = 'text-[26px] font-extrabold leading-[1.1] tracking-[-0.5px] text-[#0B1F4D] sm:text-[32px]';
+const EYEBROW = 'text-[18px] font-bold uppercase tracking-wide text-[#2563EB]';
+const BODY = 'text-[17px] leading-[1.6] text-ink-700 sm:text-[20px]';
+const BTN = 'inline-flex min-h-14 items-center justify-center rounded-lg px-7 text-base font-semibold';
+const BTN_PRIMARY = `${BTN} bg-[#1D4ED8] text-white hover:bg-[#1E3A8A]`;
+const BTN_SECONDARY = `${BTN} border-2 border-[#1D4ED8] bg-white text-[#1D4ED8] hover:bg-[#EEF3FF]`;
+const SOFT_CARD = 'rounded-3xl bg-white p-8 shadow-[0_12px_32px_rgba(11,31,77,0.10)] sm:p-10';
+
 export default function Landing() {
   return (
-    <div className="bg-white">
-      <header className="bg-navy">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-6 px-6 py-4 sm:px-8">
-          <Link href="/"><Logo /></Link>
-          <nav aria-label="Page" className="ml-auto hidden gap-5 text-[15px] sm:flex">
-            <a href="#how" className="text-[#E6EAF2] hover:text-white">How it works</a>
-            <a href="#why" className="text-[#E6EAF2] hover:text-white">Why InvoiceGuard</a>
-            <a href="#faq" className="text-[#E6EAF2] hover:text-white">FAQ</a>
-          </nav>
-          <Link href="/login" className="btn-primary ml-auto sm:ml-0">Sign in</Link>
-        </div>
-      </header>
-
-      <section className="bg-[#F3F5FA]">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-12 px-6 pb-16 pt-16 sm:px-8 sm:pt-20">
-          <div className="flex flex-[1_1_460px] flex-col gap-6">
-            <p className="text-sm font-semibold text-high-fg">Duplicate payment prevention for SAP AP teams</p>
-            <h1 className="text-[40px] font-bold leading-[1.06] tracking-tight text-navy sm:text-[52px]">Catch duplicate invoices before the payment run.</h1>
-            <p className="max-w-xl text-[19px] leading-relaxed text-ink-700">Upload your payment-run register. InvoiceGuard flags the duplicates SAP’s standard check misses, explains the evidence for each one, and lets you block them in minutes.</p>
-            <div className="flex flex-wrap gap-3">
-              <Link href="/login" className="btn-primary min-h-[52px] px-6 text-base">Try it free with Google</Link>
-              <a href="#how" className="inline-flex min-h-[52px] items-center rounded-lg border border-accent bg-white px-6 text-base font-semibold text-accent">See how it works</a>
-            </div>
-            <p className="text-sm text-ink-500">Free during the beta, no credit card, and your data stays private to your account.</p>
+    <div className="overflow-x-clip bg-white font-landing text-ink">
+      <div className="bg-gradient-to-b from-[#EEF3FF] to-white">
+        <header className="px-4 pt-4 sm:px-6 sm:pt-6">
+          <div className="mx-auto flex max-w-[1240px] items-center gap-4 rounded-2xl bg-[#0B1F4D] px-5 py-3 shadow-[0_12px_28px_rgba(11,31,77,0.30)] sm:gap-6 sm:px-7">
+            <Link href="/" aria-label="InvoiceGuard home"><Logo /></Link>
+            <nav aria-label="Page" className="ml-auto hidden gap-7 text-[17px] font-bold md:flex">
+              <a href="#how" className="text-white hover:underline">How it works</a>
+              <a href="#why" className="text-white hover:underline">Why InvoiceGuard</a>
+              <a href="#faq" className="text-white hover:underline">FAQ</a>
+            </nav>
+            <Link href="/login" className={`${BTN} ml-auto bg-[#2563EB] hover:bg-[#1D4ED8] md:ml-0 text-white`}>Sign in</Link>
           </div>
-          <div aria-hidden="true" className="flex-[1_1_440px] overflow-hidden rounded-2xl border border-line bg-white shadow-[0_18px_40px_rgba(20,33,61,0.12)]">
-            <div className="flex justify-between bg-navy px-5 py-3 text-[13px] font-semibold text-white"><span>Risk queue</span><span className="font-mono">payment_run_wk42.csv</span></div>
-            {PREVIEW.map((p) => (
-              <div key={p.refs} className="grid grid-cols-[96px_1fr_auto] items-center gap-3 border-b border-line-soft px-5 py-3 text-[13px]">
-                <RiskBadge band={p.band} />
-                <span><span className="font-semibold">{p.vendor}</span><br /><span className="font-mono text-ink-500">{p.refs}</span></span>
-                <span className="font-mono">{p.amt}</span>
+        </header>
+
+        <section className="mx-auto flex max-w-[1240px] flex-wrap items-center gap-14 px-6 pb-12 pt-14 sm:px-8 sm:pt-20">
+          <div className="flex flex-[1_1_480px] flex-col gap-7">
+            <p className={EYEBROW}>Duplicate payment prevention for SAP AP teams</p>
+            <h1 className="text-[44px] font-extrabold leading-[1.02] tracking-[-2px] text-[#0B1F4D] sm:text-[56px] lg:text-[72px]">Catch duplicate invoices before the payment run.</h1>
+            <p className={`max-w-xl ${BODY}`}>Upload your payment-run register. InvoiceGuard flags the duplicates SAP’s standard check misses, explains the evidence for each one, and lets you block them in minutes.</p>
+            <div className="flex flex-wrap gap-3">
+              <Link href="/login" className={BTN_PRIMARY}>Try it free with Google</Link>
+              <a href="#how" className={BTN_SECONDARY}>See how it works</a>
+            </div>
+            <p className="text-base text-ink-500">Free during the beta, no credit card, and your data stays private to your account.</p>
+          </div>
+
+          <div aria-hidden="true" className="flex-[1_1_420px]">
+            <div className="rounded-[40px] bg-gradient-to-br from-[#1D4ED8] to-[#3B82F6] p-5 shadow-[0_24px_60px_rgba(29,78,216,0.35)] sm:p-9">
+              <div className="rotate-[2.5deg] overflow-hidden rounded-2xl border border-line bg-white shadow-[0_18px_40px_rgba(11,31,77,0.25)] motion-safe:transition-transform motion-safe:duration-300 motion-safe:hover:rotate-0">
+                <div className="flex justify-between gap-3 bg-[#0B1F4D] px-5 py-3 text-[13px] font-semibold text-white"><span>Risk queue</span><span className="font-mono">payment_run_wk42.csv</span></div>
+                {PREVIEW.map((p) => (
+                  <div key={p.refs} className="grid grid-cols-[88px_minmax(0,1fr)_auto] items-center gap-3 border-b border-line-soft px-4 py-3 text-[13px] sm:px-5">
+                    <RiskBadge band={p.band} />
+                    <span className="min-w-0"><span className="font-semibold">{p.vendor}</span><br /><span className="break-words font-mono text-ink-500">{p.refs}</span></span>
+                    <span className="font-mono">{p.amt}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section aria-label="Results from our testing" className="mx-auto max-w-[1240px] px-6 pb-16 sm:px-8">
+          <dl className="grid grid-cols-2 gap-x-6 gap-y-8 border-t border-[#C7D6F5] pt-10 lg:grid-cols-4">
+            {PROOF.map(([big, label]) => (
+              <div key={big} className="flex flex-col gap-1">
+                <dt className="order-2 text-base leading-snug text-ink-500">{label}</dt>
+                <dd className="text-[40px] font-extrabold leading-none tracking-[-1px] text-[#1D4ED8]">{big}</dd>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
+          </dl>
+        </section>
+      </div>
 
-      <section aria-labelledby="gap" className="mx-auto max-w-6xl px-6 pb-6 pt-16 sm:px-8">
-        <h2 id="gap" className="mb-6 text-[32px] font-bold tracking-tight text-navy">What SAP’s duplicate check lets through</h2>
-        <div className="grid gap-5 md:grid-cols-3">
+      <section aria-labelledby="gap" className="mx-auto max-w-[1240px] px-6 py-20 sm:px-8">
+        <h2 id="gap" className={`mb-10 max-w-3xl ${H2}`}>What SAP’s duplicate check lets through</h2>
+        <div className="grid gap-6 md:grid-cols-3">
           {GAPS.map(([ex, t, d]) => (
-            <div key={t} className="flex flex-col gap-2.5 rounded-xl border border-line p-6">
+            <div key={t} className="flex flex-col gap-4 rounded-3xl border border-line p-8 shadow-[0_8px_24px_rgba(11,31,77,0.06)]">
               <span className="self-start rounded-lg bg-high-row px-3 py-2 font-mono text-[15px] text-high-fg">{ex}</span>
-              <span className="text-[17px] font-semibold">{t}</span>
-              <span className="text-[15px] leading-relaxed text-ink-700">{d}</span>
+              <span className={CARD_TITLE}>{t}</span>
+              <span className={BODY}>{d}</span>
             </div>
           ))}
         </div>
       </section>
 
-      <section id="how" aria-labelledby="howh" className="mx-auto max-w-6xl px-6 py-14 sm:px-8">
-        <h2 id="howh" className="mb-7 text-[32px] font-bold tracking-tight text-navy">How it works</h2>
-        <ol className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <section aria-labelledby="leak" className="bg-[#EEF3FF]">
+        <div className="mx-auto grid max-w-[1240px] items-stretch gap-8 px-6 py-20 sm:px-8 lg:grid-cols-2">
+          <div className="flex flex-col justify-between gap-8 rounded-3xl bg-[#0B1F4D] p-8 text-white shadow-[0_12px_32px_rgba(11,31,77,0.25)] sm:p-10">
+            <div>
+              <p className="text-[26px] font-extrabold leading-[1.1] tracking-[-0.5px] sm:text-[32px]">Financial leakage</p>
+              <p className="mt-2 text-[17px] leading-[1.6] text-[#C9D2E3] sm:text-[20px]">The money that leaves before anyone notices</p>
+            </div>
+            <svg role="img" aria-label="Illustration: bars of payments rising, with a magnifier highlighting one that leaks out" viewBox="0 0 400 260" className="h-auto w-full max-w-[460px] self-center">
+              <line x1="20" y1="230" x2="380" y2="230" stroke="#3B82F6" strokeOpacity="0.5" strokeWidth="2" />
+              <line x1="20" y1="170" x2="380" y2="170" stroke="#3B82F6" strokeOpacity="0.18" strokeWidth="1" strokeDasharray="4 6" />
+              <line x1="20" y1="110" x2="380" y2="110" stroke="#3B82F6" strokeOpacity="0.18" strokeWidth="1" strokeDasharray="4 6" />
+              <rect x="40" y="170" width="38" height="60" rx="6" fill="#1D4ED8" />
+              <rect x="94" y="140" width="38" height="90" rx="6" fill="#2563EB" />
+              <rect x="148" y="150" width="38" height="80" rx="6" fill="#1D4ED8" />
+              <rect x="202" y="100" width="38" height="130" rx="6" fill="#3B82F6" />
+              <rect x="256" y="120" width="38" height="110" rx="6" fill="#2563EB" />
+              <rect x="310" y="60" width="38" height="170" rx="6" fill="#60A5FA" />
+              <rect x="310" y="60" width="38" height="42" rx="6" fill="none" stroke="#BFDBFE" strokeWidth="2" strokeDasharray="5 5" />
+              <circle cx="290" cy="82" r="38" fill="#0B1F4D" fillOpacity="0.55" stroke="#BFDBFE" strokeWidth="6" />
+              <line x1="317" y1="109" x2="352" y2="144" stroke="#BFDBFE" strokeWidth="9" strokeLinecap="round" />
+              <path d="M274 82h32M290 66v32" stroke="#93C5FD" strokeWidth="4" strokeLinecap="round" />
+            </svg>
+          </div>
+
+          <div className={`flex flex-col gap-5 ${SOFT_CARD}`}>
+            <p className={EYEBROW}>Financial leakage</p>
+            <h2 id="leak" className="text-[30px] font-extrabold leading-[1.08] tracking-[-1px] text-[#0B1F4D] sm:text-[40px]">Duplicate payments are a quiet, expensive leak</h2>
+            <p className={BODY}>Industry research estimates that around $53 billion a year leaks out of accounts payable through duplicate payments, invoice errors and missed credit notes, the kind of errors standard ERP controls struggle to catch. InvoiceGuard checks every payment run before money leaves, so you are not relying on a recovery audit months later.</p>
+            <p className="text-sm text-ink-500">Source: SSON Research &amp; Analytics, Financial Leakage Report 2026.</p>
+            <Link href="/login" className={`${BTN_PRIMARY} mt-auto self-start`}>Check your payment run</Link>
+          </div>
+        </div>
+      </section>
+
+      <section id="how" aria-labelledby="howh" className="mx-auto max-w-[1240px] px-6 py-20 sm:px-8">
+        <h2 id="howh" className={`mb-10 ${H2}`}>How it works</h2>
+        <ol className="grid gap-6 md:grid-cols-2">
           {STEPS.map(([t, d], i) => (
-            <li key={t} className="flex flex-col gap-3 rounded-xl bg-[#F3F5FA] p-6">
-              <span className="self-start rounded-full bg-navy px-3 py-1 text-xs font-semibold text-white">Step {i + 1}</span>
-              <span className="text-[19px] font-bold text-navy">{t}</span>
-              <span className="text-[15px] leading-relaxed text-ink-700">{d}</span>
+            <li key={t} className="flex flex-col gap-4 rounded-3xl bg-[#EEF3FF] p-8 sm:p-10">
+              {/* white on the light end of the gradient is 3.7:1, so the label is large bold text (3:1 needed) */}
+              <span className="self-start rounded-full bg-gradient-to-r from-[#1D4ED8] to-[#3B82F6] px-5 py-1.5 text-[19px] font-extrabold uppercase tracking-wide text-white">Step {i + 1}</span>
+              <span className={CARD_TITLE}>{t}</span>
+              <span className={BODY}>{d}</span>
             </li>
           ))}
         </ol>
       </section>
 
-      <section id="why" aria-labelledby="whyh" className="bg-navy text-white">
-        <div className="mx-auto max-w-6xl px-6 py-16 sm:px-8">
-          <h2 id="whyh" className="mb-7 text-[32px] font-bold tracking-tight">Why InvoiceGuard</h2>
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <section id="why" aria-labelledby="whyh" className="bg-[#EEF3FF]">
+        <div className="mx-auto max-w-[1240px] px-6 py-20 sm:px-8">
+          <h2 id="whyh" className={`mb-10 ${H2}`}>Why InvoiceGuard</h2>
+          <div className="grid gap-6 md:grid-cols-2">
             {WHY.map(([t, d]) => (
-              <div key={t} className="flex flex-col gap-2.5 rounded-xl border border-navy-500 bg-navy-700 p-6">
-                <span className="text-lg font-bold">{t}</span>
-                <span className="text-[15px] leading-relaxed text-[#C9D2E3]">{d}</span>
+              <div key={t} className={`flex flex-col gap-4 ${SOFT_CARD}`}>
+                <span className={CARD_TITLE}>{t}</span>
+                <span className={BODY}>{d}</span>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section id="faq" aria-labelledby="faqh" className="mx-auto max-w-3xl px-6 py-16 sm:px-8">
-        <h2 id="faqh" className="mb-6 text-center text-[32px] font-bold tracking-tight text-navy">Frequently asked questions</h2>
+      <section id="faq" aria-labelledby="faqh" className="mx-auto max-w-3xl px-6 py-20 sm:px-8">
+        <h2 id="faqh" className={`mb-10 text-center ${H2}`}>Frequently asked questions</h2>
         <Faq />
       </section>
 
-      <section className="bg-[#F3F5FA]">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-5 px-6 py-14 sm:px-8">
-          <div>
-            <h2 className="text-[28px] font-bold tracking-tight text-navy">Check your next payment run before it goes out.</h2>
-            <p className="mt-2 text-base text-ink-700">Sign in with Google and scan a register in under two minutes.</p>
+      {/* final call to action on a navy-to-blue band with a curved top edge */}
+      <section className="relative overflow-hidden bg-gradient-to-r from-[#0B1F4D] to-[#1D4ED8] text-white">
+        <div aria-hidden="true" className="absolute inset-x-[-10%] top-0 h-14 rounded-b-[100%] bg-white sm:h-20" />
+        <div className="relative mx-auto flex max-w-[1240px] flex-wrap items-center justify-between gap-8 px-6 pb-20 pt-32 sm:px-8 sm:pt-40">
+          <div className="max-w-2xl">
+            <h2 className="text-[34px] font-extrabold leading-[1.05] tracking-[-1.5px] sm:text-[52px]">Check your next payment run before it goes out.</h2>
+            <p className="mt-4 text-[17px] leading-[1.6] text-[#DBEAFE] sm:text-[20px]">Sign in with Google and scan a register in under two minutes.</p>
           </div>
-          <Link href="/login" className="btn-primary min-h-[52px] px-7 text-base">Try it free</Link>
+          <Link href="/login" className={`${BTN} bg-white text-[#0B1F4D] hover:bg-[#EEF3FF]`}>Try it free</Link>
         </div>
       </section>
 
-      <footer className="mx-auto flex max-w-6xl flex-wrap justify-between gap-4 px-6 py-7 text-sm text-ink-500 sm:px-8">
+      <footer className="mx-auto flex max-w-[1240px] flex-wrap justify-between gap-4 px-6 py-8 text-base text-ink-500 sm:px-8">
         <span>InvoiceGuard, built for the HelloPM AI Product Management buildathon</span>
-        <span><Link href="/privacy" className="text-accent">Privacy</Link> · <Link href="/terms" className="text-accent">Terms</Link></span>
+        <span><Link href="/privacy" className="text-[#1D4ED8] underline">Privacy</Link> · <Link href="/terms" className="text-[#1D4ED8] underline">Terms</Link></span>
       </footer>
     </div>
   );

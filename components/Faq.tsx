@@ -14,13 +14,13 @@ export default function Faq() {
   return (
     <div className="flex flex-col gap-3.5">
       {Q.map(([q, a], i) => (
-        <div key={q} className="rounded-xl bg-[#EEF2FB]">
+        <div key={q} className="rounded-2xl bg-[#EEF3FF]">
           <h3>
-            <button type="button" aria-expanded={open === i} onClick={() => setOpen(open === i ? -1 : i)} className="flex min-h-14 w-full items-center justify-between gap-4 px-6 py-5 text-left text-lg font-bold text-navy">
-              {q}<span aria-hidden="true" className="text-2xl font-normal">{open === i ? '−' : '+'}</span>
+            <button type="button" aria-expanded={open === i} onClick={() => setOpen(open === i ? -1 : i)} className="flex min-h-14 w-full items-center justify-between gap-4 px-6 py-5 text-left text-xl font-bold text-[#0B1F4D]">
+              {q}<span aria-hidden="true" className="text-3xl font-normal text-[#1D4ED8]">{open === i ? '−' : '+'}</span>
             </button>
           </h3>
-          {open === i && <p className="px-6 pb-5 text-base leading-relaxed text-ink-700">{a}</p>}
+          {open === i && <p className="px-6 pb-6 text-[17px] leading-[1.6] text-ink-700 sm:text-lg">{a}</p>}
         </div>
       ))}
     </div>

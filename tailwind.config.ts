@@ -19,6 +19,7 @@ const config: Config = {
       },
       fontFamily: {
         sans: ['"IBM Plex Sans"', 'system-ui', 'sans-serif'],
+        landing: ['Barlow', 'system-ui', 'sans-serif'], // public landing page only
         mono: ['"IBM Plex Mono"', 'ui-monospace', 'monospace']
       }
     }
