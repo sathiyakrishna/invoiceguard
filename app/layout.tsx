@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   description: 'Upload your payment-run register. InvoiceGuard flags the duplicate invoices SAP’s standard check misses, explains the evidence and lets you block them in minutes.',
   openGraph: {
     title: 'InvoiceGuard – Catch duplicate invoices before the payment run',
-    description: 'Flags the duplicates SAP’s standard check misses: reference format changes, cross company code postings and alternate vendor IDs.',
+    description: 'Flags the duplicates SAP’s standard check misses: reference format changes, cross company code postings and alternate vendor accounts.',
     type: 'website'
   }
 };

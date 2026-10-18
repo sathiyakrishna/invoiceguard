@@ -54,11 +54,11 @@ describe('detect', () => {
     expect(r[0].rules).toContain('R4');
     expect(r[0].type).toBe('Near amount');
   });
-  it('needs AI confirmation before pairing different vendor IDs', () => {
+  it('needs AI confirmation before pairing different vendor accounts', () => {
     const rows = [row({}), row({ vendor_id: 'V2', vendor_name: 'Robert Bosch India', doc_number: 'D2', po_number: '' })];
     expect(detect(rows)).toHaveLength(0);
     const r = detect(rows, new Set([vendorPairKey('V1', 'V2')]));
-    expect(r[0].type).toBe('Alternate vendor ID');
+    expect(r[0].type).toBe('Alternate vendor account');
     expect(r[0].rules).toContain('R8');
   });
   it('ignores recurring rent with different references', () => {

@@ -1,6 +1,6 @@
 // InvoiceGuard detection engine.
 // Deterministic rules find and score candidate duplicate pairs.
-// AI is used elsewhere only to (a) decide whether two vendor IDs are the
+// AI is used elsewhere only to (a) decide whether two vendor accounts are the
 // same supplier and (b) explain a flag. It never changes a score.
 
 export type InvoiceRow = {
@@ -25,7 +25,7 @@ export const RULES: Record<RuleId, { label: string; points: number }> = {
   R5: { label: 'Invoice dates within 30 days', points: 10 },
   R6: { label: 'Posted in two company codes', points: 10 },
   R7: { label: 'One with PO, one without', points: 10 },
-  R8: { label: 'Same supplier under two vendor IDs (AI)', points: 10 }
+  R8: { label: 'Same supplier under two vendor accounts (AI)', points: 10 }
 };
 
 export type DupType =
@@ -34,7 +34,7 @@ export type DupType =
   | 'Similar reference'
   | 'Cross company code'
   | 'PO vs non-PO'
-  | 'Alternate vendor ID'
+  | 'Alternate vendor account'
   | 'Near amount';
 
 export type Band = 'High' | 'Medium' | 'Low';
@@ -177,7 +177,7 @@ export function suggestedAction(rules: string[]): SuggestedAction {
 }
 
 /**
- * Vendor-ID pairs worth asking the AI about: different vendor IDs with
+ * Vendor-account pairs worth asking the AI about: different vendor accounts with
  * similar names that have an invoice each with the same normalized invoice
  * number and an amount within 1%. A duplicate needs the invoice-number signal
  * anyway, and requiring it stops look-alike vendors (Ltd vs LLP) crowding real
@@ -211,7 +211,7 @@ export function findVendorCandidates(rows: InvoiceRow[], max = 20): Array<{ a: s
 
 /**
  * Find candidate duplicate pairs.
- * @param sameSupplier vendor-ID pairs the AI confirmed as the same supplier (keys from vendorPairKey)
+ * @param sameSupplier vendor-account pairs the AI confirmed as the same supplier (keys from vendorPairKey)
  * @param ignoredKeys pair keys the user previously marked Ignore
  */
 export function detect(rows: InvoiceRow[], sameSupplier: Set<string> = new Set(), ignoredKeys: Set<string> = new Set()): Candidate[] {
@@ -274,7 +274,7 @@ export function detect(rows: InvoiceRow[], sameSupplier: Set<string> = new Set()
       if (ignoredKeys.has(pairKey)) continue;
 
       let type: DupType;
-      if (altVendor) type = 'Alternate vendor ID';
+      if (altVendor) type = 'Alternate vendor account';
       else if (rules.includes('R6')) type = 'Cross company code';
       else if (rules.includes('R7')) type = 'PO vs non-PO';
       else if (rules.includes('R4')) type = 'Near amount';

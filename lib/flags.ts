@@ -46,4 +46,4 @@ export async function listFlags(supabase: SupabaseClient, opts: { status?: strin
   return (data ?? []) as unknown as Flag[];
 }
 
-export const DUP_TYPES = ['Exact match', 'Reference format', 'Similar reference', 'Cross company code', 'PO vs non-PO', 'Alternate vendor ID', 'Near amount'];
+export const DUP_TYPES = ['Exact match', 'Reference format', 'Similar reference', 'Cross company code', 'PO vs non-PO', 'Alternate vendor account', 'Near amount'];

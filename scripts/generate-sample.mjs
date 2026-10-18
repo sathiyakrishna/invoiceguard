@@ -53,12 +53,12 @@ for (let i = 0; i < 4; i++) { const o = sample(); const r = o.invoice_ref; const
 for (let i = 0; i < 5; i++) { const o = sample(); plant('Cross company code', o, { ...o, company_code: o.company_code === '1000' ? '2000' : '1000', invoice_date: later(o.invoice_date, 1), doc_number: String(docFI++) }); }
 for (let i = 0; i < 4; i++) { const o = sample(); plant('PO vs non-PO', o, { ...o, po_number: o.po_number ? '' : '4500099' + pad(i, 3), invoice_date: later(o.invoice_date, 3), doc_number: String(docMM++) }); }
 for (let i = 0; i < 3; i++) { const o = sample(); plant('Near amount', o, { ...o, amount: Math.round(o.amount * 0.998 * 100) / 100, invoice_date: later(o.invoice_date, 4), doc_number: String(docFI++) }); }
-// alternate vendor IDs (needs AI vendor matching)
+// alternate vendor accounts (needs AI vendor matching)
 const alts = [['Bosch Ltd', 'V90001', 'BOSCH LIMITED'], ['Tata Steel Ltd', 'V90002', 'TATA STEEL LIMITED'], ['Exide Industries Ltd', 'V90003', 'Exide Industries Limited']];
 for (const [orig, id, alias] of alts) {
   const v = vendors.find((x) => x.name === orig);
   const o = addRow(base(v));
-  plant('Alternate vendor ID', o, { ...o, vendor_id: id, vendor_name: alias, invoice_date: later(o.invoice_date, 6), doc_number: String(docMM++) });
+  plant('Alternate vendor account', o, { ...o, vendor_id: id, vendor_name: alias, invoice_date: later(o.invoice_date, 6), doc_number: String(docMM++) });
 }
 // traps: monthly rent and retainers, same amount, different months and references
 for (let i = 0; i < TRAPS; i++) {

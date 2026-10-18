@@ -2,7 +2,7 @@
 
 Catch duplicate supplier invoices before the payment run.
 
-An AP analyst uploads the payment-run register (CSV or Excel). Rules find and score likely duplicate pairs that SAP's standard check misses (reference format changes, the same invoice in two company codes, PO vs non-PO routes, alternate vendor IDs). AI matches vendor names and explains each flag in plain words. The analyst classifies every pair Yes, No or Ignore, and the dashboard shows payment value prevented, all computed live from the database.
+An AP analyst uploads the payment-run register (CSV or Excel). Rules find and score likely duplicate pairs that SAP's standard check misses (reference format changes, the same invoice in two company codes, PO vs non-PO routes, alternate vendor accounts). AI matches vendor names and explains each flag in plain words. The analyst classifies every pair Yes, No or Ignore, and the dashboard shows payment value prevented, all computed live from the database.
 
 Built for the HelloPM AI Product Management buildathon (theme: personal productivity).
 
@@ -21,7 +21,7 @@ Next.js 14 (App Router, TypeScript) · Tailwind CSS · Supabase (Postgres, row-l
 | R5 | Invoice dates within 30 days | 10 |
 | R6 | Same invoice in two company codes (only with R1) | 10 |
 | R7 | One with PO, one without (only with R1) | 10 |
-| R8 | Different vendor IDs the AI confirmed as the same supplier | 10 |
+| R8 | Different vendor accounts the AI confirmed as the same supplier | 10 |
 
 Only pairs with the same vendor (or an AI-confirmed alias) and amounts within 1% are compared, and every pair needs an invoice-number signal. Bands: 80+ High (red), 60–79 Medium (amber), 50–59 Low (green). Recurring charges (RENT-AUG vs RENT-SEP) and consecutive invoices are excluded. Pairs you mark Ignore are not flagged again. Code: `lib/detect.ts`, tests: `tests/`.
 

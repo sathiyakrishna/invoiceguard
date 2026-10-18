@@ -16,8 +16,8 @@ describe.runIf(existsSync('public/sample_register.csv') && existsSync('answer_ke
     expect(rows).toHaveLength(2000);
   });
 
-  it('offers all 3 alternate-vendor-ID pairs to the AI within the default top 20', () => {
-    const aliasPairs = key.filter((k) => k.type === 'Alternate vendor ID').map((k) => {
+  it('offers all 3 alternate-vendor-account pairs to the AI within the default top 20', () => {
+    const aliasPairs = key.filter((k) => k.type === 'Alternate vendor account').map((k) => {
       const alt = rows.find((r) => r.invoice_ref === k.duplicate_ref && r.vendor_id !== k.vendor)!;
       return vendorPairKey(k.vendor, alt.vendor_id);
     });
@@ -27,7 +27,7 @@ describe.runIf(existsSync('public/sample_register.csv') && existsSync('answer_ke
   });
 
   it('finds every planted duplicate and none of the traps', () => {
-    const aiConfirmed = new Set(key.filter((k) => k.type === 'Alternate vendor ID').map((k) => {
+    const aiConfirmed = new Set(key.filter((k) => k.type === 'Alternate vendor account').map((k) => {
       const alt = rows.find((r) => r.invoice_ref === k.duplicate_ref && r.vendor_id !== k.vendor)!;
       return vendorPairKey(k.vendor, alt.vendor_id);
     }));

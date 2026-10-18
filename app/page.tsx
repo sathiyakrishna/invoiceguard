@@ -21,7 +21,7 @@ const PROOF = [
 const GAPS = [
   ['INV-0012 vs INV0012', 'Reference format changes', 'A hyphen, space or leading zero makes the same invoice look new to a character-by-character check.'],
   ['CC 1000 vs CC 2000', 'Same invoice, two company codes', 'Standard checks run within one company code, so a cross-entity posting slips through.'],
-  ['V10021 vs V20450', 'Same supplier, two vendor IDs', 'Duplicate vendor master records hide the same invoice under different vendor numbers.']
+  ['V10021 vs V20450', 'Same supplier, two vendor accounts', 'Duplicate vendor master records hide the same invoice under different vendor account numbers.']
 ];
 
 const STEPS = [
@@ -94,6 +94,10 @@ export default function Landing() {
 
         <section aria-label="Results from our testing" className="mx-auto max-w-[1240px] px-6 pb-16 sm:px-8">
           <dl className="grid grid-cols-2 gap-x-6 gap-y-8 border-t border-[#C7D6F5] pt-10 lg:grid-cols-4">
+            <div className="col-span-2 flex flex-col gap-1 lg:col-span-4">
+              <dt className="order-2 text-base leading-snug text-ink-500">reference format changes, cross company code postings, alternate vendor accounts</dt>
+              <dd className="text-[40px] font-extrabold leading-[1.05] tracking-[-1px] text-[#1D4ED8]">Catches what SAP misses</dd>
+            </div>
             {PROOF.map(([big, label]) => (
               <div key={big} className="flex flex-col gap-1">
                 <dt className="order-2 text-base leading-snug text-ink-500">{label}</dt>

@@ -19,7 +19,7 @@ export default function LoginPage({ searchParams }: { searchParams: { error?: st
         <Link href="/" className="self-start"><Logo /></Link>
         <div className="mt-auto flex max-w-xl flex-col gap-4">
           <h1 className="text-4xl font-bold leading-[1.1] tracking-tight text-white sm:text-[44px]">Stop duplicate payments before the payment run.</h1>
-          <p className="text-[17px] leading-relaxed text-[#C9D2E3]">InvoiceGuard checks your payment-run register for the duplicates SAP’s standard check misses: reference format changes, the same invoice in two company codes, and alternate vendor IDs. Every flag comes with its evidence.</p>
+          <p className="text-[17px] leading-relaxed text-[#C9D2E3]">InvoiceGuard checks your payment-run register for the duplicates SAP’s standard check misses: reference format changes, the same invoice in two company codes, and alternate vendor accounts. Every flag comes with its evidence.</p>
         </div>
         <div aria-hidden="true" className="flex max-w-xl flex-col gap-2.5 rounded-xl border border-navy-500 bg-navy-700 p-4">
           {PREVIEW.map((p) => (
