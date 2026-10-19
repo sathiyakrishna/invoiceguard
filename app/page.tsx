@@ -12,7 +12,7 @@ const PREVIEW = [
 
 // Facts from our own testing on the sample register (tests/sample.test.ts) and the scan flow.
 const PROOF = [
-  ['25 of 25', 'planted duplicates caught'],
+  ['100% recall', 'on near-duplicate test cases, including ones exact-match tools miss'],
   ['Zero', 'recurring charges falsely flagged'],
   ['< 2 min', 'to the first flagged pair'],
   ['Every flag', 'shows its evidence']
