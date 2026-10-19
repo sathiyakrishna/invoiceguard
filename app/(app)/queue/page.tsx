@@ -16,12 +16,13 @@ const TABS = [
   ['ignore', 'Ignore']
 ] as const;
 
-type SP = { status?: string; type?: string; q?: string; sort?: string; page?: string; scan?: string; new?: string };
+type SP = { status?: string; type?: string; risk?: string; q?: string; sort?: string; page?: string; scan?: string; new?: string };
+const RISKS = ['High', 'Medium', 'Low'];
 
 function href(sp: SP, patch: Partial<SP>) {
   const p = new URLSearchParams();
   const merged = { ...sp, ...patch };
-  (['status', 'type', 'q', 'sort', 'page'] as const).forEach((k) => {
+  (['status', 'type', 'risk', 'q', 'sort', 'page'] as const).forEach((k) => {
     const v = merged[k];
     if (v && !(k === 'status' && v === 'pending') && !(k === 'page' && v === '1')) p.set(k, v);
   });
@@ -48,7 +49,8 @@ export default async function QueuePage({ searchParams }: { searchParams: SP }) 
   const highPending = pending.filter((f) => f.risk_band === 'High').length;
   const latest = scans?.[0];
 
-  let rows: Flag[] = all.filter((f) => (status === 'all' || f.status === status) && (!searchParams.type || f.dup_type === searchParams.type));
+  const risk = RISKS.includes(searchParams.risk ?? '') ? searchParams.risk! : '';
+  let rows: Flag[] = all.filter((f) => (status === 'all' || f.status === status) && (!searchParams.type || f.dup_type === searchParams.type) && (!risk || f.risk_band === risk));
   if (q) rows = rows.filter((f) => [f.pair_code, f.a.vendor_name, f.a.vendor_id, f.b.vendor_id, f.a.invoice_ref, f.b.invoice_ref, f.a.doc_number, f.b.doc_number].some((v) => (v ?? '').toLowerCase().includes(q)));
   if (sort !== 'amount' && sort !== 'age') rows.sort(compareByRisk);
   if (sort === 'amount') rows.sort((x, y) => Number(y.amount) - Number(x.amount));
@@ -107,9 +109,15 @@ export default async function QueuePage({ searchParams }: { searchParams: SP }) 
                 {label}
               </Link>
             ))}
+            {risk && (
+              <Link href={href(searchParams, { risk: '', page: '1' })} aria-label={`Clear the ${risk} risk filter`} className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-accent bg-accent-soft px-3.5 text-[13px] font-medium text-accent-text">
+                Risk: {risk} <span aria-hidden="true">×</span>
+              </Link>
+            )}
           </nav>
           <form method="get" action="/queue" className="ml-auto flex flex-wrap items-center gap-2.5">
             <input type="hidden" name="status" value={status} />
+            {risk && <input type="hidden" name="risk" value={risk} />}
             <label className="flex items-center gap-2 text-[13px] text-ink-500">Type
               <select name="type" defaultValue={searchParams.type ?? ''} className="input min-h-9 text-[13px]">
                 <option value="">All types</option>

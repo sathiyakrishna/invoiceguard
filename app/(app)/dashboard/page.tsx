@@ -10,10 +10,10 @@ export const metadata: Metadata = { title: 'Dashboard' };
 
 const RANGES = [['7', '7 days'], ['30', '30 days'], ['90', '90 days'], ['365', 'This year'], ['all', 'All time']] as const;
 const CLASSES = [
-  { key: 'pending', label: 'Pending', color: '#93B4F5' },
-  { key: 'yes', label: 'Yes · duplicate', color: '#1E40AF' },
-  { key: 'no', label: 'No · not duplicate', color: '#94A3B8' },
-  { key: 'ignore', label: 'Ignored', color: '#334155' }
+  { key: 'pending', label: 'Pending', color: '#CBD2DC' }, // light grey (line-input)
+  { key: 'yes', label: 'Yes · duplicate', color: '#1D4ED8' }, // brand blue (accent)
+  { key: 'no', label: 'No · not duplicate', color: '#4F9D7D' }, // muted green, a softer step of low-fg
+  { key: 'ignore', label: 'Ignored', color: '#334155' } // dark grey
 ] as const;
 
 export default async function Dashboard({ searchParams }: { searchParams: { range?: string } }) {
@@ -32,7 +32,8 @@ export default async function Dashboard({ searchParams }: { searchParams: { rang
   const no = by('no');
   const pending = by('pending');
   const prevented = yes.reduce((s, f) => s + Number(f.amount), 0);
-  const fpRate = yes.length + no.length ? Math.round((no.length / (yes.length + no.length)) * 100) : null;
+  const MIN_REVIEWS = 5; // a rate from fewer reviewed pairs is noise
+  const fpRate = yes.length + no.length >= MIN_REVIEWS ? Math.round((no.length / (yes.length + no.length)) * 100) : null;
   const timed = flags.filter((f) => f.review_seconds !== null && f.status !== 'pending');
   const avgReview = timed.length ? timed.reduce((s, f) => s + (f.review_seconds ?? 0), 0) / timed.length : null;
 
@@ -80,7 +81,7 @@ export default async function Dashboard({ searchParams }: { searchParams: { rang
       <div className="flex flex-wrap items-center justify-between gap-6 rounded-xl bg-navy px-7 py-6 text-white">
         <div>
           <div className="text-sm text-[#C9D2E3]">Payment value prevented · {rangeLabel.toLowerCase()}</div>
-          <div className="mt-1 font-mono text-[40px] tracking-tight tnum">{rupees(prevented)}</div>
+          <div className="mt-1 text-[40px] tracking-tight tnum">{rupees0(prevented)}</div>
           <div className="text-[13px] text-[#C9D2E3]">from {yes.length} confirmed duplicate{yes.length === 1 ? '' : 's'} across {scans?.length ?? 0} scan{scans?.length === 1 ? '' : 's'}</div>
         </div>
         <ShareSummary text={`InvoiceGuard summary (${rangeLabel.toLowerCase()}): ${count(scanned)} invoices scanned, ${yes.length} duplicate invoices blocked before payment, ${rupees0(prevented)} prevented.`} />
@@ -88,8 +89,8 @@ export default async function Dashboard({ searchParams }: { searchParams: { rang
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Kpi label="Invoices scanned" value={count(scanned)} />
-        <Kpi label="Pairs pending review" value={count(pending.length)} />
-        <Kpi label="False-positive rate" value={fpRate === null ? '—' : `${fpRate}%`} sub="not duplicates ÷ reviewed" />
+        <Kpi label="Pairs pending review" value={count(pending.length)} href="/queue?status=pending" />
+        <Kpi label="False-positive rate" value={fpRate === null ? '—' : `${fpRate}%`} sub={fpRate === null ? `needs ${MIN_REVIEWS}+ reviews` : 'not duplicates ÷ reviewed'} />
         <Kpi label="Avg. review time per pair" value={duration(avgReview)} />
       </div>
 
@@ -97,7 +98,7 @@ export default async function Dashboard({ searchParams }: { searchParams: { rang
         <h2 id="risk">Pending pairs by risk</h2>
         <div className="grid gap-3 sm:grid-cols-3">
           {risk.map((r) => (
-            <Link key={r.band} href="/queue" className={`flex items-center gap-3 rounded-lg px-4 py-3.5 ${riskStyle[r.band]}`}>
+            <Link key={r.band} href={`/queue?status=pending&risk=${r.band}`} className={`flex items-center gap-3 rounded-lg px-4 py-3.5 transition hover:shadow-[0_4px_12px_rgba(11,31,77,0.14)] hover:brightness-95 ${riskStyle[r.band]}`}>
               <RiskIcon band={r.band} size={22} />
               <span className="flex flex-col"><span className="text-[13px] font-semibold">{r.band}</span><span className="text-[13px] tnum">{r.n} pairs · {rupees0(r.amt)}</span></span>
             </Link>
@@ -170,12 +171,16 @@ export default async function Dashboard({ searchParams }: { searchParams: { rang
   );
 }
 
-function Kpi({ label, value, sub }: { label: string; value: string; sub?: string }) {
-  return (
-    <div className="card flex flex-col gap-1.5 px-5 py-4">
+function Kpi({ label, value, sub, href }: { label: string; value: string; sub?: string; href?: string }) {
+  const body = (
+    <>
       <div className="text-[13px] text-ink-500">{label}</div>
       <div className={`text-2xl font-medium tnum ${value.startsWith('₹') ? 'font-mono' : ''}`}>{value}</div>
       {sub && <div className="text-xs text-ink-500">{sub}</div>}
-    </div>
+    </>
   );
+  const box = 'card flex flex-col gap-1.5 px-5 py-4';
+  return href
+    ? <Link href={href} className={`${box} transition hover:border-accent hover:shadow-[0_4px_12px_rgba(11,31,77,0.10)]`}>{body}</Link>
+    : <div className={box}>{body}</div>;
 }
