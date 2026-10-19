@@ -6,6 +6,7 @@ const Q: [string, string][] = [
   ['Does it replace a recovery audit?', 'It reduces how much a recovery audit finds by stopping duplicates before payment. Keep your existing controls for anything already paid.'],
   ['Does AI decide what gets blocked?', 'No. Rules find candidate pairs, AI explains the evidence, and you classify each pair yourself.'],
   ['Is my data safe?', 'Your workspace is private to your account, files are deleted after 30 days, and only flagged pairs are sent to the AI for explanation. Please use anonymized data during the beta.'],
+  ['Which file types can I upload?', 'CSV, Excel (.xlsx) and PDF, up to 10 MB and 20,000 rows. PDFs must be text-based, exported from your ERP or a spreadsheet. Scanned PDFs aren’t supported yet, so export your register as CSV or Excel instead. PDFs can be up to 100 pages.'],
   ['What does it cost?', 'It is free during the beta, with daily and monthly limits on scans and AI explanations.']
 ];
 

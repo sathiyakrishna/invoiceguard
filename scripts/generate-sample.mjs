@@ -1,4 +1,5 @@
-// Generates public/sample_register.csv (2,000 invoices) and answer_key.csv (planted cases).
+// Generates public/sample_register.csv (2,000 invoices), public/sample_register.pdf (the same rows as a text PDF)
+// and answer_key.csv (planted cases).
 // Usage: npm run sample
 import { writeFileSync } from 'fs';
 
@@ -102,6 +103,37 @@ for (let i = rows.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)
 const cols = ['company_code', 'vendor_id', 'vendor_name', 'invoice_ref', 'invoice_date', 'amount', 'currency', 'po_number', 'doc_number', 'reversed_with', 'clearing_date', 'clearing_document'];
 const esc = (v) => (/[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : String(v));
 writeFileSync('public/sample_register.csv', [cols.join(','), ...rows.map((r) => cols.map((c) => esc(c === 'amount' ? r[c].toFixed(2) : (r[c] ?? ''))).join(','))].join('\n') + '\n');
+
+// The same register as a text-based PDF: A4 landscape, one table, heading row repeated on every page, amounts right-aligned.
+const PDF_COLS = [['company_code', 30], ['vendor_id', 90], ['vendor_name', 135], ['invoice_ref', 275], ['invoice_date', 340], ['amount', 440, 'right'], ['currency', 455], ['po_number', 500], ['doc_number', 555], ['reversed_with', 615], ['clearing_date', 680], ['clearing_document', 740]];
+const PER_PAGE = 40, ROW_H = 12, SIZE = 7;
+const pdfEsc = (s) => String(s).replace(/[\\()]/g, '\\$&');
+const textWidth = (s) => [...s].reduce((w, ch) => w + (/\d/.test(ch) ? 0.556 : ch === '.' ? 0.278 : ch === '-' ? 0.333 : 0.5), 0) * SIZE; // Helvetica digit widths
+const pdfRow = (values, y) => PDF_COLS.map(([, x, align], i) => {
+  const v = String(values[i] ?? '');
+  return v ? `BT /F1 ${SIZE} Tf ${(align === 'right' ? x - textWidth(v) : x).toFixed(1)} ${y} Td (${pdfEsc(v)}) Tj ET` : '';
+}).filter(Boolean).join('\n');
+const pages = [];
+for (let i = 0; i < rows.length; i += PER_PAGE) pages.push(rows.slice(i, i + PER_PAGE));
+const streams = pages.map((part, p) => [
+  `BT /F1 10 Tf 30 560 Td (Vendor invoice register - payment run) Tj ET`,
+  pdfRow(cols, 535),
+  ...part.map((r, k) => pdfRow(cols.map((c) => (c === 'amount' ? r[c].toFixed(2) : (r[c] ?? ''))), 521 - k * ROW_H)),
+  `BT /F1 7 Tf 30 20 Td (Page ${p + 1} of ${pages.length}) Tj ET`
+].join('\n'));
+const objects = ['<< /Type /Catalog /Pages 2 0 R >>', `<< /Type /Pages /Kids [${pages.map((_, p) => `${4 + 2 * p} 0 R`).join(' ')}] /Count ${pages.length} >>`, '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>'];
+streams.forEach((s, p) => {
+  objects.push(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 842 595] /Resources << /Font << /F1 3 0 R >> >> /Contents ${5 + 2 * p} 0 R >>`);
+  objects.push(`<< /Length ${s.length} >>\nstream\n${s}\nendstream`);
+});
+let pdf = '%PDF-1.4\n';
+const offsets = objects.map((o, i) => { const at = pdf.length; pdf += `${i + 1} 0 obj\n${o}\nendobj\n`; return at; });
+const xref = pdf.length;
+pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n${offsets.map((o) => `${String(o).padStart(10, '0')} 00000 n \n`).join('')}trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`;
+if (/[^\x00-\x7f]/.test(pdf)) throw new Error('PDF content must be ASCII so string length equals byte length');
+writeFileSync('public/sample_register.pdf', pdf, 'latin1');
+
 const kc = ['type', 'vendor', 'original_ref', 'duplicate_ref', 'amount', 'expected'];
 writeFileSync('answer_key.csv', [kc.join(','), ...key.map((k) => kc.map((c) => esc(k[c])).join(','))].join('\n') + '\n');
+console.log(`sample_register.pdf: ${pages.length} pages, same rows`);
 console.log(`sample_register.csv: ${rows.length} invoices, ${key.filter((k) => k.expected === 'Yes').length} planted duplicates, ${TRAPS} recurring traps, ${REVERSED_TRAPS} reversed-and-reposted traps`);

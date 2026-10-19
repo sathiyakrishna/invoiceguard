@@ -7,9 +7,16 @@ import { FIELDS, autoMap, toInvoiceRows, type Mapping, type FieldKey, type RowEr
 const MAX_ROWS = 20000;
 const MAX_BYTES = 10 * 1024 * 1024;
 
-type Loaded = { name: string; headers: string[]; records: Record<string, unknown>[] };
+type Loaded = { name: string; headers: string[]; records: Record<string, unknown>[]; fromPdf?: boolean };
 
 async function readFile(file: File): Promise<Loaded> {
+  if (/\.pdf$/i.test(file.name)) {
+    const pdfjs = await import('pdfjs-dist');
+    pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.js', import.meta.url).toString();
+    const { extractPdfTable } = await import('@/lib/pdf-table');
+    const { headers, records } = await extractPdfTable(new Uint8Array(await file.arrayBuffer()), pdfjs);
+    return { name: file.name, headers, records, fromPdf: true };
+  }
   if (/\.xlsx$/i.test(file.name)) {
     const { default: readXlsx } = await import('read-excel-file');
     const sheet = await readXlsx(file);
@@ -42,7 +49,7 @@ export default function UploadFlow() {
     setError('');
     setRowErrors([]);
     if (!file) return;
-    if (!/\.(csv|xlsx)$/i.test(file.name)) return setError('Upload a .csv or .xlsx file.');
+    if (!/\.(csv|xlsx|pdf)$/i.test(file.name)) return setError('Upload a .csv, .xlsx or .pdf file.');
     if (file.size > MAX_BYTES) return setError('That file is over 10 MB. Split the register into smaller files.');
     setBusy('reading');
     try {
@@ -99,13 +106,13 @@ export default function UploadFlow() {
         className={`flex min-h-[200px] cursor-pointer flex-col items-center justify-center gap-2.5 rounded-xl border-2 border-dashed bg-white px-6 py-8 text-center ${drag ? 'border-accent bg-accent-soft/40' : 'border-[#A9B6CB]'}`}
       >
         <svg aria-hidden="true" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#1D4ED8" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 16V4M7 9l5-5 5 5" /><path d="M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3" /></svg>
-        <span className="text-base font-semibold">{busy === 'reading' ? 'Reading file…' : loaded ? `${loaded.name} · ${loaded.records.length.toLocaleString('en-IN')} rows` : 'Drop your CSV or Excel file here'}</span>
+        <span className="text-base font-semibold">{busy === 'reading' ? 'Reading file…' : loaded ? `${loaded.name} · ${loaded.records.length.toLocaleString('en-IN')} rows` : 'Drop your CSV, Excel or PDF file here'}</span>
         <span className="text-[13px] text-ink-500">{loaded ? 'Drop another file to replace it' : 'or click to browse · up to 10 MB, 20,000 rows'}</span>
-        <input ref={input} type="file" accept=".csv,.xlsx" className="sr-only" onChange={(e) => onFile(e.target.files?.[0])} />
+        <input ref={input} type="file" accept=".csv,.xlsx,.pdf" className="sr-only" onChange={(e) => onFile(e.target.files?.[0])} />
       </label>
 
       {!loaded && (
-        <p className="text-sm text-ink-500">No file to hand? <a href="/sample_register.csv" download className="font-medium text-accent underline">Download the sample register</a> (2,000 invoices with planted duplicates) and upload it here.</p>
+        <p className="text-sm text-ink-500">No file to hand? Download the sample register (<a href="/sample_register.csv" download className="font-medium text-accent underline">CSV</a> or <a href="/sample_register.pdf" download className="font-medium text-accent underline">PDF</a>, 2,000 invoices with planted duplicates) and upload it here.</p>
       )}
 
       {error && <p role="alert" className="rounded-lg bg-high-row px-4 py-3 text-sm font-medium text-high-fg">{error}</p>}
@@ -116,6 +123,7 @@ export default function UploadFlow() {
             <h2 id="map">Check column mapping</h2>
             <span className="text-[13px] text-ink-500">{FIELDS.filter((f) => map[f.key]).length} of {FIELDS.length} fields matched</span>
           </div>
+          {loaded.fromPdf && <p className="border-b border-line px-5 py-3 text-[13px] text-ink-700">Read from a PDF. Check each column and its example before you scan, because PDF tables can be read imperfectly.</p>}
           <div className="overflow-x-auto">
             <table className="data-table w-full min-w-[560px] text-[15px]">
               <thead><tr><th className="th pl-5">Field</th><th className="th">Your column</th><th className="th pr-5">Example</th></tr></thead>

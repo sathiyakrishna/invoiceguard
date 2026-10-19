@@ -2,7 +2,7 @@
 
 Catch duplicate supplier invoices before the payment run.
 
-An AP analyst uploads the payment-run register (CSV or Excel). Rules find and score likely duplicate pairs that SAP's standard check misses (reference format changes, the same invoice in two company codes, PO vs non-PO routes, alternate vendor accounts). AI matches vendor names and explains each flag in plain words. The analyst classifies every pair Yes, No or Ignore, and the dashboard shows payment value prevented, all computed live from the database.
+An AP analyst uploads the payment-run register (CSV, Excel or a text-based PDF exported from an ERP or spreadsheet, not a scan). Rules find and score likely duplicate pairs that SAP's standard check misses (reference format changes, the same invoice in two company codes, PO vs non-PO routes, alternate vendor accounts). AI matches vendor names and explains each flag in plain words. The analyst classifies every pair Yes, No or Ignore, and the dashboard shows payment value prevented, all computed live from the database.
 
 Built for the HelloPM AI Product Management buildathon (theme: personal productivity).
 
