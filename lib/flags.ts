@@ -50,4 +50,8 @@ export async function listFlags(supabase: SupabaseClient, opts: { status?: strin
   return (data ?? []) as unknown as Flag[];
 }
 
+/** Risk queue order: highest score first, then the larger amount, then pair ID. The review page's next/previous follows the same order. */
+export const compareByRisk = (x: Pick<Flag, 'score' | 'amount' | 'pair_code'>, y: Pick<Flag, 'score' | 'amount' | 'pair_code'>) =>
+  y.score - x.score || Number(y.amount) - Number(x.amount) || x.pair_code.localeCompare(y.pair_code);
+
 export const DUP_TYPES = ['Exact match', 'Reference format', 'Similar reference', 'Cross company code', 'PO vs non-PO', 'Alternate vendor account', 'Near amount'];

@@ -23,7 +23,7 @@ export default async function ReviewPage({ params }: { params: { id: string } })
     supabase.from('invoices').select('*, scan:scans(created_at)').in('vendor_id', vendors).order('invoice_date', { ascending: false, nullsFirst: false }).limit(80),
     // does this scan carry payment history at all? Only then can "open" be claimed for an invoice without a clearing date
     supabase.from('invoices').select('id', { count: 'exact', head: true }).eq('scan_id', f.scan_id).not('clearing_date', 'is', null),
-    supabase.from('flags').select('id').eq('status', 'pending').order('score', { ascending: false }).order('created_at', { ascending: false }).limit(2000)
+    supabase.from('flags').select('id').eq('status', 'pending').order('score', { ascending: false }).order('amount', { ascending: false }).order('pair_code', { ascending: true }).limit(2000)
   ]);
 
   // ledger: latest invoices for the vendor(s), always including both invoices of the pair. The same invoice (vendor,

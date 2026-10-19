@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { requireUser } from '@/lib/supabase/server';
-import { listFlags, DUP_TYPES, type Flag } from '@/lib/flags';
+import { listFlags, compareByRisk, DUP_TYPES, type Flag } from '@/lib/flags';
 import { RiskBadge, StatusBadge } from '@/components/RiskBadge';
 import { ageLabel, count, rupees, shortDate } from '@/lib/format';
 
@@ -50,6 +50,7 @@ export default async function QueuePage({ searchParams }: { searchParams: SP }) 
 
   let rows: Flag[] = all.filter((f) => (status === 'all' || f.status === status) && (!searchParams.type || f.dup_type === searchParams.type));
   if (q) rows = rows.filter((f) => [f.pair_code, f.a.vendor_name, f.a.vendor_id, f.b.vendor_id, f.a.invoice_ref, f.b.invoice_ref, f.a.doc_number, f.b.doc_number].some((v) => (v ?? '').toLowerCase().includes(q)));
+  if (sort !== 'amount' && sort !== 'age') rows.sort(compareByRisk);
   if (sort === 'amount') rows.sort((x, y) => Number(y.amount) - Number(x.amount));
   if (sort === 'age') rows.sort((x, y) => x.created_at.localeCompare(y.created_at));
   const pages = Math.max(1, Math.ceil(rows.length / PAGE));
