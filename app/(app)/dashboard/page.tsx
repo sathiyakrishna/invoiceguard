@@ -117,7 +117,7 @@ export default async function Dashboard({ searchParams }: { searchParams: { rang
                 <circle cx="80" cy="80" r={R} fill="none" stroke="#EEF0F3" strokeWidth="26" />
                 {arcs.map((a, i) => <circle key={i} cx="80" cy="80" r={R} fill="none" stroke={a.color} strokeWidth="26" strokeDasharray={a.dash} strokeDashoffset={a.off} transform="rotate(-90 80 80)" />)}
                 <text x="80" y="76" textAnchor="middle" fontSize="12" fill="#4B5565">Total</text>
-                <text x="80" y="94" textAnchor="middle" fontSize="13" fill="#141A26" fontFamily="IBM Plex Mono, monospace">{rupees0(total)}</text>
+                <text x="80" y="94" textAnchor="middle" fontSize="14" fill="#141A26" className="tnum">{rupees0(total)}</text>
               </svg>
               <div className="flex min-w-[220px] flex-1 flex-col">
                 {classes.map((c) => (
@@ -125,7 +125,7 @@ export default async function Dashboard({ searchParams }: { searchParams: { rang
                     <span className="h-3 w-3 rounded-sm" style={{ background: c.color }} />
                     <span>{c.label}</span>
                     <span className="text-[13px] text-ink-500 tnum">{c.n}</span>
-                    <span className="min-w-[110px] text-right font-mono text-[13px] tnum">{rupees0(c.amt)}</span>
+                    <span className="min-w-[110px] text-right text-sm tnum">{rupees0(c.amt)}</span>
                   </div>
                 ))}
               </div>
@@ -154,7 +154,7 @@ export default async function Dashboard({ searchParams }: { searchParams: { rang
                       <tr key={f.id} className="border-t border-line-soft">
                         <td className="td pl-5"><Link href={`/queue/${f.id}`} className="font-mono text-accent">{f.pair_code}</Link></td>
                         <td className="td">{f.a.vendor_name || f.a.vendor_id}</td>
-                        <td className="td text-right font-mono text-[13px]">{rupees(f.amount)}</td>
+                        <td className="td text-right text-sm tnum">{rupees(f.amount)}</td>
                         <td className="td">{CLASSES.find((c) => c.key === f.status)?.label}</td>
                         <td className="td pr-5 text-[13px] tnum">{duration(f.review_seconds)}</td>
                       </tr>
@@ -175,7 +175,7 @@ function Kpi({ label, value, sub, href }: { label: string; value: string; sub?: 
   const body = (
     <>
       <div className="text-[13px] text-ink-500">{label}</div>
-      <div className={`text-2xl font-medium tnum ${value.startsWith('₹') ? 'font-mono' : ''}`}>{value}</div>
+      <div className="text-2xl font-medium tnum">{value}</div>
       {sub && <div className="text-xs text-ink-500">{sub}</div>}
     </>
   );
