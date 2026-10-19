@@ -19,16 +19,23 @@ export default async function ReviewPage({ params }: { params: { id: string } })
 
   const vendors = Array.from(new Set([f.a.vendor_id, f.b.vendor_id].filter(Boolean))) as string[];
   const [{ data: ledgerRows }, { count: clearedInScan }, { data: pendingList }] = await Promise.all([
-    supabase.from('invoices').select('*').in('vendor_id', vendors).order('invoice_date', { ascending: false, nullsFirst: false }).limit(12),
+    // wider than the 12 shown: the same invoice can sit in several scans and is collapsed below
+    supabase.from('invoices').select('*, scan:scans(created_at)').in('vendor_id', vendors).order('invoice_date', { ascending: false, nullsFirst: false }).limit(80),
     // does this scan carry payment history at all? Only then can "open" be claimed for an invoice without a clearing date
     supabase.from('invoices').select('id', { count: 'exact', head: true }).eq('scan_id', f.scan_id).not('clearing_date', 'is', null),
     supabase.from('flags').select('id').eq('status', 'pending').order('score', { ascending: false }).order('created_at', { ascending: false }).limit(2000)
   ]);
 
-  // ledger: latest invoices for the vendor(s), always including both invoices of the pair
-  const seen = new Set<string>();
-  let ledger: Invoice[] = [...(ledgerRows ?? []), f.a, f.b].filter((i) => (seen.has(i.id) ? false : (seen.add(i.id), true))) as Invoice[];
-  ledger = ledger.sort((x, y) => (y.invoice_date ?? '').localeCompare(x.invoice_date ?? '')).slice(0, 12);
+  // ledger: latest invoices for the vendor(s), always including both invoices of the pair. The same invoice (vendor,
+  // company code, doc no.) uploaded in several scans shows once, from the most recent scan; the pair itself stays as is.
+  // An invoice without a doc no. has nothing to match on, so it is never collapsed.
+  const ledgerKey = (i: Invoice) => (i.doc_number ? `${i.vendor_id}|${i.company_code}|${i.doc_number}` : i.id);
+  const scanAt = (i: { scan?: { created_at: string } | null }) => i.scan?.created_at ?? '';
+  const seen = new Set<string>([f.a, f.b].map(ledgerKey));
+  const others = ((ledgerRows ?? []) as Array<Invoice & { scan?: { created_at: string } | null }>)
+    .sort((x, y) => scanAt(y).localeCompare(scanAt(x)))
+    .filter((i) => (seen.has(ledgerKey(i)) ? false : (seen.add(ledgerKey(i)), true)));
+  const ledger: Invoice[] = [f.a, f.b, ...others].sort((x, y) => (y.invoice_date ?? '').localeCompare(x.invoice_date ?? '')).slice(0, 12);
 
   const ids = (pendingList ?? []).map((p) => p.id);
   const pos = ids.indexOf(f.id);
