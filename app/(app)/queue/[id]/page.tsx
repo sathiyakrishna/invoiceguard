@@ -43,6 +43,8 @@ export default async function ReviewPage({ params }: { params: { id: string } })
   const prevId = pos > 0 ? ids[pos - 1] : null;
 
   const hasClearing = (clearedInScan ?? 0) > 0;
+  // how strongly a Match result points to a duplicate: strong = red, support = amber, false = neutral
+  type Row = [string, string, string, string, 'strong' | 'support' | false];
   const dmy = (iso: string) => iso.slice(0, 10).split('-').reverse().join('/');
   // IBM Plex Mono is for invoice numbers, amounts, doc numbers (PO numbers included) and vendor IDs only
   const MONO_ROWS = ['Invoice no.', 'Gross amount', 'PO number', 'Doc no.'];
@@ -50,18 +52,18 @@ export default async function ReviewPage({ params }: { params: { id: string } })
   const sameRef = f.a.invoice_ref === f.b.invoice_ref;
   const paidThenOpen = !!f.a.clearing_date && !f.b.clearing_date; // A paid, B open
   // payment rows only when this scan carries clearing data; the Match column of 'Payment date' is empty
-  const payment: [string, string, string, string, boolean][] = hasClearing ? [
-    ['Status', f.a.clearing_date ? 'Already paid' : 'Open', f.b.clearing_date ? 'Already paid' : 'Open', paidThenOpen ? 'One paid, one open' : 'Both open', paidThenOpen],
-    ['Payment date', f.a.clearing_date ? dmy(f.a.clearing_date) : '—', f.b.clearing_date ? dmy(f.b.clearing_date) : '—', '', false]
+  const payment: Row[] = hasClearing ? [
+    ['Status', f.a.clearing_date ? 'Already paid' : 'Open', f.b.clearing_date ? 'Already paid' : 'Open', paidThenOpen ? 'One paid, one open' : 'Both open', paidThenOpen ? 'strong' : false],
+    ['Payment date', f.a.clearing_date ? dmy(f.a.clearing_date) : '—', f.b.clearing_date ? dmy(f.b.clearing_date) : '—', '—', false]
   ] : [];
-  const cmp: [string, string, string, string, boolean][] = [
+  const cmp: Row[] = [
     ...payment,
-    ['Vendor', `${f.a.vendor_id} · ${f.a.vendor_name ?? ''}`, `${f.b.vendor_id} · ${f.b.vendor_name ?? ''}`, f.a.vendor_id === f.b.vendor_id ? 'Exact' : f.rules_fired.includes('R8') ? 'Same supplier (AI)' : 'Different', f.a.vendor_id === f.b.vendor_id || f.rules_fired.includes('R8')],
-    ['Invoice no.', f.a.invoice_ref ?? '', f.b.invoice_ref ?? '', sameRef ? 'Exact' : f.rules_fired.includes('R1') ? 'Normalized match' : f.rules_fired.includes('R2') ? 'Similar' : 'Different', sameRef || f.rules_fired.includes('R1') || f.rules_fired.includes('R2')],
-    ['Gross amount', rupees(f.a.amount), rupees(f.b.amount), f.rules_fired.includes('R3') ? 'Exact' : f.rules_fired.includes('R4') ? 'Within 1%' : 'Different', f.rules_fired.includes('R3') || f.rules_fired.includes('R4')],
-    ['Invoice date', shortDate(f.a.invoice_date), shortDate(f.b.invoice_date), f.rules_fired.includes('R5') ? 'Within 30 days' : 'Far apart', f.rules_fired.includes('R5')],
-    ['Company code', f.a.company_code ?? '—', f.b.company_code ?? '—', f.a.company_code === f.b.company_code ? 'Same' : 'Different', f.a.company_code === f.b.company_code],
-    ['PO number', f.a.po_number || '—', f.b.po_number || '—', f.a.po_number === f.b.po_number ? 'Same' : 'Different', !!f.a.po_number && f.a.po_number === f.b.po_number],
+    ['Vendor', `${f.a.vendor_id} · ${f.a.vendor_name ?? ''}`, `${f.b.vendor_id} · ${f.b.vendor_name ?? ''}`, f.a.vendor_id === f.b.vendor_id ? 'Exact' : f.rules_fired.includes('R8') ? 'Same supplier (AI)' : 'Different', f.a.vendor_id === f.b.vendor_id ? 'support' : f.rules_fired.includes('R8') ? 'strong' : false],
+    ['Invoice no.', f.a.invoice_ref ?? '', f.b.invoice_ref ?? '', sameRef ? 'Exact' : f.rules_fired.includes('R1') ? 'Normalized match' : f.rules_fired.includes('R2') ? 'Similar' : 'Different', sameRef || f.rules_fired.includes('R1') ? 'strong' : f.rules_fired.includes('R2') ? 'support' : false],
+    ['Gross amount', rupees(f.a.amount), rupees(f.b.amount), f.rules_fired.includes('R3') ? 'Exact' : f.rules_fired.includes('R4') ? 'Within 1%' : 'Different', f.rules_fired.includes('R3') ? 'strong' : f.rules_fired.includes('R4') ? 'support' : false],
+    ['Invoice date', shortDate(f.a.invoice_date), shortDate(f.b.invoice_date), f.rules_fired.includes('R5') ? 'Within 30 days' : 'Far apart', f.rules_fired.includes('R5') ? 'support' : false],
+    ['Company code', f.a.company_code ?? '—', f.b.company_code ?? '—', f.a.company_code === f.b.company_code ? 'Same' : 'Different', f.a.company_code === f.b.company_code ? 'support' : false],
+    ['PO number', f.a.po_number || '—', f.b.po_number || '—', f.a.po_number === f.b.po_number ? 'Same' : 'Different', !!f.a.po_number && f.a.po_number === f.b.po_number ? 'support' : false],
     ['Doc no.', f.a.doc_number || '—', f.b.doc_number || '—', f.a.doc_number === f.b.doc_number ? 'Same' : 'Different', false]
   ];
 
@@ -93,12 +95,12 @@ export default async function ReviewPage({ params }: { params: { id: string } })
               <table className="data-table w-full min-w-[560px] text-[15px]">
                 <thead><tr><th className="th pl-5">Field</th><th className="th">Invoice A</th><th className="th">Invoice B</th><th className="th pr-5">Match</th></tr></thead>
                 <tbody>
-                  {cmp.map(([label, a, b, m, hit]) => (
+                  {cmp.map(([label, a, b, m, level]) => (
                     <tr key={label}>
                       <th scope="row" className="px-5 py-2.5 text-left font-medium text-ink-700">{label}</th>
-                      <td className="px-3 py-2.5 tnum">{MONO_ROWS.includes(label) ? <span className="mono">{a}</span> : label === 'Vendor' ? vendorCell(a) : a}</td>
-                      <td className="px-3 py-2.5 tnum">{MONO_ROWS.includes(label) ? <span className="mono">{b}</span> : label === 'Vendor' ? vendorCell(b) : b}</td>
-                      <td className={`px-3 py-2.5 pr-5 text-[13px] font-semibold ${hit ? 'bg-high-bg text-high-fg' : 'text-ink-500'}`}>{m}</td>
+                      <td className={`px-3 py-2.5 tnum ${label === 'Gross amount' ? 'text-right' : ''}`}>{MONO_ROWS.includes(label) ? <span className="mono">{a}</span> : label === 'Vendor' ? vendorCell(a) : a}</td>
+                      <td className={`px-3 py-2.5 tnum ${label === 'Gross amount' ? 'text-right' : ''}`}>{MONO_ROWS.includes(label) ? <span className="mono">{b}</span> : label === 'Vendor' ? vendorCell(b) : b}</td>
+                      <td className={`px-3 py-2.5 pr-5 text-[13px] font-semibold ${level === 'strong' ? 'bg-high-bg text-high-fg' : level === 'support' ? 'bg-med-bg text-med-fg' : 'text-ink-500'}`}>{m}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -133,7 +135,7 @@ export default async function ReviewPage({ params }: { params: { id: string } })
                           <>
                             {/* same wording and DD/MM/YYYY format as the side-by-side comparison */}
                             <td className="px-1.5 py-2">
-                              {l.is_reversed ? reversedTag : l.clearing_date ? 'Already paid' : <span className="font-semibold text-accent-text">Open</span>}
+                              {l.is_reversed ? reversedTag : l.clearing_date ? 'Already paid' : <span className="font-semibold text-ink">Open</span>}
                             </td>
                             <td className="px-1.5 py-2 tnum">{!l.is_reversed && l.clearing_date ? dmy(l.clearing_date) : '—'}</td>
                           </>
@@ -148,7 +150,7 @@ export default async function ReviewPage({ params }: { params: { id: string } })
           </section>
         </div>
 
-        <aside aria-label="Pair details and decision" className="flex min-w-0 flex-[1_1_300px] flex-col gap-4">
+        <aside aria-label="Pair details and decision" className="flex min-w-0 flex-[1_1_300px] flex-col gap-4 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto">
           <section className="card px-5 py-3">
             {[
               ['Risk', `${f.risk_band} · ${f.score}`],
@@ -169,14 +171,17 @@ export default async function ReviewPage({ params }: { params: { id: string } })
             </div>
           </section>
           <AiPanel flagId={f.id} initial={f.ai_explanation ? { explanation: f.ai_explanation, action: f.ai_action ?? '' } : null} />
-          <Decision
-            key={f.id}
-            flagId={f.id}
-            amount={f.amount}
-            initial={{ status: f.status, recovery: f.recovery_status ?? 'Blocked before payment', note: f.note ?? '' }}
-            nextId={nextId}
-            prevId={prevId}
-          />
+          {/* if the column is taller than the screen it scrolls inside itself, and the decision card stays pinned at the bottom */}
+          <div className="lg:sticky lg:bottom-0">
+            <Decision
+              key={f.id}
+              flagId={f.id}
+              amount={f.amount}
+              initial={{ status: f.status, recovery: f.recovery_status ?? 'Blocked before payment', note: f.note ?? '' }}
+              nextId={nextId}
+              prevId={prevId}
+            />
+          </div>
         </aside>
       </div>
     </>
