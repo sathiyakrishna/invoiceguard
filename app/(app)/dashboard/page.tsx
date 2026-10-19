@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { requireUser } from '@/lib/supabase/server';
-import { listFlags } from '@/lib/flags';
+import { listFlags, onlySampleData } from '@/lib/flags';
 import { RiskIcon } from '@/components/RiskBadge';
 import { count, duration, rupees, rupees0 } from '@/lib/format';
 import ShareSummary from './ShareSummary';
+import InfoTip from './InfoTip';
 
 export const metadata: Metadata = { title: 'Dashboard' };
 
@@ -21,7 +22,7 @@ export default async function Dashboard({ searchParams }: { searchParams: { rang
   const range = RANGES.some(([k]) => k === searchParams.range) ? searchParams.range! : '30';
   const since = range === 'all' ? null : new Date(Date.now() - Number(range) * 86_400_000).toISOString();
 
-  let scansQ = supabase.from('scans').select('row_count, created_at');
+  let scansQ = supabase.from('scans').select('id, file_name, row_count, created_at');
   if (since) scansQ = scansQ.gte('created_at', since);
   const [allFlags, { data: scans }] = await Promise.all([listFlags(supabase), scansQ]);
   const flags = since ? allFlags.filter((f) => f.created_at >= since) : allFlags;
@@ -32,6 +33,7 @@ export default async function Dashboard({ searchParams }: { searchParams: { rang
   const no = by('no');
   const pending = by('pending');
   const prevented = yes.reduce((s, f) => s + Number(f.amount), 0);
+  const sampleOnly = onlySampleData(yes, new Map((scans ?? []).map((s) => [s.id as string, s.file_name as string])));
   const MIN_REVIEWS = 5; // a rate from fewer reviewed pairs is noise
   const fpRate = yes.length + no.length >= MIN_REVIEWS ? Math.round((no.length / (yes.length + no.length)) * 100) : null;
   const timed = flags.filter((f) => f.review_seconds !== null && f.status !== 'pending');
@@ -80,9 +82,13 @@ export default async function Dashboard({ searchParams }: { searchParams: { rang
 
       <div className="flex flex-wrap items-center justify-between gap-6 rounded-xl bg-navy px-7 py-6 text-white">
         <div>
-          <div className="text-sm text-[#C9D2E3]">Payment value prevented · {rangeLabel.toLowerCase()}</div>
+          <div className="flex items-center gap-1.5 text-sm text-[#C9D2E3]">
+            <span>Payment value prevented · {rangeLabel.toLowerCase()}</span>
+            <InfoTip label="What counts as payment value prevented">Total amount of duplicate invoices you confirmed (marked Yes) in this period. These open invoices would have been paid twice. Pairs marked No, Ignored or still pending are not counted.</InfoTip>
+          </div>
           <div className="mt-1 text-[40px] tracking-tight tnum">{rupees0(prevented)}</div>
           <div className="text-[13px] text-[#C9D2E3]">from {yes.length} confirmed duplicate{yes.length === 1 ? '' : 's'} across {scans?.length ?? 0} scan{scans?.length === 1 ? '' : 's'}</div>
+          {sampleOnly && <div className="mt-1 text-xs text-[#A9B3C6]">Sample data: shows what InvoiceGuard would prevent on a real register.</div>}
         </div>
         <ShareSummary text={`InvoiceGuard summary (${rangeLabel.toLowerCase()}): ${count(scanned)} invoices scanned, ${yes.length} duplicate invoices blocked before payment, ${rupees0(prevented)} prevented.`} />
       </div>

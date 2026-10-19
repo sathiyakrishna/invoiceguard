@@ -54,4 +54,10 @@ export async function listFlags(supabase: SupabaseClient, opts: { status?: strin
 export const compareByRisk = (x: Pick<Flag, 'score' | 'amount' | 'pair_code'>, y: Pick<Flag, 'score' | 'amount' | 'pair_code'>) =>
   y.score - x.score || Number(y.amount) - Number(x.amount) || x.pair_code.localeCompare(y.pair_code);
 
+const SAMPLE_FILES = ['sample_register.csv', 'sample_register.pdf'];
+
+/** True when there is at least one flag and every one comes from a scan of the bundled sample register. A scan we cannot name counts as real data. */
+export const onlySampleData = (flags: Array<{ scan_id: string }>, fileByScan: Map<string, string>) =>
+  flags.length > 0 && flags.every((f) => SAMPLE_FILES.includes((fileByScan.get(f.scan_id) ?? '').toLowerCase()));
+
 export const DUP_TYPES = ['Exact match', 'Reference format', 'Similar reference', 'Cross company code', 'PO vs non-PO', 'Alternate vendor account', 'Near amount'];
