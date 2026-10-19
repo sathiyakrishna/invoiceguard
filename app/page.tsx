@@ -12,7 +12,7 @@ const PREVIEW = [
 
 // Facts from our own testing on the sample register (tests/sample.test.ts) and the scan flow.
 const PROOF = [
-  ['100% recall', 'on near-duplicate test cases, including ones exact-match tools miss'],
+  ['Up to 2%', 'of AP payments are duplicate or erroneous'],
   ['Zero', 'recurring charges falsely flagged'],
   ['< 2 min', 'to the first flagged pair'],
   ['Every flag', 'shows its evidence']
@@ -105,6 +105,7 @@ export default function Landing() {
               </div>
             ))}
           </dl>
+          <p className="mt-6 text-base text-ink-500">Source: <a href="https://www.apqc.org/resource-library/resource-listing/percentage-duplicate-disbursements-processed" target="_blank" rel="noopener noreferrer" className="text-[#1D4ED8] underline">APQC Open Standards Benchmarking</a>, Accounts Payable</p>
         </section>
       </div>
 
