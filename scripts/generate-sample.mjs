@@ -24,14 +24,22 @@ let docFI = 5100000001, docMM = 1900000001, docClr = 2000000001;
 const rows = [];
 
 // Payment history: a paid invoice has a clearing date (10-30 days after the invoice date) and a clearing document.
-const later0 = (d, n) => iso(Date.parse(d) + n * day);
-const markPaid = (r) => { r.clearing_date = later0(r.invoice_date, 10 + Math.floor(rnd() * 21)); r.clearing_document = String(docClr++); return r; };
+// A payment date is never in the future (AS_OF is the sample's "today"). An ordinary invoice whose payment would land
+// after AS_OF is simply still open. A planted original must be paid by design, so its date is capped at AS_OF instead.
+const AS_OF = '2026-10-19';
+const markPaid = (r, mustBePaid = false) => {
+  const due = Date.parse(r.invoice_date) + (10 + Math.floor(rnd() * 21)) * day;
+  if (due > Date.parse(AS_OF) && !mustBePaid) return r;
+  r.clearing_date = iso(Math.min(due, Date.parse(AS_OF)));
+  r.clearing_document = String(docClr++);
+  return r;
+};
 
 function addRow(r) { rows.push(r); return r; }
 function base(v, extra = {}) {
   const hasPO = rnd() < 0.7;
   const dateT = start + Math.floor(rnd() * 75) * day;
-  const paid = rnd() < 0.7; // about 70% of ordinary invoices were paid in an earlier run, the rest are open
+  const paid = rnd() < 0.88; // ~80% of these can be paid by AS_OF (later ones stay open), so about 70% of invoices end up paid
   const r = {
     company_code: rnd() < 0.8 ? '1000' : '2000',
     vendor_id: v.id,
@@ -57,7 +65,7 @@ for (let i = 0; i < TARGET - PLANTED - TRAPS * 2 - 3 - REVERSED_TRAPS * 3; i++) 
 const key = [];
 const later = (d, n) => iso(Date.parse(d) + n * day);
 // every planted duplicate: the original was paid in an earlier run, the duplicate is open in this one
-const plant = (type, orig, dup) => { markPaid(orig); addRow(markOpen(dup)); key.push({ type, vendor: orig.vendor_id, original_ref: orig.invoice_ref, duplicate_ref: dup.invoice_ref, amount: dup.amount, expected: 'Yes' }); };
+const plant = (type, orig, dup) => { markPaid(orig, true); addRow(markOpen(dup)); key.push({ type, vendor: orig.vendor_id, original_ref: orig.invoice_ref, duplicate_ref: dup.invoice_ref, amount: dup.amount, expected: 'Yes' }); };
 const sample = () => rows[Math.floor(rnd() * (rows.length - 1))];
 
 for (let i = 0; i < 6; i++) { const o = sample(); plant('Reference format', o, { ...o, invoice_ref: o.invoice_ref.replace('-', pick(['', '/', ' '])), invoice_date: later(o.invoice_date, 2 + i), doc_number: String(docFI++) }); }

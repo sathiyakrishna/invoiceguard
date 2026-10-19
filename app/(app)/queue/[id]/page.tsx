@@ -45,7 +45,7 @@ export default async function ReviewPage({ params }: { params: { id: string } })
   // payment rows only when this scan carries clearing data; the Match column of 'Payment date' is empty
   const payment: [string, string, string, string, boolean][] = hasClearing ? [
     ['Status', f.a.clearing_date ? 'Already paid' : 'Open', f.b.clearing_date ? 'Already paid' : 'Open', paidThenOpen ? 'One paid, one open' : 'Both open', paidThenOpen],
-    ['Payment date', f.a.clearing_date ? dmy(f.a.clearing_date) : 'NA', f.b.clearing_date ? dmy(f.b.clearing_date) : 'NA', '', false]
+    ['Payment date', f.a.clearing_date ? dmy(f.a.clearing_date) : '—', f.b.clearing_date ? dmy(f.b.clearing_date) : '—', '', false]
   ] : [];
   const cmp: [string, string, string, string, boolean][] = [
     ...payment,
@@ -87,11 +87,11 @@ export default async function ReviewPage({ params }: { params: { id: string } })
                 <thead><tr><th className="th pl-5">Field</th><th className="th">Invoice A</th><th className="th">Invoice B</th><th className="th pr-5">Match</th></tr></thead>
                 <tbody>
                   {cmp.map(([label, a, b, m, hit]) => (
-                    <tr key={label} className={hit ? 'bg-high-bg' : ''}>
-                      <th scope="row" className={`px-5 py-2.5 text-left font-medium ${hit ? 'text-ink' : 'bg-[#EEF3FF] text-[#0B1F4D]'}`}>{label}</th>
+                    <tr key={label}>
+                      <th scope="row" className="px-5 py-2.5 text-left font-medium text-ink-700">{label}</th>
                       <td className="px-3 py-2.5 tnum">{MONO_ROWS.includes(label) ? <span className="mono">{a}</span> : label === 'Vendor' ? vendorCell(a) : a}</td>
                       <td className="px-3 py-2.5 tnum">{MONO_ROWS.includes(label) ? <span className="mono">{b}</span> : label === 'Vendor' ? vendorCell(b) : b}</td>
-                      <td className={`px-3 py-2.5 pr-5 text-[13px] font-semibold ${hit ? 'text-high-fg' : 'text-ink-500'}`}>{m}</td>
+                      <td className={`px-3 py-2.5 pr-5 text-[13px] font-semibold ${hit ? 'bg-high-bg text-high-fg' : 'text-ink-500'}`}>{m}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -128,7 +128,7 @@ export default async function ReviewPage({ params }: { params: { id: string } })
                             <td className="px-1.5 py-2">
                               {l.is_reversed ? reversedTag : l.clearing_date ? 'Already paid' : <span className="font-semibold text-accent-text">Open</span>}
                             </td>
-                            <td className="px-1.5 py-2 tnum">{!l.is_reversed && l.clearing_date ? dmy(l.clearing_date) : 'NA'}</td>
+                            <td className="px-1.5 py-2 tnum">{!l.is_reversed && l.clearing_date ? dmy(l.clearing_date) : '—'}</td>
                           </>
                         )}
                         <td className="py-2 pl-1.5 pr-4 text-right mono">{rupees(l.amount)}</td>
