@@ -150,7 +150,7 @@ export default async function ReviewPage({ params }: { params: { id: string } })
           </section>
         </div>
 
-        <aside aria-label="Pair details and decision" className="flex min-w-0 flex-[1_1_300px] flex-col gap-4 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto">
+        <aside aria-label="Pair details and decision" className="flex min-w-0 flex-[1_1_300px] flex-col gap-4 lg:self-stretch">
           <section className="card px-5 py-3">
             {[
               ['Risk', `${f.risk_band} · ${f.score}`],
@@ -171,8 +171,8 @@ export default async function ReviewPage({ params }: { params: { id: string } })
             </div>
           </section>
           <AiPanel flagId={f.id} initial={f.ai_explanation ? { explanation: f.ai_explanation, action: f.ai_action ?? '' } : null} />
-          {/* if the column is taller than the screen it scrolls inside itself, and the decision card stays pinned at the bottom */}
-          <div className="lg:sticky lg:bottom-0">
+          {/* the column stretches to the height of the comparison, so this last card can stay pinned while the page scrolls */}
+          <div className="lg:sticky lg:top-4">
             <Decision
               key={f.id}
               flagId={f.id}

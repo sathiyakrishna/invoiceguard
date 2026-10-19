@@ -35,7 +35,7 @@ async function generate(userId: string, f: Flag, supabase: Awaited<ReturnType<ty
 
   try {
     const action = suggestedAction(f.rules_fired);
-    const out = await explainFlag({ action, type: f.dup_type, score: f.score, rules: f.rules_fired.map((r) => RULES[r as RuleId]?.label ?? r), a: pick(f.a), b: pick(f.b) });
+    const out = await explainFlag({ action, type: f.dup_type, risk: f.risk_band, score: f.score, rules: f.rules_fired.map((r) => RULES[r as RuleId]?.label ?? r), a: pick(f.a), b: pick(f.b) });
     await supabase.from('flags').update({ ai_explanation: out.explanation, ai_action: action }).eq('id', f.id);
     return { status: 200, body: { explanation: out.explanation, action } };
   } catch (e) {

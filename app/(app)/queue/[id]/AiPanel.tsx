@@ -52,7 +52,7 @@ export default function AiPanel({ flagId, initial }: { flagId: string; initial: 
       {data && (
         <>
           <p className="text-sm leading-relaxed">{data.explanation}</p>
-          <div className="flex items-center gap-2 text-[13px]"><span className="text-ink-500">Suggested action</span><span className={`rounded-full px-2.5 py-0.5 font-semibold ${actionStyle}`}>{data.action}</span></div>
+          <div className="flex items-center gap-2 text-[13px]"><span className="text-ink-500">Suggested action</span><span className={`shrink-0 whitespace-nowrap rounded-full px-2.5 py-0.5 font-semibold ${actionStyle}`}>{data.action}</span></div>
         </>
       )}
       {msg && <p className="text-sm text-ink-700">{msg}</p>}
