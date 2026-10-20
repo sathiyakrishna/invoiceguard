@@ -1,0 +1,1537 @@
+[
+  {
+    "n": 1,
+    "kind": "real",
+    "input": {
+      "action": "Block the open invoice",
+      "type": "Cross company code",
+      "risk": "High",
+      "score": 100,
+      "rules": [
+        "Normalized invoice number match",
+        "Same gross amount",
+        "Invoice dates within 30 days",
+        "Posted in two company codes"
+      ],
+      "a": {
+        "vendor_id": "V3",
+        "vendor_name": "Vinayak Castings Ltd",
+        "invoice_no": "VI9-3489",
+        "invoice_date": "02/09/2026",
+        "amount": "₹1,60,560.29",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000001"
+      },
+      "b": {
+        "vendor_id": "V3",
+        "vendor_name": "Vinayak Castings Ltd",
+        "invoice_no": "VI9-3489",
+        "invoice_date": "03/09/2026",
+        "amount": "₹1,60,560.29",
+        "cleared_on": "",
+        "company_code": "2000",
+        "po_number": "4500012345",
+        "doc_number": "5100000002"
+      }
+    },
+    "explanation": "Vinayak Castings Ltd billed VI9-3489 for ₹1,60,560.29 on 02/09/2026 in company code 1000 and again on 03/09/2026 in company code 2000. This looks like the same invoice entered twice."
+  },
+  {
+    "n": 2,
+    "kind": "real",
+    "input": {
+      "action": "Block the open invoice",
+      "type": "Exact match",
+      "risk": "High",
+      "score": 90,
+      "rules": [
+        "Normalized invoice number match",
+        "Same gross amount",
+        "Invoice dates within 30 days"
+      ],
+      "a": {
+        "vendor_id": "V5",
+        "vendor_name": "Lakshmi Textiles Pvt Ltd",
+        "invoice_no": "LT-1190",
+        "invoice_date": "02/09/2026",
+        "amount": "₹2,41,800.00",
+        "cleared_on": "18/09/2026",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000001"
+      },
+      "b": {
+        "vendor_id": "V5",
+        "vendor_name": "Lakshmi Textiles Pvt Ltd",
+        "invoice_no": "LT-1190",
+        "invoice_date": "11/09/2026",
+        "amount": "₹2,41,800.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000002"
+      }
+    },
+    "explanation": "Lakshmi Textiles Pvt Ltd billed LT-1190 for ₹2,41,800.00 on 02/09/2026; it was already paid on 18/09/2026, and the same number is open again from 11/09/2026 in company code 1000. This looks like a repeat of an invoice already paid."
+  },
+  {
+    "n": 3,
+    "kind": "real",
+    "input": {
+      "action": "Check with supplier",
+      "type": "Alternate vendor account",
+      "risk": "High",
+      "score": 100,
+      "rules": [
+        "Normalized invoice number match",
+        "Same gross amount",
+        "Invoice dates within 30 days",
+        "Same supplier under two vendor accounts (AI)"
+      ],
+      "a": {
+        "vendor_id": "V10",
+        "vendor_name": "Eastern Gaskets Pvt Ltd",
+        "invoice_no": "EG-3345",
+        "invoice_date": "02/09/2026",
+        "amount": "₹84,100.00",
+        "cleared_on": "18/09/2026",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000001"
+      },
+      "b": {
+        "vendor_id": "V11",
+        "vendor_name": "Eastern Gaskets Private Limited",
+        "invoice_no": "EG-3345",
+        "invoice_date": "12/09/2026",
+        "amount": "₹84,100.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000002"
+      }
+    },
+    "explanation": "Eastern Gaskets Pvt Ltd billed EG-3345 for ₹84,100.00 on 02/09/2026; it was already paid on 18/09/2026, and the same number is open again from 12/09/2026 in company code 1000. This looks like a repeat of an invoice already paid."
+  },
+  {
+    "n": 4,
+    "kind": "real",
+    "input": {
+      "action": "Block the open invoice",
+      "type": "Cross company code",
+      "risk": "High",
+      "score": 100,
+      "rules": [
+        "Normalized invoice number match",
+        "Same gross amount",
+        "Invoice dates within 30 days",
+        "Posted in two company codes",
+        "One with PO, one without"
+      ],
+      "a": {
+        "vendor_id": "V9",
+        "vendor_name": "Rao & Sons Engineering Co",
+        "invoice_no": "RS-6601",
+        "invoice_date": "02/09/2026",
+        "amount": "₹1,29,990.50",
+        "cleared_on": "18/09/2026",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000001"
+      },
+      "b": {
+        "vendor_id": "V9",
+        "vendor_name": "Rao & Sons Engineering Co",
+        "invoice_no": "RS-6601",
+        "invoice_date": "08/09/2026",
+        "amount": "₹1,29,990.50",
+        "cleared_on": "",
+        "company_code": "3000",
+        "po_number": "",
+        "doc_number": "5100000002"
+      }
+    },
+    "explanation": "Rao & Sons Engineering Co billed RS-6601 for ₹1,29,990.50 on 02/09/2026; it was already paid on 18/09/2026, and the same number is open again from 08/09/2026 in company code 3000. This looks like the same invoice entered twice."
+  },
+  {
+    "n": 5,
+    "kind": "real",
+    "input": {
+      "action": "Check with supplier",
+      "type": "Near amount",
+      "risk": "Low",
+      "score": 55,
+      "rules": [
+        "Invoice number with a typo (swapped or extra character)",
+        "Amount within 1%",
+        "Invoice dates within 30 days"
+      ],
+      "a": {
+        "vendor_id": "V29",
+        "vendor_name": "Anand Tools Pvt Ltd",
+        "invoice_no": "AT-9120",
+        "invoice_date": "02/09/2026",
+        "amount": "₹1,74,500.00",
+        "cleared_on": "18/09/2026",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000001"
+      },
+      "b": {
+        "vendor_id": "V29",
+        "vendor_name": "Anand Tools Pvt Ltd",
+        "invoice_no": "AT-9102",
+        "invoice_date": "14/09/2026",
+        "amount": "₹1,75,200.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "",
+        "doc_number": "5100000002"
+      }
+    },
+    "explanation": "Anand Tools Pvt Ltd billed AT-9120 for ₹1,74,500.00 on 02/09/2026; it was already paid on 18/09/2026, and the same vendor billed AT-9102 for ₹1,75,200.00 on 14/09/2026 in company code 1000. This pair could be legitimate due to a possible typo in the invoice number."
+  },
+  {
+    "n": 6,
+    "kind": "real",
+    "input": {
+      "action": "Check with supplier",
+      "type": "Near amount",
+      "risk": "Low",
+      "score": 55,
+      "rules": [
+        "Invoice number with a typo (swapped or extra character)",
+        "Amount within 1%",
+        "Invoice dates within 30 days"
+      ],
+      "a": {
+        "vendor_id": "V24",
+        "vendor_name": "Metro Fasteners Pvt Ltd",
+        "invoice_no": "MF-8801",
+        "invoice_date": "02/09/2026",
+        "amount": "₹45,200.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000001"
+      },
+      "b": {
+        "vendor_id": "V24",
+        "vendor_name": "Metro Fasteners Pvt Ltd",
+        "invoice_no": "MF-8810",
+        "invoice_date": "05/09/2026",
+        "amount": "₹45,350.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000002"
+      }
+    },
+    "explanation": "Metro Fasteners Pvt Ltd billed MF-8801 for ₹45,200.00 on 02/09/2026 and again with invoice MF-8810 for ₹45,350.00 on 05/09/2026, both in company code 1000. This pair could be legitimate due to a possible typo in the invoice number, so confirm with the supplier before paying."
+  },
+  {
+    "n": 7,
+    "kind": "real",
+    "input": {
+      "action": "Check with supplier",
+      "type": "Near amount",
+      "risk": "Low",
+      "score": 55,
+      "rules": [
+        "Invoice number with a typo (swapped or extra character)",
+        "Amount within 1%",
+        "Invoice dates within 30 days"
+      ],
+      "a": {
+        "vendor_id": "V23",
+        "vendor_name": "Universal Springs Ltd",
+        "invoice_no": "LT60718",
+        "invoice_date": "02/09/2026",
+        "amount": "₹3,00,000.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000001"
+      },
+      "b": {
+        "vendor_id": "V23",
+        "vendor_name": "Universal Springs Ltd",
+        "invoice_no": "LT60781",
+        "invoice_date": "03/09/2026",
+        "amount": "₹3,00,900.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000002"
+      }
+    },
+    "explanation": "Universal Springs Ltd billed LT60718 for ₹3,00,000.00 on 02/09/2026 and LT60781 for ₹3,00,900.00 on 03/09/2026, both in company code 1000. This pair could be legitimate due to a possible typo in the invoice number, so confirm with the supplier before paying."
+  },
+  {
+    "n": 8,
+    "kind": "flawed",
+    "flaw": "invented_fact",
+    "input": {
+      "action": "Block the open invoice",
+      "type": "Exact match",
+      "risk": "High",
+      "score": 90,
+      "rules": [
+        "Normalized invoice number match",
+        "Same gross amount",
+        "Invoice dates within 30 days"
+      ],
+      "a": {
+        "vendor_id": "V1",
+        "vendor_name": "Kaveri Steel Ltd",
+        "invoice_no": "KS-7741",
+        "invoice_date": "02/09/2026",
+        "amount": "₹4,53,210.55",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000001"
+      },
+      "b": {
+        "vendor_id": "V1",
+        "vendor_name": "Kaveri Steel Ltd",
+        "invoice_no": "KS-7741",
+        "invoice_date": "02/09/2026",
+        "amount": "₹4,53,210.55",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000002"
+      }
+    },
+    "explanation": "Kaveri Steel Ltd billed KS-7741 for ₹4,53,210.55 on 02/09/2026 and again on 02/09/2026. The supplier has already confirmed that the first payment went to a new bank account, so this looks like the same invoice entered twice."
+  },
+  {
+    "n": 9,
+    "kind": "real",
+    "input": {
+      "action": "Check with supplier",
+      "type": "Similar reference",
+      "risk": "Medium",
+      "score": 70,
+      "rules": [
+        "Invoice number with a typo (swapped or extra character)",
+        "Same gross amount",
+        "Invoice dates within 30 days"
+      ],
+      "a": {
+        "vendor_id": "V13",
+        "vendor_name": "Zenith Packaging Industries Ltd",
+        "invoice_no": "LT40417",
+        "invoice_date": "02/09/2026",
+        "amount": "₹55,000.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000001"
+      },
+      "b": {
+        "vendor_id": "V13",
+        "vendor_name": "Zenith Packaging Industries Ltd",
+        "invoice_no": "LT40471",
+        "invoice_date": "05/09/2026",
+        "amount": "₹55,000.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000002"
+      }
+    },
+    "explanation": "Zenith Packaging Industries Ltd billed LT40417 for ₹55,000.00 on 02/09/2026 and again with a similar reference LT40471 for ₹55,000.00 on 05/09/2026, both in company code 1000. This looks like a duplicate, so confirm with the supplier before paying."
+  },
+  {
+    "n": 10,
+    "kind": "real",
+    "input": {
+      "action": "Block the open invoice",
+      "type": "Cross company code",
+      "risk": "High",
+      "score": 100,
+      "rules": [
+        "Normalized invoice number match",
+        "Same gross amount",
+        "Invoice dates within 30 days",
+        "Posted in two company codes"
+      ],
+      "a": {
+        "vendor_id": "V12",
+        "vendor_name": "Pioneer Hydraulics Co",
+        "invoice_no": "PH-9007",
+        "invoice_date": "02/09/2026",
+        "amount": "₹12,04,000.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500020001",
+        "doc_number": "5100000001"
+      },
+      "b": {
+        "vendor_id": "V12",
+        "vendor_name": "Pioneer Hydraulics Co",
+        "invoice_no": "PH-9007",
+        "invoice_date": "03/09/2026",
+        "amount": "₹12,04,000.00",
+        "cleared_on": "",
+        "company_code": "2000",
+        "po_number": "4500020002",
+        "doc_number": "5100000002"
+      }
+    },
+    "explanation": "Pioneer Hydraulics Co billed PH-9007 for ₹12,04,000.00 on 02/09/2026 in company code 1000 and again on 03/09/2026 in company code 2000. This looks like the same invoice entered twice."
+  },
+  {
+    "n": 11,
+    "kind": "real",
+    "input": {
+      "action": "Block the open invoice",
+      "type": "Exact match",
+      "risk": "High",
+      "score": 90,
+      "rules": [
+        "Normalized invoice number match",
+        "Same gross amount",
+        "Invoice dates within 30 days"
+      ],
+      "a": {
+        "vendor_id": "V1",
+        "vendor_name": "Kaveri Steel Ltd",
+        "invoice_no": "KS-7741",
+        "invoice_date": "02/09/2026",
+        "amount": "₹4,53,210.55",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000001"
+      },
+      "b": {
+        "vendor_id": "V1",
+        "vendor_name": "Kaveri Steel Ltd",
+        "invoice_no": "KS-7741",
+        "invoice_date": "02/09/2026",
+        "amount": "₹4,53,210.55",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000002"
+      }
+    },
+    "explanation": "Kaveri Steel Ltd billed KS-7741 for ₹4,53,210.55 on 02/09/2026 in company code 1000, and the same invoice number appears again with a different document number. This looks like the same invoice entered twice."
+  },
+  {
+    "n": 12,
+    "kind": "real",
+    "input": {
+      "action": "Block the open invoice",
+      "type": "Near amount",
+      "risk": "Medium",
+      "score": 75,
+      "rules": [
+        "Normalized invoice number match",
+        "Amount within 1%",
+        "Invoice dates within 30 days"
+      ],
+      "a": {
+        "vendor_id": "V19",
+        "vendor_name": "Bharat Electricals & Co",
+        "invoice_no": "BE-5005",
+        "invoice_date": "02/09/2026",
+        "amount": "₹1,50,000.00",
+        "cleared_on": "18/09/2026",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000001"
+      },
+      "b": {
+        "vendor_id": "V19",
+        "vendor_name": "Bharat Electricals & Co",
+        "invoice_no": "BE-5005",
+        "invoice_date": "10/09/2026",
+        "amount": "₹1,50,900.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000002"
+      }
+    },
+    "explanation": "Bharat Electricals & Co billed BE-5005 for ₹1,50,000.00 on 02/09/2026; it was already paid on 18/09/2026, and the same number is open again from 10/09/2026 in company code 1000 for ₹1,50,900.00. This looks like a repeat of an invoice already paid."
+  },
+  {
+    "n": 13,
+    "kind": "flawed",
+    "flaw": "uncertain_high_medium",
+    "input": {
+      "action": "Check with supplier",
+      "type": "Similar reference",
+      "risk": "Medium",
+      "score": 70,
+      "rules": [
+        "Invoice number with a typo (swapped or extra character)",
+        "Same gross amount",
+        "Invoice dates within 30 days"
+      ],
+      "a": {
+        "vendor_id": "V14",
+        "vendor_name": "Navkar Chemicals Pvt Ltd",
+        "invoice_no": "SF55",
+        "invoice_date": "02/09/2026",
+        "amount": "₹3,18,750.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000001"
+      },
+      "b": {
+        "vendor_id": "V14",
+        "vendor_name": "Navkar Chemicals Pvt Ltd",
+        "invoice_no": "SF55A",
+        "invoice_date": "04/09/2026",
+        "amount": "₹3,18,750.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000002"
+      }
+    },
+    "explanation": "Navkar Chemicals Pvt Ltd billed SF55 and SF55A for ₹3,18,750.00 on 02/09/2026 and 04/09/2026. These may well be two legitimate bills, so it is hard to say."
+  },
+  {
+    "n": 14,
+    "kind": "flawed",
+    "flaw": "uncertain_high_medium",
+    "input": {
+      "action": "Block the open invoice",
+      "type": "PO vs non-PO",
+      "risk": "High",
+      "score": 100,
+      "rules": [
+        "Normalized invoice number match",
+        "Same gross amount",
+        "Invoice dates within 30 days",
+        "One with PO, one without"
+      ],
+      "a": {
+        "vendor_id": "V4",
+        "vendor_name": "Meenakshi Packaging Pvt Ltd",
+        "invoice_no": "MP-5520",
+        "invoice_date": "02/09/2026",
+        "amount": "₹72,400.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000001"
+      },
+      "b": {
+        "vendor_id": "V4",
+        "vendor_name": "Meenakshi Packaging Pvt Ltd",
+        "invoice_no": "MP-5520",
+        "invoice_date": "09/09/2026",
+        "amount": "₹72,400.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "",
+        "doc_number": "5100000002"
+      }
+    },
+    "explanation": "Meenakshi Packaging Pvt Ltd billed MP-5520 for ₹72,400.00 on 02/09/2026 and again on 09/09/2026, one with a PO and one without. It is unclear whether this is really a duplicate and the match is uncertain."
+  },
+  {
+    "n": 15,
+    "kind": "flawed",
+    "flaw": "wrong_figure",
+    "input": {
+      "action": "Block the open invoice",
+      "type": "Exact match",
+      "risk": "High",
+      "score": 80,
+      "rules": [
+        "Normalized invoice number match",
+        "Same gross amount"
+      ],
+      "a": {
+        "vendor_id": "V8",
+        "vendor_name": "Deccan Logistics LLP",
+        "invoice_no": "DL-0412",
+        "invoice_date": "02/09/2026",
+        "amount": "₹36,900.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000001"
+      },
+      "b": {
+        "vendor_id": "V8",
+        "vendor_name": "Deccan Logistics LLP",
+        "invoice_no": "DL-0412",
+        "invoice_date": "17/10/2026",
+        "amount": "₹36,900.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000002"
+      }
+    },
+    "explanation": "Deccan Logistics LLP billed DL-0412 for ₹36,950.00 on 02/09/2026 and again on 17/10/2026. This looks like the same invoice entered twice."
+  },
+  {
+    "n": 16,
+    "kind": "flawed",
+    "flaw": "low_overclaim",
+    "input": {
+      "action": "Check with supplier",
+      "type": "Near amount",
+      "risk": "Low",
+      "score": 55,
+      "rules": [
+        "Invoice number with a typo (swapped or extra character)",
+        "Amount within 1%",
+        "Invoice dates within 30 days"
+      ],
+      "a": {
+        "vendor_id": "V23",
+        "vendor_name": "Universal Springs Ltd",
+        "invoice_no": "LT60718",
+        "invoice_date": "02/09/2026",
+        "amount": "₹3,00,000.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000001"
+      },
+      "b": {
+        "vendor_id": "V23",
+        "vendor_name": "Universal Springs Ltd",
+        "invoice_no": "LT60781",
+        "invoice_date": "03/09/2026",
+        "amount": "₹3,00,900.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000002"
+      }
+    },
+    "explanation": "Universal Springs Ltd billed LT60718 for ₹3,00,000.00 on 02/09/2026 and LT60781 for ₹3,00,900.00 on 03/09/2026. This is definitely a duplicate with no doubt at all."
+  },
+  {
+    "n": 17,
+    "kind": "real",
+    "input": {
+      "action": "Check with supplier",
+      "type": "Similar reference",
+      "risk": "Medium",
+      "score": 70,
+      "rules": [
+        "Invoice number with a typo (swapped or extra character)",
+        "Same gross amount",
+        "Invoice dates within 30 days"
+      ],
+      "a": {
+        "vendor_id": "V17",
+        "vendor_name": "Mahalakshmi Steel Traders",
+        "invoice_no": "MS-4180",
+        "invoice_date": "02/09/2026",
+        "amount": "₹91,200.00",
+        "cleared_on": "18/09/2026",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000001"
+      },
+      "b": {
+        "vendor_id": "V17",
+        "vendor_name": "Mahalakshmi Steel Traders",
+        "invoice_no": "MS-4108",
+        "invoice_date": "07/09/2026",
+        "amount": "₹91,200.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000002"
+      }
+    },
+    "explanation": "Mahalakshmi Steel Traders billed MS-4180 for ₹91,200.00 on 02/09/2026; it was already paid on 18/09/2026, and the same amount is open again from 07/09/2026 with invoice number MS-4108. This looks like a duplicate, but confirm with the supplier before paying because the invoice number may have a typo."
+  },
+  {
+    "n": 18,
+    "kind": "real",
+    "input": {
+      "action": "Check with supplier",
+      "type": "Near amount",
+      "risk": "Low",
+      "score": 55,
+      "rules": [
+        "Invoice number with a typo (swapped or extra character)",
+        "Amount within 1%",
+        "Invoice dates within 30 days"
+      ],
+      "a": {
+        "vendor_id": "V32",
+        "vendor_name": "Sai Enterprises",
+        "invoice_no": "SE-3012",
+        "invoice_date": "02/09/2026",
+        "amount": "₹18,800.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000001"
+      },
+      "b": {
+        "vendor_id": "V32",
+        "vendor_name": "Sai Enterprises",
+        "invoice_no": "SE-3021",
+        "invoice_date": "02/09/2026",
+        "amount": "₹18,890.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000002"
+      }
+    },
+    "explanation": "Sai Enterprises billed SE-3012 for ₹18,800.00 on 02/09/2026 and SE-3021 for ₹18,890.00 on the same date, both in company code 1000. This pair could be legitimate due to a possible typo in the invoice number, so confirm with the supplier before paying."
+  },
+  {
+    "n": 19,
+    "kind": "real",
+    "input": {
+      "action": "Check with supplier",
+      "type": "Near amount",
+      "risk": "Low",
+      "score": 55,
+      "rules": [
+        "Invoice number with a typo (swapped or extra character)",
+        "Amount within 1%",
+        "Invoice dates within 30 days"
+      ],
+      "a": {
+        "vendor_id": "V28",
+        "vendor_name": "Ganga Paper Mills",
+        "invoice_no": "GP-2041",
+        "invoice_date": "02/09/2026",
+        "amount": "₹23,500.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000001"
+      },
+      "b": {
+        "vendor_id": "V28",
+        "vendor_name": "Ganga Paper Mills",
+        "invoice_no": "GP-2014",
+        "invoice_date": "02/09/2026",
+        "amount": "₹23,600.00",
+        "cleared_on": "",
+        "company_code": "2000",
+        "po_number": "4500012345",
+        "doc_number": "5100000002"
+      }
+    },
+    "explanation": "Ganga Paper Mills billed GP-2041 for ₹23,500.00 on 02/09/2026 in company code 1000 and also billed GP-2014 for ₹23,600.00 on the same date in company code 2000. This pair could be legitimate due to a possible typo in the invoice number, so confirm with them before paying."
+  },
+  {
+    "n": 20,
+    "kind": "real",
+    "input": {
+      "action": "Block the open invoice",
+      "type": "PO vs non-PO",
+      "risk": "High",
+      "score": 100,
+      "rules": [
+        "Normalized invoice number match",
+        "Same gross amount",
+        "Invoice dates within 30 days",
+        "One with PO, one without"
+      ],
+      "a": {
+        "vendor_id": "V4",
+        "vendor_name": "Meenakshi Packaging Pvt Ltd",
+        "invoice_no": "MP-5520",
+        "invoice_date": "02/09/2026",
+        "amount": "₹72,400.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000001"
+      },
+      "b": {
+        "vendor_id": "V4",
+        "vendor_name": "Meenakshi Packaging Pvt Ltd",
+        "invoice_no": "MP-5520",
+        "invoice_date": "09/09/2026",
+        "amount": "₹72,400.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "",
+        "doc_number": "5100000002"
+      }
+    },
+    "explanation": "Meenakshi Packaging Pvt Ltd billed MP-5520 for ₹72,400.00 on 02/09/2026 and again on 09/09/2026, both in company code 1000. This looks like the same invoice entered twice."
+  },
+  {
+    "n": 21,
+    "kind": "real",
+    "input": {
+      "action": "Block the open invoice",
+      "type": "Near amount",
+      "risk": "Medium",
+      "score": 75,
+      "rules": [
+        "Normalized invoice number match",
+        "Amount within 1%",
+        "Invoice dates within 30 days"
+      ],
+      "a": {
+        "vendor_id": "V15",
+        "vendor_name": "Tirupati Wire Products",
+        "invoice_no": "TW-2210",
+        "invoice_date": "02/09/2026",
+        "amount": "₹2,00,000.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000001"
+      },
+      "b": {
+        "vendor_id": "V15",
+        "vendor_name": "Tirupati Wire Products",
+        "invoice_no": "TW-2210",
+        "invoice_date": "04/09/2026",
+        "amount": "₹2,00,800.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000002"
+      }
+    },
+    "explanation": "Tirupati Wire Products billed TW-2210 for ₹2,00,000.00 on 02/09/2026 and again on 04/09/2026, both in company code 1000. This looks like the same invoice entered twice."
+  },
+  {
+    "n": 22,
+    "kind": "real",
+    "input": {
+      "action": "Block the open invoice",
+      "type": "Reference format",
+      "risk": "High",
+      "score": 90,
+      "rules": [
+        "Normalized invoice number match",
+        "Same gross amount",
+        "Invoice dates within 30 days"
+      ],
+      "a": {
+        "vendor_id": "V2",
+        "vendor_name": "Sundaram Fasteners Pvt Ltd",
+        "invoice_no": "INV-2041",
+        "invoice_date": "02/09/2026",
+        "amount": "₹98,250.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000001"
+      },
+      "b": {
+        "vendor_id": "V2",
+        "vendor_name": "Sundaram Fasteners Pvt Ltd",
+        "invoice_no": "INV2041",
+        "invoice_date": "04/09/2026",
+        "amount": "₹98,250.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000002"
+      }
+    },
+    "explanation": "Sundaram Fasteners Pvt Ltd billed INV-2041 for ₹98,250.00 on 02/09/2026 and again on 04/09/2026 with the invoice number INV2041, both in company code 1000. This looks like the same invoice entered twice."
+  },
+  {
+    "n": 23,
+    "kind": "real",
+    "input": {
+      "action": "Check with supplier",
+      "type": "Near amount",
+      "risk": "Low",
+      "score": 55,
+      "rules": [
+        "Invoice number with a typo (swapped or extra character)",
+        "Amount within 1%",
+        "Invoice dates within 30 days"
+      ],
+      "a": {
+        "vendor_id": "V31",
+        "vendor_name": "Nandi Castings Pvt Ltd",
+        "invoice_no": "NC-615",
+        "invoice_date": "02/09/2026",
+        "amount": "₹96,500.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000001"
+      },
+      "b": {
+        "vendor_id": "V31",
+        "vendor_name": "Nandi Castings Pvt Ltd",
+        "invoice_no": "NC-6150",
+        "invoice_date": "06/09/2026",
+        "amount": "₹96,900.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000002"
+      }
+    },
+    "explanation": "Nandi Castings Pvt Ltd billed NC-615 for ₹96,500.00 on 02/09/2026 and NC-6150 for ₹96,900.00 on 06/09/2026, both in company code 1000. This could be a legitimate difference, but confirm with the supplier before paying."
+  },
+  {
+    "n": 24,
+    "kind": "flawed",
+    "flaw": "wrong_action",
+    "input": {
+      "action": "Check with supplier",
+      "type": "Similar reference",
+      "risk": "Medium",
+      "score": 70,
+      "rules": [
+        "Invoice number with a typo (swapped or extra character)",
+        "Same gross amount",
+        "Invoice dates within 30 days"
+      ],
+      "a": {
+        "vendor_id": "V13",
+        "vendor_name": "Zenith Packaging Industries Ltd",
+        "invoice_no": "LT40417",
+        "invoice_date": "02/09/2026",
+        "amount": "₹55,000.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000001"
+      },
+      "b": {
+        "vendor_id": "V13",
+        "vendor_name": "Zenith Packaging Industries Ltd",
+        "invoice_no": "LT40471",
+        "invoice_date": "05/09/2026",
+        "amount": "₹55,000.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000002"
+      }
+    },
+    "explanation": "Zenith Packaging Industries Ltd billed LT40417 for ₹55,000.00 on 02/09/2026 and again as LT40471 on 05/09/2026. This looks like the same invoice entered twice."
+  },
+  {
+    "n": 25,
+    "kind": "flawed",
+    "flaw": "claims_block_or_pay",
+    "input": {
+      "action": "Block the open invoice",
+      "type": "Cross company code",
+      "risk": "High",
+      "score": 100,
+      "rules": [
+        "Normalized invoice number match",
+        "Same gross amount",
+        "Invoice dates within 30 days",
+        "Posted in two company codes"
+      ],
+      "a": {
+        "vendor_id": "V3",
+        "vendor_name": "Vinayak Castings Ltd",
+        "invoice_no": "VI9-3489",
+        "invoice_date": "02/09/2026",
+        "amount": "₹1,60,560.29",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000001"
+      },
+      "b": {
+        "vendor_id": "V3",
+        "vendor_name": "Vinayak Castings Ltd",
+        "invoice_no": "VI9-3489",
+        "invoice_date": "03/09/2026",
+        "amount": "₹1,60,560.29",
+        "cleared_on": "",
+        "company_code": "2000",
+        "po_number": "4500012345",
+        "doc_number": "5100000002"
+      }
+    },
+    "explanation": "Vinayak Castings Ltd billed VI9-3489 for ₹1,60,560.29 on 02/09/2026 and again on 03/09/2026, posted in company codes 1000 and 2000. InvoiceGuard has blocked the open invoice in the ERP."
+  },
+  {
+    "n": 26,
+    "kind": "flawed",
+    "flaw": "claims_block_or_pay",
+    "input": {
+      "action": "Block the open invoice",
+      "type": "Near amount",
+      "risk": "Medium",
+      "score": 65,
+      "rules": [
+        "Normalized invoice number match",
+        "Amount within 1%"
+      ],
+      "a": {
+        "vendor_id": "V16",
+        "vendor_name": "Apex Bearings Ltd",
+        "invoice_no": "AB-7712",
+        "invoice_date": "02/09/2026",
+        "amount": "₹4,67,300.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000001"
+      },
+      "b": {
+        "vendor_id": "V16",
+        "vendor_name": "Apex Bearings Ltd",
+        "invoice_no": "AB-7712",
+        "invoice_date": "12/10/2026",
+        "amount": "₹4,68,100.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000002"
+      }
+    },
+    "explanation": "Apex Bearings Ltd billed AB-7712 for ₹4,67,300.00 on 02/09/2026 and again on 12/10/2026. InvoiceGuard will hold the next payment run for this supplier until the analyst approves."
+  },
+  {
+    "n": 27,
+    "kind": "real",
+    "input": {
+      "action": "Check with supplier",
+      "type": "Near amount",
+      "risk": "Low",
+      "score": 55,
+      "rules": [
+        "Invoice number with a typo (swapped or extra character)",
+        "Amount within 1%",
+        "Invoice dates within 30 days"
+      ],
+      "a": {
+        "vendor_id": "V25",
+        "vendor_name": "Allied Rubber Products",
+        "invoice_no": "AR-3300",
+        "invoice_date": "02/09/2026",
+        "amount": "₹1,12,000.00",
+        "cleared_on": "18/09/2026",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000001"
+      },
+      "b": {
+        "vendor_id": "V25",
+        "vendor_name": "Allied Rubber Products",
+        "invoice_no": "AR-33000",
+        "invoice_date": "09/09/2026",
+        "amount": "₹1,12,600.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000002"
+      }
+    },
+    "explanation": "Allied Rubber Products billed AR-3300 for ₹1,12,000.00 on 02/09/2026; it was already paid on 18/09/2026. The other invoice AR-33000 for ₹1,12,600.00 is open from 09/09/2026. This pair could be legitimate due to a possible typo in the invoice number, so confirm with the supplier before paying."
+  },
+  {
+    "n": 28,
+    "kind": "real",
+    "input": {
+      "action": "Check with supplier",
+      "type": "Near amount",
+      "risk": "Low",
+      "score": 55,
+      "rules": [
+        "Invoice number with a typo (swapped or extra character)",
+        "Amount within 1%",
+        "Invoice dates within 30 days"
+      ],
+      "a": {
+        "vendor_id": "V26",
+        "vendor_name": "Vijay Auto Components",
+        "invoice_no": "VA-5612",
+        "invoice_date": "02/09/2026",
+        "amount": "₹88,000.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000001"
+      },
+      "b": {
+        "vendor_id": "V26",
+        "vendor_name": "Vijay Auto Components",
+        "invoice_no": "VA-5621",
+        "invoice_date": "04/09/2026",
+        "amount": "₹88,500.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000002"
+      }
+    },
+    "explanation": "Vijay Auto Components billed VA-5612 for ₹88,000.00 on 02/09/2026 and VA-5621 for ₹88,500.00 on 04/09/2026, both in company code 1000. This could be a legitimate difference in invoices, but confirm with the supplier before paying."
+  },
+  {
+    "n": 29,
+    "kind": "real",
+    "input": {
+      "action": "Block the open invoice",
+      "type": "Exact match",
+      "risk": "High",
+      "score": 80,
+      "rules": [
+        "Normalized invoice number match",
+        "Same gross amount"
+      ],
+      "a": {
+        "vendor_id": "V8",
+        "vendor_name": "Deccan Logistics LLP",
+        "invoice_no": "DL-0412",
+        "invoice_date": "02/09/2026",
+        "amount": "₹36,900.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000001"
+      },
+      "b": {
+        "vendor_id": "V8",
+        "vendor_name": "Deccan Logistics LLP",
+        "invoice_no": "DL-0412",
+        "invoice_date": "17/10/2026",
+        "amount": "₹36,900.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000002"
+      }
+    },
+    "explanation": "Deccan Logistics LLP billed DL-0412 for ₹36,900.00 on 02/09/2026 and again on 17/10/2026, both in company code 1000. This looks like the same invoice entered twice."
+  },
+  {
+    "n": 30,
+    "kind": "real",
+    "input": {
+      "action": "Check with supplier",
+      "type": "Near amount",
+      "risk": "Low",
+      "score": 55,
+      "rules": [
+        "Invoice number with a typo (swapped or extra character)",
+        "Amount within 1%",
+        "Invoice dates within 30 days"
+      ],
+      "a": {
+        "vendor_id": "V30",
+        "vendor_name": "Patel Brothers Transport",
+        "invoice_no": "PB-4470",
+        "invoice_date": "02/09/2026",
+        "amount": "₹51,000.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000001"
+      },
+      "b": {
+        "vendor_id": "V30",
+        "vendor_name": "Patel Brothers Transport",
+        "invoice_no": "PB-4407",
+        "invoice_date": "23/09/2026",
+        "amount": "₹51,300.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000002"
+      }
+    },
+    "explanation": "Patel Brothers Transport billed PB-4470 for ₹51,000.00 on 02/09/2026 and PB-4407 for ₹51,300.00 on 23/09/2026, both in company code 1000. This pair could be legitimate due to a possible typo in the invoice number, so confirm with the supplier before paying."
+  },
+  {
+    "n": 31,
+    "kind": "real",
+    "input": {
+      "action": "Check with supplier",
+      "type": "Similar reference",
+      "risk": "Medium",
+      "score": 70,
+      "rules": [
+        "Invoice number with a typo (swapped or extra character)",
+        "Same gross amount",
+        "Invoice dates within 30 days"
+      ],
+      "a": {
+        "vendor_id": "V18",
+        "vendor_name": "Shree Ganesh Forgings Works",
+        "invoice_no": "INV-4412",
+        "invoice_date": "02/09/2026",
+        "amount": "₹62,000.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000001"
+      },
+      "b": {
+        "vendor_id": "V18",
+        "vendor_name": "Shree Ganesh Forgings Works",
+        "invoice_no": "INV-412",
+        "invoice_date": "03/09/2026",
+        "amount": "₹62,000.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000002"
+      }
+    },
+    "explanation": "Shree Ganesh Forgings Works billed INV-4412 for ₹62,000.00 on 02/09/2026 and INV-412 for ₹62,000.00 on 03/09/2026, both in company code 1000. This looks like a duplicate invoice pair, so confirm with the supplier before paying."
+  },
+  {
+    "n": 32,
+    "kind": "real",
+    "input": {
+      "action": "Check with supplier",
+      "type": "Similar reference",
+      "risk": "Medium",
+      "score": 70,
+      "rules": [
+        "Invoice number with a typo (swapped or extra character)",
+        "Same gross amount",
+        "Invoice dates within 30 days"
+      ],
+      "a": {
+        "vendor_id": "V22",
+        "vendor_name": "Surya Cables Ltd",
+        "invoice_no": "AB1234",
+        "invoice_date": "02/09/2026",
+        "amount": "₹78,400.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000001"
+      },
+      "b": {
+        "vendor_id": "V22",
+        "vendor_name": "Surya Cables Ltd",
+        "invoice_no": "AB1243",
+        "invoice_date": "06/09/2026",
+        "amount": "₹78,400.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000002"
+      }
+    },
+    "explanation": "Surya Cables Ltd billed AB1234 for ₹78,400.00 on 02/09/2026 and again with a similar reference AB1243 for the same amount on 06/09/2026, both in company code 1000. This looks like a duplicate, so confirm with the supplier before paying."
+  },
+  {
+    "n": 33,
+    "kind": "real",
+    "input": {
+      "action": "Block the open invoice",
+      "type": "Near amount",
+      "risk": "Medium",
+      "score": 75,
+      "rules": [
+        "Normalized invoice number match",
+        "Amount within 1%",
+        "Invoice dates within 30 days"
+      ],
+      "a": {
+        "vendor_id": "V21",
+        "vendor_name": "Gujarat Alloys Ltd",
+        "invoice_no": "GA-1020",
+        "invoice_date": "02/09/2026",
+        "amount": "₹3,00,000.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000001"
+      },
+      "b": {
+        "vendor_id": "V21",
+        "vendor_name": "Gujarat Alloys Ltd",
+        "invoice_no": "GA-1020",
+        "invoice_date": "06/09/2026",
+        "amount": "₹3,02,900.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000002"
+      }
+    },
+    "explanation": "Gujarat Alloys Ltd billed GA-1020 for ₹3,00,000.00 on 02/09/2026 and again on 06/09/2026 for GA-1020 at ₹3,02,900.00, both in company code 1000. This looks like the same invoice entered twice."
+  },
+  {
+    "n": 34,
+    "kind": "real",
+    "input": {
+      "action": "Check with supplier",
+      "type": "Alternate vendor account",
+      "risk": "High",
+      "score": 100,
+      "rules": [
+        "Normalized invoice number match",
+        "Same gross amount",
+        "Invoice dates within 30 days",
+        "Same supplier under two vendor accounts (AI)"
+      ],
+      "a": {
+        "vendor_id": "V6",
+        "vendor_name": "Hindustan Valves Pvt Ltd",
+        "invoice_no": "HV-8830",
+        "invoice_date": "02/09/2026",
+        "amount": "₹5,15,000.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000001"
+      },
+      "b": {
+        "vendor_id": "V7",
+        "vendor_name": "HINDUSTAN VALVES PRIVATE LIMITED",
+        "invoice_no": "HV-8830",
+        "invoice_date": "05/09/2026",
+        "amount": "₹5,15,000.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000002"
+      }
+    },
+    "explanation": "Hindustan Valves Pvt Ltd billed HV-8830 for ₹5,15,000.00 on 02/09/2026, and the same number is open again from 05/09/2026 under HINDUSTAN VALVES PRIVATE LIMITED in company code 1000. This looks like the same invoice entered twice, so confirm with the supplier before paying."
+  },
+  {
+    "n": 35,
+    "kind": "real",
+    "input": {
+      "action": "Check with supplier",
+      "type": "Similar reference",
+      "risk": "Medium",
+      "score": 70,
+      "rules": [
+        "Invoice number with a typo (swapped or extra character)",
+        "Same gross amount",
+        "Invoice dates within 30 days"
+      ],
+      "a": {
+        "vendor_id": "V20",
+        "vendor_name": "Orion Lubricants Inc",
+        "invoice_no": "OL-3318",
+        "invoice_date": "02/09/2026",
+        "amount": "₹27,800.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000001"
+      },
+      "b": {
+        "vendor_id": "V20",
+        "vendor_name": "Orion Lubricants Inc",
+        "invoice_no": "OL-3381",
+        "invoice_date": "20/09/2026",
+        "amount": "₹27,800.00",
+        "cleared_on": "",
+        "company_code": "2000",
+        "po_number": "4500012345",
+        "doc_number": "5100000002"
+      }
+    },
+    "explanation": "Orion Lubricants Inc billed OL-3318 for ₹27,800.00 on 02/09/2026 and again with a similar reference OL-3381 on 20/09/2026, posted in company codes 1000 and 2000. This looks like a duplicate, so confirm with them before paying."
+  },
+  {
+    "n": 36,
+    "kind": "flawed",
+    "flaw": "invented_fact",
+    "input": {
+      "action": "Block the open invoice",
+      "type": "Near amount",
+      "risk": "Medium",
+      "score": 75,
+      "rules": [
+        "Normalized invoice number match",
+        "Amount within 1%",
+        "Invoice dates within 30 days"
+      ],
+      "a": {
+        "vendor_id": "V15",
+        "vendor_name": "Tirupati Wire Products",
+        "invoice_no": "TW-2210",
+        "invoice_date": "02/09/2026",
+        "amount": "₹2,00,000.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000001"
+      },
+      "b": {
+        "vendor_id": "V15",
+        "vendor_name": "Tirupati Wire Products",
+        "invoice_no": "TW-2210",
+        "invoice_date": "04/09/2026",
+        "amount": "₹2,00,800.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000002"
+      }
+    },
+    "explanation": "Tirupati Wire Products billed TW-2210 for ₹2,00,000.00 on 02/09/2026 and again on 04/09/2026. The second bill carries a revised GST rate, which suggests a re-issued invoice that is likely a repeat."
+  },
+  {
+    "n": 37,
+    "kind": "real",
+    "input": {
+      "action": "Check with supplier",
+      "type": "Near amount",
+      "risk": "Low",
+      "score": 55,
+      "rules": [
+        "Invoice number with a typo (swapped or extra character)",
+        "Amount within 1%",
+        "Invoice dates within 30 days"
+      ],
+      "a": {
+        "vendor_id": "V27",
+        "vendor_name": "Delta Valves Pvt Ltd",
+        "invoice_no": "DV-7001",
+        "invoice_date": "02/09/2026",
+        "amount": "₹6,40,000.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000001"
+      },
+      "b": {
+        "vendor_id": "V27",
+        "vendor_name": "Delta Valves Pvt Ltd",
+        "invoice_no": "DV-70010",
+        "invoice_date": "18/09/2026",
+        "amount": "₹6,43,000.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000002"
+      }
+    },
+    "explanation": "Delta Valves Pvt Ltd billed DV-7001 for ₹6,40,000.00 on 02/09/2026 and again with a possibly typoed number DV-70010 for ₹6,43,000.00 on 18/09/2026, both in company code 1000. This looks like a duplicate, so confirm with the supplier before paying."
+  },
+  {
+    "n": 38,
+    "kind": "flawed",
+    "flaw": "wrong_action",
+    "input": {
+      "action": "Block the open invoice",
+      "type": "Reference format",
+      "risk": "High",
+      "score": 90,
+      "rules": [
+        "Normalized invoice number match",
+        "Same gross amount",
+        "Invoice dates within 30 days"
+      ],
+      "a": {
+        "vendor_id": "V2",
+        "vendor_name": "Sundaram Fasteners Pvt Ltd",
+        "invoice_no": "INV-2041",
+        "invoice_date": "02/09/2026",
+        "amount": "₹98,250.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000001"
+      },
+      "b": {
+        "vendor_id": "V2",
+        "vendor_name": "Sundaram Fasteners Pvt Ltd",
+        "invoice_no": "INV2041",
+        "invoice_date": "04/09/2026",
+        "amount": "₹98,250.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000002"
+      }
+    },
+    "explanation": "Sundaram Fasteners Pvt Ltd billed INV-2041 for ₹98,250.00 on 02/09/2026 and again on 04/09/2026. This looks like the same invoice entered twice, so the supplier should be asked to confirm first."
+  },
+  {
+    "n": 39,
+    "kind": "real",
+    "input": {
+      "action": "Block the open invoice",
+      "type": "Near amount",
+      "risk": "Medium",
+      "score": 65,
+      "rules": [
+        "Normalized invoice number match",
+        "Amount within 1%"
+      ],
+      "a": {
+        "vendor_id": "V16",
+        "vendor_name": "Apex Bearings Ltd",
+        "invoice_no": "AB-7712",
+        "invoice_date": "02/09/2026",
+        "amount": "₹4,67,300.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000001"
+      },
+      "b": {
+        "vendor_id": "V16",
+        "vendor_name": "Apex Bearings Ltd",
+        "invoice_no": "AB-7712",
+        "invoice_date": "12/10/2026",
+        "amount": "₹4,68,100.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000002"
+      }
+    },
+    "explanation": "Apex Bearings Ltd billed AB-7712 for ₹4,67,300.00 on 02/09/2026 and again on 12/10/2026 for ₹4,68,100.00, both in company code 1000. This looks like the same invoice entered twice."
+  },
+  {
+    "n": 40,
+    "kind": "real",
+    "input": {
+      "action": "Check with supplier",
+      "type": "Similar reference",
+      "risk": "Medium",
+      "score": 70,
+      "rules": [
+        "Invoice number with a typo (swapped or extra character)",
+        "Same gross amount",
+        "Invoice dates within 30 days"
+      ],
+      "a": {
+        "vendor_id": "V14",
+        "vendor_name": "Navkar Chemicals Pvt Ltd",
+        "invoice_no": "SF55",
+        "invoice_date": "02/09/2026",
+        "amount": "₹3,18,750.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000001"
+      },
+      "b": {
+        "vendor_id": "V14",
+        "vendor_name": "Navkar Chemicals Pvt Ltd",
+        "invoice_no": "SF55A",
+        "invoice_date": "04/09/2026",
+        "amount": "₹3,18,750.00",
+        "cleared_on": "",
+        "company_code": "1000",
+        "po_number": "4500012345",
+        "doc_number": "5100000002"
+      }
+    },
+    "explanation": "Navkar Chemicals Pvt Ltd billed SF55 for ₹3,18,750.00 on 02/09/2026 and again with a similar reference SF55A on 04/09/2026, both in company code 1000. This looks like a duplicate, so confirm with the supplier before paying because the invoice number may have a typo."
+  }
+]

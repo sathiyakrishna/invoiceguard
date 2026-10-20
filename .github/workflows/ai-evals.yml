@@ -50,4 +50,32 @@ jobs:
           path: evals/vendors/results.json
           if-no-files-found: ignore
 
-  # explain job (OpenAI explanations judged by Jev, needs TYPESAFE_API_KEY) is added with part 3
+  explain:
+    # OpenAI writes 30 explanations with the production prompt; 10 flawed ones are added; code checks plus TypeSafe Jev judge all 40.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      TYPESAFE_API_KEY: ${{ secrets.TYPESAFE_API_KEY }}
+      PROMPTFOO_DISABLE_TELEMETRY: '1'
+      PROMPTFOO_DISABLE_UPDATE: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Skip when the Jev key is not set
+        if: env.TYPESAFE_API_KEY == ''
+        run: echo "::warning::TYPESAFE_API_KEY is not set, so the explanation eval was skipped."
+      # Fails when real explanations pass fewer than EVAL_MIN_EXPLAIN_PASS of their checks or Jev rejects fewer than EVAL_MIN_FLAW_CATCH of the flawed ones.
+      - name: Explanation eval
+        if: env.TYPESAFE_API_KEY != ''
+        run: npm run eval:explain
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: explain-eval
+          path: evals/explain/results.json
+          if-no-files-found: ignore

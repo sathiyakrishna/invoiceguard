@@ -1,0 +1,17 @@
+# Explanation eval. Real cases: OpenAI writes the explanation with the production prompt. Flawed cases: fixed text.
+# Every explanation is checked in code and judged by Jev. Run with: npm run eval:explain  (OPENAI_API_KEY and TYPESAFE_API_KEY, or JEV_MOCK=1)
+description: InvoiceGuard AI explanations
+
+prompts:
+  - '{{ user }}'
+
+providers:
+  - id: file://provider.cjs
+    label: openai-explain
+
+tests: file://tests.cjs
+
+defaultTest:
+  assert:
+    - type: javascript
+      value: file://assert.cjs

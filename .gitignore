@@ -8,3 +8,4 @@ answer_key.csv
 # eval outputs
 evals/**/results.json
 evals/**/outputs/
+evals/**/judgements.json
