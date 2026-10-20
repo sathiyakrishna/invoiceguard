@@ -6,7 +6,8 @@ import { detect, findReversals, findVendorCandidates, normalizeRef, vendorPairKe
 
 describe.runIf(existsSync('public/sample_register.csv') && existsSync('answer_key.csv'))('sample register', () => {
   const csv = Papa.parse<Record<string, string>>(readFileSync('public/sample_register.csv', 'utf8'), { header: true, skipEmptyLines: true });
-  const key = Papa.parse<Record<string, string>>(readFileSync('answer_key.csv', 'utf8'), { header: true, skipEmptyLines: true }).data;
+  // answer_key.csv is git-ignored, so it is missing in a clean checkout (CI). describe.runIf still runs this body, so do not read it unguarded.
+  const key = existsSync('answer_key.csv') ? Papa.parse<Record<string, string>>(readFileSync('answer_key.csv', 'utf8'), { header: true, skipEmptyLines: true }).data : [];
   const map = autoMap(csv.meta.fields!);
   const { rows, errors } = toInvoiceRows(csv.data, map);
 
