@@ -140,12 +140,12 @@ function readSeconds(el: HTMLElement, name: string, fallback: number) {
 
 export default function P2PAnimation() {
   const root = useRef<HTMLElement>(null);
-  const [canAnimate, setCanAnimate] = useState(false); // wide screen and motion allowed
+  const [canAnimate, setCanAnimate] = useState(false); // motion allowed (desktop scene and phone timeline both animate)
   const [inView, setInView] = useState(false);
   const [paused, setPaused] = useState(false);
 
   useEffect(() => {
-    const mq = window.matchMedia('(min-width: 768px) and (prefers-reduced-motion: no-preference)');
+    const mq = window.matchMedia('(prefers-reduced-motion: no-preference)');
     const sync = () => setCanAnimate(mq.matches);
     sync();
     mq.addEventListener('change', sync);
@@ -361,7 +361,7 @@ export default function P2PAnimation() {
       <ol className="p2p-tl" aria-label="Steps">
         {MOBILE_STEPS.map((t, i) => (
           <li key={t} className={`p2p-tl__item${i === 2 ? ' is-open' : ''}`}>
-            <span className="p2p-tl__n" aria-hidden="true">{i + 1}</span>
+            <span className="p2p-tl__n" aria-hidden="true">{i + 1}<span className="p2p-tl__nf">{i + 1}</span></span>
             <span className="p2p-tl__t">{t}</span>
             {i === 2 && (
               <div className="p2p-tl__body">

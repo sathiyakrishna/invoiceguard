@@ -215,12 +215,12 @@
 .p2p-tl__item { position: relative; display: grid; grid-template-columns: 24px minmax(0, 1fr); column-gap: 12px; padding-bottom: 14px; }
 .p2p-tl__item:not(:last-child)::before { content: ''; position: absolute; left: 11px; top: 26px; bottom: 2px; width: 2px; background: var(--p2p-line); }
 .p2p-tl__n {
-  width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center;
+  position: relative; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center;
   font-size: 12px; font-weight: 800; color: var(--p2p-accent); border: 2px solid var(--p2p-accent); background: var(--p2p-card);
 }
 .p2p-tl__t { align-self: center; font-size: 12px; line-height: 1.3; font-weight: 600; color: var(--p2p-ink); }
-.p2p-tl__item.is-open .p2p-tl__n { background: var(--p2p-accent); color: #fff; }
-.p2p-tl__item.is-open .p2p-tl__t { font-weight: 800; }
+.p2p-tl__nf { position: absolute; inset: -2px; border-radius: 50%; display: grid; place-items: center; background: var(--p2p-accent); color: #fff; opacity: 0; }
+.p2p-tl__item.is-open .p2p-tl__nf { opacity: 1; }          /* static layout: step 3 open */
 .p2p-tl__body { grid-column: 2; display: grid; gap: 10px; margin-top: 10px; }
 .p2p-tl__body .p2p-chip-html { align-self: start; justify-self: start; }
 
@@ -293,13 +293,13 @@
   min-height: 32px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--p2p-line);
   background: var(--p2p-card); color: var(--p2p-ink); font-size: 13px; font-weight: 600; cursor: pointer;
 }
+.p2p[data-can-animate='1'] .p2p-pause { display: inline-flex; }
 .p2p-pause:hover { border-color: var(--p2p-accent); }
 .p2p-pause svg { width: 12px; height: 12px; }
 
 @media (min-width: 768px) {
   .p2p-steps { grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 14px 16px 12px; gap: 10px; }
   .p2p-step { font-size: clamp(11px, 1.05vw, 13px); }
-  .p2p[data-can-animate='1'] .p2p-pause { display: inline-flex; }
 }
 
 /* ───────────── ANIMATION (only while data-live='1') ───────────── */
@@ -337,6 +337,9 @@
 @keyframes p2p-coin { 0% { transform: translate(0, 0); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translate(var(--mx), var(--my)); opacity: 0; } }
 @keyframes p2p-credit { 0% { transform: scale(0); opacity: 0; } 70% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
 @keyframes p2p-step-on { 0% { opacity: 0; } 8%, 92% { opacity: 1; } 100% { opacity: 0; } }
+/* phone: the card and chip sit faint from the start, so no blank gap, then settle at the catch */
+@keyframes p2p-m-in { from { opacity: 0.25; transform: scale(0.98); } to { opacity: 1; transform: none; } }
+@keyframes p2p-tl-text { 0%, 100% { opacity: 0.7; } 8%, 92% { opacity: 1; } }
 @keyframes p2p-step-bar { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 
 .p2p .ring, .p2p .tick, .p2p .credit, .p2p .grn, .p2p .deliver, .p2p .credit-lbl, .p2p .pay { transform-box: fill-box; transform-origin: center; }
@@ -394,10 +397,20 @@
 /* caption strip stays in sync with the phases */
 .p2p[data-live='1'] .p2p-step__on { animation: p2p-step-on var(--d) linear var(--t) both; }
 .p2p[data-live='1'] .p2p-step__bar { animation: p2p-step-bar var(--d) linear var(--t) both; }
-.p2p-step:nth-child(1) { --t: var(--t-a); --d: var(--d-a); }
-.p2p-step:nth-child(2) { --t: var(--t-b); --d: var(--d-b); }
-.p2p-step:nth-child(3) { --t: var(--t-c); --d: var(--d-c); }
-.p2p-step:nth-child(4) { --t: var(--t-d); --d: var(--d-d); }
+/* phone timeline: same phase variables as the desktop caption strip */
+.p2p[data-live='1'] .p2p-tl__nf { animation: p2p-step-on var(--d) linear var(--t) both; }
+.p2p[data-live='1'] .p2p-tl__t { animation: p2p-tl-text var(--d) linear var(--t) both; }
+/* the phone card and chip open at the catch and stay open through step 4 (no fade-out in phase D); before that they show at 25% so there is no blank gap */
+.p2p[data-live='1'] .p2p-card--m { animation: p2p-m-in var(--d-card) var(--ease-out) calc(var(--t-c) + var(--o-card)) both; }
+.p2p[data-live='1'] .p2p-chip-html--m { animation: p2p-m-in var(--d-confirm) var(--ease-out) calc(var(--t-c) + var(--o-confirm)) both; }
+/* on phones the stage has no box of its own, so fade the visible blocks at the end of the loop */
+@media (max-width: 767px) {
+  .p2p[data-live='1'] .p2p-tl, .p2p[data-live='1'] .p2p-kpis { animation: p2p-scene-in var(--fade) ease both, p2p-scene-out var(--fade) linear calc(var(--loop) - var(--fade)) forwards; }
+}
+.p2p-step:nth-child(1), .p2p-tl__item:nth-child(1) { --t: var(--t-a); --d: var(--d-a); }
+.p2p-step:nth-child(2), .p2p-tl__item:nth-child(2) { --t: var(--t-b); --d: var(--d-b); }
+.p2p-step:nth-child(3), .p2p-tl__item:nth-child(3) { --t: var(--t-c); --d: var(--d-c); }
+.p2p-step:nth-child(4), .p2p-tl__item:nth-child(4) { --t: var(--t-d); --d: var(--d-d); }
 
 @media (prefers-reduced-motion: reduce) {
   .p2p *, .p2p *::after { animation: none !important; transition: none !important; }
