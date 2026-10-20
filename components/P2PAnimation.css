@@ -1,0 +1,384 @@
+/* P2PAnimation: procure-to-pay scene. Everything is scoped under .p2p.
+   Only transform and opacity are animated.
+
+   Two modes:
+   - Default (no data-live): the fully composed static scene (Phase C end: evidence card up, duplicate held,
+     KPI at its final value, step 3 highlighted). Used on phones, with prefers-reduced-motion, before hydration,
+     when paused and while off screen.
+   - [data-live='1'] (set by the component on wide screens with motion allowed): the same elements animate from
+     their "before" state to this static state, driven by the timing variables below.
+   Base rules therefore describe the END state; keyframes describe how an element gets there. */
+
+.p2p {
+  /* ───────────── TIMING: tune the whole pace here ─────────────
+     The component restarts the scene every --loop. Keep each phase's offsets inside its own --d-*. */
+  --loop: 15s;
+  --fade: 0.6s;                         /* fade at the end of the loop, and fade-in after it */
+
+  --t-a: 0s;    --d-a: 3s;              /* A  goods arrive + invoices arrive (email and paper) */
+  --t-b: 3s;    --d-b: 2.5s;            /* B  OCR → ERP → payment proposal */
+  --t-c: 5.5s;  --d-c: 6s;              /* C  InvoiceGuard catches the duplicate (the hero) */
+  --t-d: 11.5s; --d-d: 3.5s;            /* D  eligible invoices paid, duplicate stays held */
+
+  /* A: offsets from --t-a */
+  --o-truck: 0s;   --d-truck: 1.5s;
+  --o-unload: 1.5s; --d-unload: 0.9s;   --st-crate: 0.35s;
+  --o-grn: 2.4s;   --d-grn: 0.4s;
+  --o-email: 0.1s; --d-email: 2.4s;
+  --o-paper: 0.5s; --d-paper: 2.2s;
+
+  /* B: offsets from --t-b. The landing at the tray always ends with the phase. */
+  --d-exit: 0.55s;
+  --o-ocr: 0.6s;   --d-ocr: 0.8s;
+  --o-erp: 1.3s;   --d-erp: 0.7s;
+
+  /* C: offsets from --t-c */
+  --d-dim: 0.5s;
+  --o-sweep: 0.5s; --d-sweep: 0.7s;
+  --o-pin: 1.2s;   --d-pin: 0.45s;
+  --o-card: 1.5s;  --d-card: 0.5s;
+  --o-cursor: 2.3s; --d-cursor: 0.9s;
+  --o-click: 3.2s; --d-click: 0.2s;
+  --o-confirm: 3.5s; --d-confirm: 0.4s;
+  --o-held: 4.1s;  --d-held: 0.8s;
+  --o-kpi: 4.7s;   --d-kpi: 1s;
+
+  /* D: offsets from --t-d */
+  --d-out: 0.5s;   --o-card-out: 0.1s;  --d-card-out: 0.4s;
+  --o-pay: 0.5s;   --d-pay: 1.2s;       --st-pay: 0.15s;
+  --o-paid: 1.5s;  --d-paid: 0.4s;
+  --o-coin: 1.5s;  --d-coin: 0.9s;      --st-coin: 0.15s;
+  --o-credit: 2.5s; --d-credit: 0.4s;
+
+  --focus: 1.1;                         /* subtle zoom on the payment proposal */
+  --dim: 0.45;                          /* opacity of everything else while the batch is in focus */
+  --ease-out: cubic-bezier(0.22, 0.8, 0.3, 1);
+  --ease-io: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* ───────────── COLOURS: always the light palette, matching the page. Hex values are the site tokens in tailwind.config.ts ───────────── */
+  --p2p-panel: #eef3ff;                 /* landing section tint */
+  --p2p-panel-2: #ffffff;
+  --p2p-ink: #0b1f4d;                   /* navy */
+  --p2p-ink-2: #4b5565;                 /* ink-500 */
+  --p2p-line: #e2e5ea;                  /* line */
+  --p2p-card: #ffffff;
+  --p2p-accent: #1d4ed8;                /* accent */
+  --p2p-accent-2: #3b82f6;
+  --p2p-accent-soft: #dbeafe;           /* accent-soft */
+  --p2p-danger: #b42318;                /* high-fg */
+  --p2p-danger-soft: #fde2e1;           /* high-bg */
+  --p2p-ok: #067647;                    /* low-fg */
+  --p2p-ok-soft: #dcfae6;               /* low-bg */
+  --p2p-supplier: #0f8f83;              /* one supplier = one colour on both invoices */
+  --p2p-acct-a: #2563eb;                /* vendor account 1 */
+  --p2p-acct-b: #7c3aed;                /* vendor account 2 */
+  --p2p-neutral: #94a3b8;
+  --p2p-shadow: 11, 31, 77;             /* rgb for soft shadows */
+  --p2p-chip-bg: #ffffff;
+
+  /* 2.5D faces: top, left (faces front-left), right (faces front-right) */
+  --p2p-g-top: #f8fafd; --p2p-g-left: #e4e9f2; --p2p-g-right: #d3dae8;   /* ground plate */
+  --p2p-w-top: #ffffff; --p2p-w-left: #eef1f6; --p2p-w-right: #dde3ec;   /* white buildings */
+  --p2p-b-top: #60a5fa; --p2p-b-left: #2563eb; --p2p-b-right: #1d4ed8;   /* blue accents */
+  --p2p-bl-top: #dbeafe; --p2p-bl-left: #bfd6fb; --p2p-bl-right: #a9c5f5; /* payment tray */
+  --p2p-k-top: #475569; --p2p-k-left: #334155; --p2p-k-right: #1e293b;   /* doors, tyres */
+  --p2p-r-top: #cbd5e1; --p2p-r-left: #b4bfd0; --p2p-r-right: #9fadc2;   /* road */
+  --p2p-lp-top: #cfe0ff; --p2p-lp-left: #b8d0fb; --p2p-lp-right: #a6c3f7; /* PO lane */
+  --p2p-lq-top: #e4dcfb; --p2p-lq-left: #d3c8f6; --p2p-lq-right: #c2b4f1; /* non-PO lane */
+  --p2p-rd-top: #fde8e6; --p2p-rd-left: #f9cfcb; --p2p-rd-right: #f3b8b2; /* held bay */
+}
+
+/* ───────────── Layout ───────────── */
+.p2p {
+  position: relative;
+  border-radius: 28px;
+  background: linear-gradient(180deg, var(--p2p-panel), var(--p2p-panel-2));
+  color: var(--p2p-ink);
+  box-shadow: 0 12px 32px rgba(var(--p2p-shadow), 0.1);
+  overflow: hidden;
+}
+.p2p-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.p2p-stage { display: flex; flex-direction: column; gap: 12px; padding: 12px 12px 4px; }
+.p2p-view { order: 1; position: relative; overflow: hidden; aspect-ratio: 600 / 430; border-radius: 16px; }
+/* phones: show only the viewBox region x 400-1000, y 150-580 (tray, held bay, ERP, bank) so the main elements are larger */
+.p2p-view .p2p-svg { position: absolute; left: 0; top: 0; display: block; width: 166.67%; height: auto; transform: translate(-40%, -24.19%); transform-origin: 0 0; }
+.p2p-card { order: 2; }
+.p2p-chip-html--confirm { order: 3; }
+.p2p-kpis { order: 4; }
+
+@media (min-width: 768px) {
+  .p2p-stage {
+    position: relative; display: block; padding: 0;
+    aspect-ratio: 1000 / 620;
+    container-type: inline-size;
+  }
+  .p2p-view { display: contents; }
+  .p2p-view .p2p-svg { inset: 0; width: 100%; height: 100%; transform: none; }
+  .p2p-kpis { position: absolute; left: 2.4cqw; top: 2cqw; z-index: 3; }
+  .p2p-card { position: absolute; left: 59cqw; top: 1.6cqw; width: 39cqw; z-index: 4; }
+  .p2p-chip-html { position: absolute; left: 20cqw; top: 50.5cqw; z-index: 4; }
+  .p2p-chip-html--paid { display: flex; opacity: 0; }
+}
+
+/* SVG labels are unreadable at phone width; the card, KPIs and caption strip carry the meaning there */
+@media (max-width: 639px) { .p2p-lbl { display: none; } }
+
+/* ───────────── KPI cards ───────────── */
+.p2p-kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0; padding: 0; list-style: none; font-size: 14px; }
+.p2p-kpis__tag {
+  grid-column: 1 / -1; justify-self: start;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--p2p-ink-2); padding: 2px 8px; border: 1px dashed var(--p2p-line); border-radius: 999px; background: var(--p2p-card);
+}
+.p2p-kpi {
+  position: relative; display: flex; flex-direction: column; justify-content: space-between; gap: 2px;
+  padding: 8px 10px; border-radius: 12px; background: var(--p2p-card); border: 1px solid var(--p2p-line);
+  box-shadow: 0 6px 16px rgba(var(--p2p-shadow), 0.1);
+}
+.p2p-kpi__label { font-size: 11px; line-height: 1.2; font-weight: 600; color: var(--p2p-ink-2); }
+.p2p-kpi__value { font-family: inherit; font-size: 20px; line-height: 24px; font-weight: 800; letter-spacing: -0.5px; color: var(--p2p-ink); font-variant-numeric: tabular-nums; }
+.p2p-kpi--held .p2p-kpi__value { color: var(--p2p-danger); }
+.p2p-kpi--held::after {            /* pulse ring: transform + opacity only */
+  content: ''; position: absolute; inset: -2px; border-radius: 14px; border: 2px solid var(--p2p-danger); opacity: 0; pointer-events: none;
+}
+.p2p-odo { display: block; height: 24px; overflow: hidden; }
+.p2p-odo__strip { display: block; transform: translateY(-83.3333%); }
+.p2p-odo__strip > span { display: block; height: 24px; }
+
+@media (min-width: 768px) {
+  .p2p-kpis { width: 57cqw; gap: 0.8cqw; }
+  .p2p-kpis__tag { font-size: clamp(9px, 1cqw, 12px); }
+  .p2p-kpi { padding: 0.8cqw 1cqw; border-radius: 1.1cqw; }
+  .p2p-kpi__label { font-size: clamp(9px, 1.08cqw, 13px); }
+  .p2p-kpi__value { font-size: clamp(14px, 2cqw, 24px); line-height: 1.2; }
+  .p2p-odo, .p2p-odo__strip > span { height: calc(clamp(14px, 2cqw, 24px) * 1.2); }
+}
+@media (max-width: 479px) {
+  .p2p-kpis { grid-template-columns: 1fr; }
+  .p2p-kpi { flex-direction: row; align-items: center; }
+  .p2p-kpi__label { max-width: 60%; }
+}
+
+/* ───────────── Evidence card (the visual anchor) ───────────── */
+.p2p-card {
+  border-radius: 16px; background: var(--p2p-card); color: var(--p2p-ink);
+  border: 2px solid var(--p2p-danger); padding: 14px 16px 14px;
+  box-shadow: 0 22px 48px rgba(var(--p2p-shadow), 0.28), 0 4px 10px rgba(var(--p2p-shadow), 0.12);
+  font-size: 14px;
+}
+.p2p-card__head { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; }
+.p2p-card__ico { flex: none; width: 1.5em; height: 1.5em; border-radius: 8px; display: grid; place-items: center; background: var(--p2p-danger-soft); color: var(--p2p-danger); }
+.p2p-card__ico svg { width: 1em; height: 1em; }
+.p2p-card__title { margin: 0; font-size: 1.12em; line-height: 1.2; font-weight: 800; letter-spacing: -0.2px; color: var(--p2p-danger); }
+.p2p-card__rows { margin: 0; display: grid; gap: 0; }
+.p2p-card__row { display: grid; grid-template-columns: 6.2em minmax(0, 1fr); gap: 8px; padding: 4px 0; border-top: 1px solid var(--p2p-line); align-items: baseline; }
+.p2p-card__row dt { font-size: 0.82em; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--p2p-ink-2); }
+.p2p-card__row dd { margin: 0; font-weight: 700; line-height: 1.3; font-variant-numeric: tabular-nums; }
+.p2p-eq { display: inline-block; margin: 0 0.35em; padding: 0 0.3em; border-radius: 6px; background: var(--p2p-danger-soft); color: var(--p2p-danger); font-weight: 800; }
+.p2p-sl { margin: 0 0.35em; color: var(--p2p-ink-2); font-weight: 600; }
+.p2p-card__note { display: block; margin-top: 2px; font-size: 0.82em; font-weight: 600; color: var(--p2p-ink-2); }
+.p2p-card__foot { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 6px; padding-top: 10px; border-top: 1px solid var(--p2p-line); }
+.p2p-analyst { display: flex; align-items: center; gap: 8px; font-size: 0.85em; font-weight: 600; color: var(--p2p-ink-2); }
+.p2p-analyst__av { width: 2.1em; height: 2.1em; border-radius: 50%; display: grid; place-items: center; background: var(--p2p-accent-soft); color: var(--p2p-accent); }
+.p2p-analyst__av svg { width: 1.3em; height: 1.3em; }
+.p2p-btn { position: relative; display: inline-grid; min-width: 7.6em; height: 2.6em; border-radius: 10px; font-weight: 700; font-size: 1em; overflow: hidden; }
+.p2p-btn > span { grid-area: 1 / 1; display: flex; align-items: center; justify-content: center; gap: 0.4em; }
+.p2p-btn__idle { background: var(--p2p-accent); color: #fff; opacity: 0; }
+.p2p-btn__done { background: var(--p2p-ok); color: #fff; }
+.p2p-cursor { position: absolute; right: 1.2em; bottom: -0.6em; width: 1.7em; height: 1.7em; opacity: 0; pointer-events: none; filter: drop-shadow(0 2px 3px rgba(var(--p2p-shadow), 0.4)); }
+.p2p-cursor svg { width: 100%; height: 100%; display: block; }
+
+@media (min-width: 768px) {
+  .p2p-card { font-size: clamp(11px, 1.3cqw, 16px); padding: 1cqw 1.4cqw; border-radius: 1.5cqw; }
+}
+
+/* HTML label chips */
+.p2p-chip-html {
+  display: flex; align-items: center; gap: 0.5em; padding: 0.55em 0.9em; border-radius: 999px;
+  background: var(--p2p-card); color: var(--p2p-ink); font-size: 14px; font-weight: 700; line-height: 1.25;
+  border: 1.5px solid var(--p2p-ok); box-shadow: 0 8px 20px rgba(var(--p2p-shadow), 0.18);
+}
+.p2p-chip-html svg { flex: none; width: 1.3em; height: 1.3em; color: var(--p2p-ok); }
+.p2p-chip-html--paid { border-color: var(--p2p-accent); }
+.p2p-chip-html--paid svg { color: var(--p2p-accent); }
+@media (min-width: 768px) { .p2p-chip-html { font-size: clamp(10px, 1.4cqw, 16px); } }
+@media (max-width: 767px) { .p2p-chip-html--confirm { align-self: flex-start; } .p2p .p2p-chip-html--paid { display: none; } }
+
+/* ───────────── SVG parts ───────────── */
+.p2p svg { overflow: visible; }
+.p2p .s-top.s-g { fill: var(--p2p-g-top); } .p2p .s-left.s-g { fill: var(--p2p-g-left); } .p2p .s-right.s-g { fill: var(--p2p-g-right); }
+.p2p .s-top.s-w { fill: var(--p2p-w-top); } .p2p .s-left.s-w { fill: var(--p2p-w-left); } .p2p .s-right.s-w { fill: var(--p2p-w-right); }
+.p2p .s-top.s-b { fill: var(--p2p-b-top); } .p2p .s-left.s-b { fill: var(--p2p-b-left); } .p2p .s-right.s-b { fill: var(--p2p-b-right); }
+.p2p .s-top.s-bl { fill: var(--p2p-bl-top); } .p2p .s-left.s-bl { fill: var(--p2p-bl-left); } .p2p .s-right.s-bl { fill: var(--p2p-bl-right); }
+.p2p .s-top.s-k { fill: var(--p2p-k-top); } .p2p .s-left.s-k { fill: var(--p2p-k-left); } .p2p .s-right.s-k { fill: var(--p2p-k-right); }
+.p2p .s-top.s-r { fill: var(--p2p-r-top); } .p2p .s-left.s-r { fill: var(--p2p-r-left); } .p2p .s-right.s-r { fill: var(--p2p-r-right); }
+.p2p .s-top.s-lp { fill: var(--p2p-lp-top); } .p2p .s-left.s-lp { fill: var(--p2p-lp-left); } .p2p .s-right.s-lp { fill: var(--p2p-lp-right); }
+.p2p .s-top.s-lq { fill: var(--p2p-lq-top); } .p2p .s-left.s-lq { fill: var(--p2p-lq-left); } .p2p .s-right.s-lq { fill: var(--p2p-lq-right); }
+.p2p .s-top.s-rd { fill: var(--p2p-rd-top); } .p2p .s-left.s-rd { fill: var(--p2p-rd-left); } .p2p .s-right.s-rd { fill: var(--p2p-rd-right); }
+
+.p2p .shadow { fill: rgba(var(--p2p-shadow), 0.22); }
+.p2p .win { fill: var(--p2p-k-left); opacity: 0.55; }
+.p2p .door { fill: var(--p2p-k-left); }
+.p2p .tyre { fill: var(--p2p-k-right); }
+.p2p .doc-body { fill: var(--p2p-card); stroke: var(--p2p-line); stroke-width: 1.5; }
+.p2p .doc-line { stroke: var(--p2p-neutral); stroke-width: 2; stroke-linecap: round; opacity: 0.7; }
+.p2p .supplier { fill: var(--p2p-supplier); }
+.p2p .supplier-s { stroke: var(--p2p-supplier); }
+.p2p .neutral { fill: var(--p2p-neutral); }
+.p2p .tag-a { fill: var(--p2p-acct-a); } .p2p .tag-b { fill: var(--p2p-acct-b); } .p2p .tag-n { fill: var(--p2p-neutral); }
+.p2p .tick-bg { fill: var(--p2p-ok); }
+.p2p .tick-fg { fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.p2p .pin-body { fill: var(--p2p-danger); }
+.p2p .pin-dot { fill: #fff; }
+.p2p .ring { fill: none; stroke: var(--p2p-danger); stroke-width: 2.5; }
+.p2p .link { fill: none; stroke: var(--p2p-danger); stroke-width: 2.5; stroke-dasharray: 5 5; stroke-linecap: round; }
+.p2p .bay-edge { fill: none; stroke: var(--p2p-danger); stroke-width: 1.8; stroke-dasharray: 6 5; }
+.p2p .sweep { fill: var(--p2p-accent-2); }
+.p2p .curtain { fill: var(--p2p-accent-2); }
+.p2p .glow { fill: var(--p2p-accent-soft); }
+.p2p .coin-c { fill: var(--p2p-accent); stroke: var(--p2p-card); stroke-width: 2; }
+.p2p .coin-in { fill: none; stroke: var(--p2p-card); stroke-width: 1.6; opacity: 0.8; }
+.p2p .chip rect { fill: var(--p2p-chip-bg); stroke: var(--p2p-line); stroke-width: 1.2; }
+.p2p .chip text { fill: var(--p2p-ink); font-size: 12px; font-weight: 700; font-family: inherit; text-anchor: middle; }
+.p2p .chip--held rect { stroke: var(--p2p-danger); }
+.p2p .chip--held text { fill: var(--p2p-danger); }
+.p2p .chip .chip-ok { fill: none; stroke: var(--p2p-ok); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* default (static) states of elements that exist only during the animation */
+.p2p .a-b1, .p2p .crate, .p2p .curtain, .p2p .erp-glow, .p2p .bank-glow, .p2p .sweep, .p2p .link,
+.p2p .ring, .p2p .coin, .p2p .credit { opacity: 0; }
+.p2p .bg { opacity: var(--dim); }
+.p2p .focus { transform: scale(var(--focus)); }
+
+/* ───────────── Caption strip ───────────── */
+.p2p-steps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0; padding: 12px; list-style: none; counter-reset: step; }
+.p2p-step {
+  position: relative; overflow: hidden; display: flex; align-items: center; gap: 10px;
+  padding: 12px 14px; border-radius: 14px; background: var(--p2p-card); border: 1px solid var(--p2p-line);
+  font-size: 15px; line-height: 1.25; font-weight: 600; color: var(--p2p-ink);
+}
+.p2p-step > * { position: relative; }
+.p2p-step__on { position: absolute !important; inset: 0; background: var(--p2p-accent-soft); opacity: 0; border-radius: inherit; }
+.p2p-step__bar { position: absolute !important; left: 0; right: 0; bottom: 0; height: 3px; background: var(--p2p-accent); transform: scaleX(0); transform-origin: left; }
+.p2p-step__n {
+  flex: none; width: 1.9em; height: 1.9em; border-radius: 50%; display: grid; place-items: center;
+  font-size: 0.9em; font-weight: 800; color: var(--p2p-accent); border: 2px solid var(--p2p-accent); background: var(--p2p-card);
+}
+.p2p-step:nth-child(3) .p2p-step__on { opacity: 1; }          /* static scene shows the catch step */
+.p2p-step:nth-child(3) .p2p-step__bar { transform: scaleX(1); }
+.p2p-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 0 16px 14px; }
+.p2p-note { margin: 0; flex: 1 1 320px; font-size: 13px; line-height: 1.5; color: var(--p2p-ink-2); }
+
+.p2p-pause {
+  display: none; align-items: center; gap: 6px;
+  min-height: 32px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--p2p-line);
+  background: var(--p2p-card); color: var(--p2p-ink); font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.p2p-pause:hover { border-color: var(--p2p-accent); }
+.p2p-pause svg { width: 12px; height: 12px; }
+
+@media (min-width: 768px) {
+  .p2p-steps { grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 14px 16px 12px; gap: 10px; }
+  .p2p-step { font-size: clamp(13px, 1.4vw, 16px); }
+  .p2p[data-can-animate='1'] .p2p-pause { display: inline-flex; }
+}
+
+/* ───────────── ANIMATION (only while data-live='1') ───────────── */
+@keyframes p2p-scene-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes p2p-scene-out { to { opacity: 0; } }
+@keyframes p2p-truck { from { transform: translate(var(--mx), var(--my)); opacity: 0; } 25% { opacity: 1; } to { transform: none; opacity: 1; } }
+@keyframes p2p-crate { 0% { transform: translate(0, 0); opacity: 0; } 12% { opacity: 1; } 80% { opacity: 1; } 100% { transform: translate(var(--mx), var(--my)); opacity: 0; } }
+@keyframes p2p-pop { from { transform: translateY(6px) scale(0.85); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes p2p-doc-a { from { transform: translate(var(--mx), var(--my)); opacity: 0; } 30% { opacity: 1; } to { transform: none; opacity: 1; } }
+@keyframes p2p-doc-b1 { 0% { transform: none; opacity: 1; } 82% { opacity: 1; } 100% { transform: translate(var(--mx), var(--my)); opacity: 0; } }
+@keyframes p2p-doc-b2 { from { transform: translate(var(--mx), var(--my)); opacity: 0; } 25% { opacity: 1; } to { transform: none; opacity: 1; } }
+@keyframes p2p-flash { 0%, 100% { opacity: 0; } 40% { opacity: 0.5; } }
+@keyframes p2p-glow { 0%, 100% { opacity: 0; } 45% { opacity: 0.7; } }
+@keyframes p2p-dim { to { opacity: var(--dim); } }
+@keyframes p2p-undim { from { opacity: var(--dim); } to { opacity: 1; } }
+@keyframes p2p-zoom { to { transform: scale(var(--focus)); } }
+@keyframes p2p-unzoom { from { transform: scale(var(--focus)); } to { transform: scale(1); } }
+@keyframes p2p-sweep { 0% { transform: none; opacity: 0; } 15% { opacity: 0.3; } 85% { opacity: 0.3; } 100% { transform: translate(var(--mx), var(--my)); opacity: 0; } }
+@keyframes p2p-pin { from { transform: translateY(-26px) scale(1.15); opacity: 0; } 60% { opacity: 1; } to { transform: none; opacity: 1; } }
+@keyframes p2p-ring { 0% { transform: scale(0.6); opacity: 0.7; } 100% { transform: scale(2.2); opacity: 0; } }
+@keyframes p2p-link { 0% { opacity: 0; } 20%, 100% { opacity: 1; } }
+@keyframes p2p-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes p2p-fade-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes p2p-card-in { from { transform: translateY(14px) scale(0.96); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes p2p-card-out { to { transform: translateY(-8px); opacity: 0; } }
+@keyframes p2p-chip-in { from { transform: translateY(8px) scale(0.95); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes p2p-cursor-in { from { transform: translate(3.2em, 2.4em); opacity: 0; } 25% { opacity: 1; } to { transform: none; opacity: 1; } }
+@keyframes p2p-click { 0%, 100% { transform: none; } 50% { transform: scale(0.88); } }
+@keyframes p2p-press { 0%, 100% { transform: none; } 50% { transform: scale(0.94); } }
+@keyframes p2p-held { from { transform: translate(var(--mx), var(--my)); } to { transform: none; } }
+@keyframes p2p-odo { to { transform: translateY(-83.3333%); } }
+@keyframes p2p-odo-from { from { transform: translateY(0); } }
+@keyframes p2p-pulse { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(1.12, 1.25); opacity: 0; } }
+@keyframes p2p-pay { 0% { transform: none; opacity: 1; } 70% { opacity: 1; } 100% { transform: translate(var(--mx), var(--my)) scale(0.7); opacity: 0; } }
+@keyframes p2p-coin { 0% { transform: translate(0, 0); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translate(var(--mx), var(--my)); opacity: 0; } }
+@keyframes p2p-credit { 0% { transform: scale(0); opacity: 0; } 70% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+@keyframes p2p-step-on { 0% { opacity: 0; } 8%, 92% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes p2p-step-bar { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+.p2p .ring, .p2p .tick, .p2p .credit, .p2p .grn, .p2p .pay { transform-box: fill-box; transform-origin: center; }
+
+.p2p[data-live='1'] .p2p-stage { animation: p2p-scene-in var(--fade) ease both, p2p-scene-out var(--fade) linear calc(var(--loop) - var(--fade)) forwards; }
+
+/* A — goods and invoices arrive */
+.p2p[data-live='1'] .truck { animation: p2p-truck var(--d-truck) var(--ease-out) calc(var(--t-a) + var(--o-truck)) both; }
+.p2p[data-live='1'] .crate { animation: p2p-crate var(--d-unload) var(--ease-io) calc(var(--t-a) + var(--o-unload)) both; }
+.p2p[data-live='1'] .crate--2 { animation-delay: calc(var(--t-a) + var(--o-unload) + var(--st-crate)); }
+.p2p[data-live='1'] .grn { animation: p2p-pop var(--d-grn) var(--ease-out) calc(var(--t-a) + var(--o-grn)) both; }
+.p2p[data-live='1'] .a-a--email { animation: p2p-doc-a var(--d-email) var(--ease-out) calc(var(--t-a) + var(--o-email)) both; }
+.p2p[data-live='1'] .a-a--paper { animation: p2p-doc-a var(--d-paper) var(--ease-out) calc(var(--t-a) + var(--o-paper)) both; }
+
+/* B — OCR, ERP, onto the payment proposal */
+.p2p[data-live='1'] .a-b1 { animation: p2p-doc-b1 calc(var(--d-b) - var(--d-exit)) var(--ease-io) var(--t-b) both; }
+.p2p[data-live='1'] .curtain { animation: p2p-flash var(--d-ocr) ease-in-out calc(var(--t-b) + var(--o-ocr)) both; }
+.p2p[data-live='1'] .erp-glow { animation: p2p-glow var(--d-erp) ease-in-out calc(var(--t-b) + var(--o-erp)) both; }
+.p2p[data-live='1'] .a-b2 { animation: p2p-doc-b2 var(--d-exit) var(--ease-out) calc(var(--t-b) + var(--d-b) - var(--d-exit)) both; }
+.p2p[data-live='1'] .tick { animation: p2p-pop 0.3s var(--ease-out) calc(var(--t-b) + var(--d-b) - 0.2s) both; }
+
+/* C — the catch */
+.p2p[data-live='1'] .bg { opacity: 1; animation: p2p-dim var(--d-dim) ease forwards var(--t-c), p2p-undim var(--d-out) ease forwards var(--t-d); }
+.p2p[data-live='1'] .focus { transform: none; animation: p2p-zoom var(--d-dim) var(--ease-io) var(--t-c) forwards, p2p-unzoom var(--d-out) var(--ease-io) var(--t-d) forwards; }
+.p2p[data-live='1'] .sweep { animation: p2p-sweep var(--d-sweep) ease-in calc(var(--t-c) + var(--o-sweep)) both; }
+.p2p[data-live='1'] .pin { animation: p2p-pin var(--d-pin) var(--ease-out) calc(var(--t-c) + var(--o-pin)) both; }
+.p2p[data-live='1'] .ring { animation: p2p-ring 0.8s ease-out calc(var(--t-c) + var(--o-pin) + 0.2s) 3 both; }
+.p2p[data-live='1'] .link { animation: p2p-link var(--d-pin) ease calc(var(--t-c) + var(--o-pin)) both, p2p-fade-out 0.3s ease calc(var(--t-c) + var(--o-held)) forwards; }
+.p2p[data-live='1'] .held-move { animation: p2p-held var(--d-held) var(--ease-io) calc(var(--t-c) + var(--o-held)) both; }
+.p2p[data-live='1'] .bay { animation: p2p-fade-in var(--d-held) ease calc(var(--t-c) + var(--o-held) - 0.3s) both; }
+
+.p2p[data-live='1'] .p2p-card { animation: p2p-card-in var(--d-card) var(--ease-out) calc(var(--t-c) + var(--o-card)) both, p2p-card-out var(--d-card-out) ease calc(var(--t-d) + var(--o-card-out)) forwards; }
+.p2p[data-live='1'] .p2p-cursor { animation: p2p-cursor-in var(--d-cursor) var(--ease-io) calc(var(--t-c) + var(--o-cursor)) both, p2p-click var(--d-click) ease calc(var(--t-c) + var(--o-click)) both, p2p-fade-out 0.3s ease calc(var(--t-c) + var(--o-click) + 0.35s) forwards; }
+.p2p[data-live='1'] .p2p-btn { animation: p2p-press var(--d-click) ease calc(var(--t-c) + var(--o-click)) both; }
+.p2p[data-live='1'] .p2p-btn__idle { animation: p2p-fade-out 0.15s linear calc(var(--t-c) + var(--o-click) + 0.1s) forwards; opacity: 1; }
+.p2p[data-live='1'] .p2p-btn__done { animation: p2p-fade-in 0.15s linear calc(var(--t-c) + var(--o-click) + 0.1s) both; }
+.p2p[data-live='1'] .p2p-chip-html--confirm { animation: p2p-chip-in var(--d-confirm) var(--ease-out) calc(var(--t-c) + var(--o-confirm)) both, p2p-fade-out var(--d-card-out) ease calc(var(--t-d) + var(--o-card-out)) forwards; }
+
+.p2p[data-live='1'] .p2p-odo__strip { animation: p2p-odo var(--d-kpi) steps(5, jump-end) calc(var(--t-c) + var(--o-kpi)) both; transform: translateY(0); }
+.p2p[data-live='1'] .p2p-kpi--held::after { animation: p2p-pulse 0.5s ease-out calc(var(--t-c) + var(--o-kpi)) 2 both; }
+
+/* D — eligible invoices paid, suppliers credited */
+.p2p[data-live='1'] .pay { animation: p2p-pay var(--d-pay) var(--ease-io) calc(var(--t-d) + var(--o-pay)) both; }
+.p2p[data-live='1'] .pay--1 { animation-delay: calc(var(--t-d) + var(--o-pay) + var(--st-pay)); }
+.p2p[data-live='1'] .pay--2 { animation-delay: calc(var(--t-d) + var(--o-pay) + var(--st-pay) * 2); }
+.p2p[data-live='1'] .bank-glow { animation: p2p-glow 0.8s ease-in-out calc(var(--t-d) + var(--o-pay) + var(--d-pay) - 0.6s) 2 both; }
+.p2p[data-live='1'] .p2p-chip-html--paid { animation: p2p-chip-in var(--d-paid) var(--ease-out) calc(var(--t-d) + var(--o-paid)) both; }
+.p2p[data-live='1'] .coin { animation: p2p-coin var(--d-coin) var(--ease-io) calc(var(--t-d) + var(--o-coin)) both; }
+.p2p[data-live='1'] .coin--1 { animation-delay: calc(var(--t-d) + var(--o-coin) + var(--st-coin)); }
+.p2p[data-live='1'] .coin--2 { animation-delay: calc(var(--t-d) + var(--o-coin) + var(--st-coin) * 2); }
+.p2p[data-live='1'] .credit { animation: p2p-credit var(--d-credit) var(--ease-out) calc(var(--t-d) + var(--o-credit)) both; }
+
+/* caption strip stays in sync with the phases */
+.p2p[data-live='1'] .p2p-step__on { animation: p2p-step-on var(--d) linear var(--t) both; }
+.p2p[data-live='1'] .p2p-step__bar { animation: p2p-step-bar var(--d) linear var(--t) both; }
+.p2p-step:nth-child(1) { --t: var(--t-a); --d: var(--d-a); }
+.p2p-step:nth-child(2) { --t: var(--t-b); --d: var(--d-b); }
+.p2p-step:nth-child(3) { --t: var(--t-c); --d: var(--d-c); }
+.p2p-step:nth-child(4) { --t: var(--t-d); --d: var(--d-d); }
+
+@media (prefers-reduced-motion: reduce) {
+  .p2p *, .p2p *::after { animation: none !important; transition: none !important; }
+}

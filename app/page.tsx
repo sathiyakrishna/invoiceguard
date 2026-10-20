@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Logo } from '@/components/Logo';
 import { RiskBadge } from '@/components/RiskBadge';
 import Faq from '@/components/Faq';
+import P2PAnimation from '@/components/P2PAnimation';
 
 const PREVIEW = [
   { band: 'High' as const, vendor: 'Bosch Ltd', refs: 'INV-0012 · INV0012', amt: '₹1,25,000.00' },
@@ -107,6 +108,12 @@ export default function Landing() {
           </dl>
         </section>
       </div>
+
+      <section aria-labelledby="flow" className="mx-auto max-w-[1240px] px-6 pb-4 pt-16 sm:px-8">
+        <h2 id="flow" className={`mb-3 max-w-3xl ${H2}`}>Where the duplicate gets caught</h2>
+        <p className={`mb-8 max-w-2xl ${BODY}`}>InvoiceGuard scans the payment proposal after the invoices are posted and before the money moves.</p>
+        <P2PAnimation />
+      </section>
 
       <section aria-labelledby="gap" className="mx-auto max-w-[1240px] px-6 py-20 sm:px-8">
         <h2 id="gap" className={`mb-10 max-w-3xl ${H2}`}>What SAP’s duplicate check lets through</h2>
