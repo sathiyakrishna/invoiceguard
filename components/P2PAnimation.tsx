@@ -96,12 +96,11 @@ const Icon = {
 };
 
 const STEPS = ['Supplier delivers goods & invoice', 'Posted in ERP', 'InvoiceGuard catches duplicate', 'Payment credited to supplier'];
-const MOBILE_STEPS = ['Supplier delivers goods & invoice', 'Posted in ERP (PO and non-PO)', 'InvoiceGuard catches the duplicate', 'Payment credited to supplier'];
 const ODO = ['₹0', '₹1,06,802', '₹2,13,603', '₹3,20,405', '₹4,27,206', '₹5,34,008'];
 
-function Evidence({ variant }: { variant: 'd' | 'm' }) {
+function Evidence() {
   return (
-    <article className={`p2p-card p2p-card--${variant}`} aria-label="Duplicate evidence">
+    <article className="p2p-card" aria-label="Duplicate evidence">
       <h3 className="p2p-card__head">
         <span className="p2p-card__ico">{Icon.warn}</span>
         <span className="p2p-card__title">Potential duplicate — review required</span>
@@ -121,14 +120,14 @@ function Evidence({ variant }: { variant: 'd' | 'm' }) {
           <span className="p2p-btn__idle">Confirm</span>
           <span className="p2p-btn__done">{Icon.check}Confirmed</span>
         </span>
-        {variant === 'd' && <span className="p2p-cursor">{Icon.cursor}</span>}
+        <span className="p2p-cursor">{Icon.cursor}</span>
       </div>
     </article>
   );
 }
 
-const ConfirmChip = ({ variant }: { variant: 'd' | 'm' }) => (
-  <p className={`p2p-chip-html p2p-chip-html--confirm p2p-chip-html--${variant}`} aria-hidden={variant === 'd' ? true : undefined}>{Icon.lock}<span>Confirmed → payment block set in ERP</span></p>
+const ConfirmChip = () => (
+  <p className="p2p-chip-html p2p-chip-html--confirm" aria-hidden="true">{Icon.lock}<span>Confirmed → payment block set in ERP</span></p>
 );
 
 function readSeconds(el: HTMLElement, name: string, fallback: number) {
@@ -140,7 +139,7 @@ function readSeconds(el: HTMLElement, name: string, fallback: number) {
 
 export default function P2PAnimation() {
   const root = useRef<HTMLElement>(null);
-  const [canAnimate, setCanAnimate] = useState(false); // motion allowed (desktop scene and phone timeline both animate)
+  const [canAnimate, setCanAnimate] = useState(false); // motion allowed
   const [inView, setInView] = useState(false);
   const [paused, setPaused] = useState(false);
 
@@ -342,8 +341,8 @@ export default function P2PAnimation() {
           </li>
         </ul>
 
-        <Evidence variant="d" />
-        <ConfirmChip variant="d" />
+        <Evidence />
+        <ConfirmChip />
         <p className="p2p-chip-html p2p-chip-html--paid" aria-hidden="true">{Icon.bank}<span>Payment executed for eligible invoices</span></p>
       </div>
 
@@ -354,21 +353,6 @@ export default function P2PAnimation() {
             <span className="p2p-step__n" aria-hidden="true">{i + 1}</span>
             <span>{s}</span>
             <span className="p2p-step__bar" aria-hidden="true" />
-          </li>
-        ))}
-      </ol>
-
-      <ol className="p2p-tl" aria-label="Steps">
-        {MOBILE_STEPS.map((t, i) => (
-          <li key={t} className={`p2p-tl__item${i === 2 ? ' is-open' : ''}`}>
-            <span className="p2p-tl__n" aria-hidden="true">{i + 1}<span className="p2p-tl__nf">{i + 1}</span></span>
-            <span className="p2p-tl__t">{t}</span>
-            {i === 2 && (
-              <div className="p2p-tl__body">
-                <Evidence variant="m" />
-                <ConfirmChip variant="m" />
-              </div>
-            )}
           </li>
         ))}
       </ol>

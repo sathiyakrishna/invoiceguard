@@ -109,7 +109,7 @@ export default function Landing() {
         </section>
       </div>
 
-      <section aria-labelledby="flow" className="mx-auto max-w-[1240px] px-6 pb-4 pt-16 sm:px-8">
+      <section aria-labelledby="flow" className="mx-auto hidden max-w-[1240px] px-6 pb-4 pt-16 sm:px-8 md:block">
         <h2 id="flow" className={`mb-3 max-w-3xl ${H2}`}>Where the duplicate gets caught</h2>
         <p className={`mb-8 max-w-2xl ${BODY}`}>InvoiceGuard scans the payment proposal after the invoices are posted and before the money moves.</p>
         <P2PAnimation />
