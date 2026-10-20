@@ -14,6 +14,7 @@ module.exports = async function check(output, context) {
   const missing = labels.map((_, i) => i).filter((i) => !answers.has(i));
   if (missing.length || parsed.data.results.length !== labels.length) return { pass: false, score: 0, reason: `expected ${labels.length} answers, missing indexes: ${missing.join(',') || 'none'}` };
   let right = 0, falseMatches = 0, misses = 0;
+  if (labels.every((l) => l.gated === false)) return { pass: true, score: 1, reason: 'report-only batch: answered, not scored' };
   labels.forEach((l, i) => {
     const said = answers.get(i);
     if (said === l.same) right++;

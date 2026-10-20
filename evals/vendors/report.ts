@@ -12,9 +12,10 @@ const file = process.argv[2] ?? 'evals/vendors/results.json';
 const data = JSON.parse(readFileSync(file, 'utf8'));
 const results: any[] = data.results?.results ?? data.results ?? [];
 
-type Label = { id: number; nameA: string; nameB: string; same: boolean; kind: string };
+type Label = { id: number; nameA: string; nameB: string; same: boolean | null; kind: string; gated?: boolean };
 let total = 0, correct = 0, falseMatches = 0, misses = 0, same = 0, different = 0, errors = 0, invalid = 0;
 const wrong: string[] = [];
+const reportOnly: string[] = [];
 let tokens = 0;
 let model = '';
 
@@ -22,11 +23,16 @@ for (const r of results) {
   tokens += r.response?.tokenUsage?.total ?? 0;
   model = r.response?.metadata?.model ?? model;
   const labels: Label[] = r.vars?.labels ?? r.testCase?.vars?.labels ?? [];
-  if (r.error || !r.response) { errors += labels.length; continue; }
+  if (r.error || !r.response) { errors += labels.filter((l) => l.gated !== false).length; continue; }
   let parsed;
-  try { parsed = VendorOut.parse(JSON.parse(r.response.output)); } catch { invalid += labels.length; continue; }
+  try { parsed = VendorOut.parse(JSON.parse(r.response.output)); } catch { invalid += labels.filter((l) => l.gated !== false).length; continue; }
   const answers = new Map(parsed.results.map((x) => [x.i, x]));
   labels.forEach((l, i) => {
+    if (l.gated === false) {
+      const a = answers.get(i);
+      reportOnly.push(`"${l.nameA}" vs "${l.nameB}" -> ${a ? (a.same_supplier ? 'same' : 'different') : 'no answer'}${a ? ` ("${a.reason}")` : ''}   [${l.kind}]`);
+      return;
+    }
     total++;
     l.same ? same++ : different++;
     const said = answers.get(i);
@@ -43,6 +49,7 @@ console.log(`  accuracy       ${pct(correct, total)} (${correct}/${total})`);
 console.log(`  false matches  ${falseMatches} of ${different} different-supplier pairs (${pct(falseMatches, different)}); ${pct(falseMatches, total)} of all pairs`);
 console.log(`  misses         ${misses} of ${same} same-supplier pairs (${pct(misses, same)})`);
 if (errors || invalid) console.log(`  not scored     ${errors} pairs errored, ${invalid} unparseable`);
+if (reportOnly.length) { console.log(String.fromCharCode(10) + 'Ambiguous pairs (report only, not scored)'); for (const w of reportOnly) console.log(`  ${w}`); }
 if (wrong.length) { console.log('\nWrong answers'); for (const w of wrong) console.log(`  ${w}`); }
 
 const rate = total ? falseMatches / total : 1;

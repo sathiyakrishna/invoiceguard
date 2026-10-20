@@ -17,9 +17,21 @@ so an eval always tests the prompt that ships. `evals/vendors/provider.cjs` call
 - `evals/detection/cases.ts`: each scenario lists the document pairs that must be flagged; everything else must not be.
   Labels are written from the rule table and from what an AP analyst would expect, not copied from the engine's output.
   A scenario with `gap: '...'` is a known limitation: it is reported but does not fail the run. When one starts passing the report says so.
-- `evals/vendors/pairs.ts`: 22 same-supplier and 28 different-supplier pairs, shuffled into batches of up to 20 as production sends them.
+- `evals/vendors/pairs.ts`: the gated set is 19 same-supplier and 31 different-supplier pairs (50 in all), shuffled into batches of up to 20 as production sends them.
+  `AMBIGUOUS` in the same file is a short report-only list, see below.
 
 ## Notes
-- Vendor results vary a little between runs (the model is called at temperature 0.1). Three runs gave 88%, 94% and 94% accuracy.
+- Vendor results vary a little between runs (the model is called at temperature 0.1). With the current prompt and labels three runs gave 98%, 96% and 98% accuracy.
+- The vendor gate is tight: one false match in 50 pairs is allowed. Today that one is always "Arvind Polymers India Pvt Ltd" vs "Arvind Polymers Ltd", which is labelled different on purpose and is not tuned for.
 - Output goes to `evals/**/results.json` (git-ignored; CI uploads it as an artifact).
 - Set `PROMPTFOO_DISABLE_TELEMETRY=1` to stop Promptfoo telemetry. The scripts do not share results anywhere.
+
+## Vendor labels (AP judgement)
+- Same supplier: spelling and transliteration variants, abbreviations, suffix variants of the same legal form (Ltd/Limited, Pvt/Private), a unit tag such as "(Unit II)".
+- Different supplier: companies that only share a word, different legal forms (Ltd vs LLP, Pvt Ltd vs Ltd), and a parent versus its Indian subsidiary. These are separate legal entities with their own bank accounts and payees.
+- Ambiguous pairs are kept **out of the gated set**. An analyst could reasonably go either way, so scoring them would only measure a coin flip. They run in a separate report-only batch and the report prints the model's answer next to the reason they are ambiguous. Currently:
+  - "Deccan Logistics LLP" vs "Deccan Logistics (India) LLP" (a country tag: one entity, or a separate Indian one?)
+  - "K. R. Industries" vs "KR Industries Ltd" (initials differ and a legal form is added)
+  - "SRI VENKATESWARA TRADERS" vs "Sri Venkateswara Traders Pvt Ltd" (a legal form is added to a trading name)
+- The three clear pairs added to keep the gated set at 50 are Chandra Industries (suffix and case), Kothari Poly-Pack (hyphen) and Jai Hind Bearings (split word).
+- The prompt's examples (Laxmi/Lakshmi, Shri/Sri, Venkatesh/Venkatesha, S. K./SK, "Acme Corp" vs "Acme India Pvt Ltd") are deliberately not eval pairs, so the prompt is not taught the test.

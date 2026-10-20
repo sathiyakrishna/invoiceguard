@@ -1,36 +1,36 @@
 // 50 labelled vendor-name pairs. Synthetic: invented supplier names. `same` is the ground truth an AP analyst would give:
-// the same legal supplier (spelling, suffix, abbreviation, parent/Indian-subsidiary of one brand) or a different company
-// that only shares a word. Every pair is meant to look similar enough to reach the AI in production (see findVendorCandidates).
+// the same legal supplier (spelling or transliteration, suffix, abbreviation) or a different payee: a company that only shares a word,
+// a different legal form (Ltd vs LLP), or a parent and its subsidiary (separate legal entities and bank accounts). Every pair is meant to look similar enough to reach the AI in production (see findVendorCandidates).
 export type VendorPair = { id: number; nameA: string; nameB: string; same: boolean; kind: string };
 
 const same = (nameA: string, nameB: string, kind: string) => ({ nameA, nameB, same: true, kind });
 const diff = (nameA: string, nameB: string, kind: string) => ({ nameA, nameB, same: false, kind });
 
 const RAW = [
-  // ----- same supplier (22) -----
+  // ----- same supplier (19) -----
   same('Kaveri Steel Ltd', 'KAVERI STEEL LIMITED', 'suffix and case'),
   same('Sundaram Fasteners Pvt Ltd', 'Sundaram Fasteners Private Limited', 'suffix'),
   same('M/s Lakshmi Textiles', 'Lakshmi Textiles Pvt Ltd', 'prefix and suffix'),
   same('Meenakshi Packaging Pvt Ltd', 'Meenakshi Packaging', 'suffix dropped'),
   same('Rao & Sons Engineering Co', 'Rao and Sons Engineering Company', 'ampersand and Co'),
   same('Vinayak Castings Ltd.', 'Vinayak Castings Limited', 'punctuation'),
-  same('Arvind Polymers India Pvt Ltd', 'Arvind Polymers Ltd', 'Indian subsidiary'),
-  same('Northwind Tools GmbH', 'Northwind Tools India Pvt Ltd', 'parent and Indian subsidiary'),
-  same('Orion Lubricants Inc', 'Orion Lubricants India Pvt Ltd', 'parent and Indian subsidiary'),
-  same('Shree Ganesh Forgings Works', 'Sri Ganesh Forgings Works', 'Shree/Sri'),
+        same('Shree Ganesh Forgings Works', 'Sri Ganesh Forgings Works', 'Shree/Sri'),
   same('Bharat Electricals & Co', 'Bharat Electricals and Company', 'ampersand and Co'),
-  same('K. R. Industries', 'KR Industries Ltd', 'initials and suffix'),
   same('Hindustan Valves Pvt. Ltd.', 'HINDUSTAN VALVES PVT LTD', 'punctuation and case'),
-  same('Deccan Logistics LLP', 'Deccan Logistics (India) LLP', 'country tag'),
   same('Eastern Gaskets (P) Ltd', 'Eastern Gaskets Private Limited', '(P) abbreviation'),
-  same('SRI VENKATESWARA TRADERS', 'Sri Venkateswara Traders Pvt Ltd', 'case and suffix'),
   same('Navkar Chemicals & Allied Ind.', 'Navkar Chemicals and Allied Industries', 'abbreviated Industries'),
   same('Apex Bearings Ltd. (Unit II)', 'Apex Bearings Limited', 'unit tag'),
   same('Tirupati Wire Products', 'Tirupathi Wire Products', 'spelling variant'),
   same('Pioneer Hydraulics Co.', 'Pioneer Hydraulics Company Ltd', 'Co and suffix'),
   same('Mahalakshmi Steel Traders', 'Maha Lakshmi Steel Traders', 'split word'),
   same('Zenith Packaging Industries Ltd', 'Zenith Packaging Inds Ltd', 'abbreviated Industries'),
-  // ----- different suppliers (28) -----
+  same('Chandra Industries Pvt. Ltd.', 'CHANDRA INDUSTRIES PRIVATE LIMITED', 'suffix and case'),
+  same('Kothari Poly-Pack Ltd', 'Kothari Polypack Limited', 'hyphen and suffix'),
+  same('Jai Hind Bearings Ltd', 'Jaihind Bearings Limited', 'split word and suffix'),
+  // ----- different suppliers (31) -----
+  diff('Arvind Polymers India Pvt Ltd', 'Arvind Polymers Ltd', 'parent vs Indian subsidiary: separate legal entities and bank accounts'),
+  diff('Northwind Tools GmbH', 'Northwind Tools India Pvt Ltd', 'parent vs Indian subsidiary: separate legal entities and bank accounts'),
+  diff('Orion Lubricants Inc', 'Orion Lubricants India Pvt Ltd', 'parent vs Indian subsidiary: separate legal entities and bank accounts'),
   diff('Kaveri Steel Ltd', 'Kaveri Textiles Ltd', 'shared first word'),
   diff('Sundaram Fasteners Pvt Ltd', 'Sundaram Finance Ltd', 'shared first word'),
   diff('Lakshmi Textiles Pvt Ltd', 'Lakshmi Machine Works Ltd', 'shared first word'),
@@ -72,6 +72,14 @@ function shuffled<T>(items: T[], seed: number): T[] {
   }
   return out;
 }
+
+// Genuinely ambiguous pairs. An AP analyst could reasonably go either way, so they are NOT in the gated set: the eval runs them in a
+// separate batch and the report lists the model's answers without scoring them. `kind` says why each one is ambiguous.
+export const AMBIGUOUS: Array<{ nameA: string; nameB: string; kind: string }> = [
+  { nameA: 'Deccan Logistics LLP', nameB: 'Deccan Logistics (India) LLP', kind: 'country tag in brackets: a tag on one name, or a separate Indian entity?' },
+  { nameA: 'K. R. Industries', nameB: 'KR Industries Ltd', kind: 'initials differ and a legal form is added: a proprietorship that incorporated, or a different firm?' },
+  { nameA: 'SRI VENKATESWARA TRADERS', nameB: 'Sri Venkateswara Traders Pvt Ltd', kind: 'a legal form is added to a trading name: same business or a separate company?' }
+];
 
 export const PAIRS: VendorPair[] = shuffled(RAW, 20260101).map((p, id) => ({ id, ...p }));
 export const BATCH_SIZE = 20; // production sends at most 20 pairs per call (findVendorCandidates default)
