@@ -1,0 +1,18 @@
+# Vendor-matching eval. The prompt, user message, schema and max_tokens come from lib/ai-prompts.ts, the same code the app uses.
+# Run with: npm run eval:vendors   (needs OPENAI_API_KEY, read from .env.local)
+description: InvoiceGuard AI vendor matching
+
+prompts:
+  - '{{ user }}'
+
+providers:
+  - id: file://provider.cjs
+    label: openai-vendor-match
+
+tests: file://tests.cjs
+
+defaultTest:
+  assert:
+    - type: javascript
+      value: file://assert.cjs
+

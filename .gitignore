@@ -4,3 +4,7 @@ node_modules
 .env.local
 *.tsbuildinfo
 answer_key.csv
+
+# eval outputs
+evals/**/results.json
+evals/**/outputs/

@@ -9,7 +9,10 @@
     "lint": "next lint",
     "test": "vitest run",
     "sample": "node scripts/generate-sample.mjs",
-    "demo-users": "node scripts/create-demo-users.mjs"
+    "demo-users": "node scripts/create-demo-users.mjs",
+    "eval:detection": "tsx evals/detection/run.ts",
+    "eval:vendors": "node --env-file-if-exists=.env.local node_modules/promptfoo/dist/src/entrypoint.js eval -c evals/vendors/promptfooconfig.yaml --no-cache --no-share --no-table --no-progress-bar -o evals/vendors/results.json && tsx evals/vendors/report.ts",
+    "eval:vendors:check": "tsx evals/vendors/check-pairs.ts"
   },
   "dependencies": {
     "@supabase/ssr": "0.5.2",
@@ -30,7 +33,9 @@
     "@types/react-dom": "18.3.1",
     "autoprefixer": "10.4.20",
     "postcss": "8.4.47",
+    "promptfoo": "0.124.1",
     "tailwindcss": "3.4.14",
+    "tsx": "4.23.15",
     "typescript": "5.6.3",
     "vitest": "2.1.3"
   }

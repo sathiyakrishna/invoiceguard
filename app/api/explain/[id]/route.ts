@@ -2,24 +2,11 @@ import { NextResponse } from 'next/server';
 import { requireUser } from '@/lib/supabase/server';
 import { consume, QUOTA_MESSAGES } from '@/lib/limits';
 import { explainFlag } from '@/lib/ai';
+import { pickInvoice as pick } from '@/lib/ai-prompts';
 import { FLAG_SELECT, type Flag } from '@/lib/flags';
 import { RULES, suggestedAction, type RuleId } from '@/lib/detect';
-import { rupees } from '@/lib/format';
 
 export const maxDuration = 30;
-
-// YYYY-MM-DD -> DD/MM/YYYY
-const ddmmyyyy = (iso: string | null | undefined) => {
-  if (!iso) return '';
-  const [y, m, d] = iso.slice(0, 10).split('-');
-  return `${d}/${m}/${y}`;
-};
-
-// Amounts and dates are pre-formatted so the AI copies them instead of reformatting.
-const pick = (i: Flag['a']) => ({
-  vendor_id: i.vendor_id ?? '', vendor_name: i.vendor_name ?? '', invoice_no: i.invoice_ref ?? '', invoice_date: ddmmyyyy(i.invoice_date),
-  amount: rupees(i.amount), cleared_on: ddmmyyyy(i.clearing_date), company_code: i.company_code ?? '', po_number: i.po_number ?? '', doc_number: i.doc_number ?? ''
-});
 
 type Reply = { status: number; body: Record<string, unknown> };
 
