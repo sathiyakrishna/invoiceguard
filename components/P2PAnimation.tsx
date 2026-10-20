@@ -128,7 +128,7 @@ function Evidence({ variant }: { variant: 'd' | 'm' }) {
 }
 
 const ConfirmChip = ({ variant }: { variant: 'd' | 'm' }) => (
-  <p className={`p2p-chip-html p2p-chip-html--confirm p2p-chip-html--${variant}`}>{Icon.lock}<span>Confirmed → payment block set in ERP</span></p>
+  <p className={`p2p-chip-html p2p-chip-html--confirm p2p-chip-html--${variant}`} aria-hidden={variant === 'd' ? true : undefined}>{Icon.lock}<span>Confirmed → payment block set in ERP</span></p>
 );
 
 function readSeconds(el: HTMLElement, name: string, fallback: number) {
@@ -185,9 +185,10 @@ export default function P2PAnimation() {
   return (
     <section ref={root} className="p2p" data-can-animate={canAnimate ? '1' : '0'} aria-labelledby="p2p-cap">
       <p id="p2p-cap" className="p2p-sr">
-        Illustrated procure-to-pay flow. A truck unloads goods and two invoices arrive, one by email and one on paper. Both are read by OCR, posted
-        in the ERP under two different vendor accounts and land in the payment proposal. InvoiceGuard flags them as a potential duplicate (invoice
-        AS-4471, amount ₹5,34,008), the analyst confirms, the payment block is set in the ERP and the duplicate is held while eligible invoices are paid.
+        Illustrated procure-to-pay flow. A supplier delivers goods by truck to the warehouse and two invoices arrive, one by email and one on
+        paper. Both are read by OCR, posted in the ERP under two different vendor accounts, one on the PO route and one on the non-PO route, and land
+        in the payment proposal. InvoiceGuard flags them as a potential duplicate (invoice AS-4471, amount ₹5,34,008). The analyst confirms, the
+        payment block is set in the ERP and the duplicate is held. Payment is then credited to the suppliers for the eligible invoices.
       </p>
 
       <div className="p2p-stage">
@@ -343,7 +344,7 @@ export default function P2PAnimation() {
 
         <Evidence variant="d" />
         <ConfirmChip variant="d" />
-        <p className="p2p-chip-html p2p-chip-html--paid">{Icon.bank}<span>Payment executed for eligible invoices</span></p>
+        <p className="p2p-chip-html p2p-chip-html--paid" aria-hidden="true">{Icon.bank}<span>Payment executed for eligible invoices</span></p>
       </div>
 
       <ol className="p2p-steps" aria-label="Steps shown in the animation">
