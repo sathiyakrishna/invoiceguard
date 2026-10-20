@@ -18,7 +18,7 @@ const at = (x: number, y: number, z = 0) => `translate(${r(X(x, y))} ${r(Y(x, y,
 const mv = (a: [number, number, number], b: [number, number, number]) =>
   ({ '--mx': `${r(X(b[0], b[1]) - X(a[0], a[1]))}px`, '--my': `${r(Y(b[0], b[1], b[2]) - Y(a[0], a[1], a[2]))}px` }) as CSSProperties;
 
-type Tone = 'g' | 'w' | 'b' | 'bl' | 'k' | 'r' | 'lp' | 'lq' | 'rd';
+type Tone = 'g' | 'w' | 'b' | 'bl' | 'k' | 'r' | 'lp' | 'lq' | 'rd' | 'gr' | 'gd' | 'tk';
 
 function Slab({ x, y, w, d, h, z = 0, tone = 'w' }: { x: number; y: number; w: number; d: number; h: number; z?: number; tone?: Tone }) {
   const t = z + h;
@@ -33,6 +33,45 @@ function Slab({ x, y, w, d, h, z = 0, tone = 'w' }: { x: number; y: number; w: n
 
 /* a flat polygon on a face or the floor */
 const Face = ({ cls, pts }: { cls: string; pts: [number, number, number][] }) => <polygon className={cls} points={pts.map((p) => pt(...p)).join(' ')} />;
+
+/* decoration: low-poly foliage (muted greens, drawn behind or beside the story elements) */
+function Cone({ x, y, w, z, h, tone }: { x: number; y: number; w: number; z: number; h: number; tone: Tone }) {
+  const apex = pt(x, y, z + h);
+  return (
+    <g>
+      <polygon className={`s-left s-${tone}`} points={[pt(x - w, y + w, z), pt(x + w, y + w, z), apex].join(' ')} />
+      <polygon className={`s-right s-${tone}`} points={[pt(x + w, y + w, z), pt(x + w, y - w, z), apex].join(' ')} />
+    </g>
+  );
+}
+function Plant({ x, y, tree = false, n = 0 }: { x: number; y: number; tree?: boolean; n?: number }) {
+  return (
+    <g>
+      <g transform={at(x, y)}><ellipse className="tshadow" cx={5} cy={2} rx={tree ? 13 : 9} ry={tree ? 5 : 3.5} /></g>
+      <g className="sway" style={{ '--sd': `${(n * 0.9) % 4}s` } as CSSProperties}>
+        {tree ? (
+          <>
+            <Slab x={x - 1.5} y={y - 1.5} w={3} d={3} h={7} tone="tk" />
+            <Cone x={x} y={y} w={8} z={6} h={17} tone="gr" />
+            <Cone x={x} y={y} w={5.5} z={15} h={15} tone="gd" />
+          </>
+        ) : (
+          <Cone x={x} y={y} w={6.5} z={0} h={9} tone={n % 2 ? 'gd' : 'gr'} />
+        )}
+      </g>
+    </g>
+  );
+}
+const TREES_BACK: [number, number, boolean][] = [[30, 22, true], [78, 14, true], [120, 90, false], [236, 98, false], [255, 20, false], [432, 12, true], [604, 40, false]];
+const TREES_MID: [number, number, boolean][] = [[168, 200, true], [150, 242, false], [182, 264, true], [236, 236, false], [290, 222, true], [330, 176, false], [300, 272, true], [362, 262, false], [410, 250, true], [420, 160, false]];
+const TREES_FRONT: [number, number, boolean][] = [[570, 250, true], [624, 234, false], [700, 238, true], [716, 126, false]];
+const grid = (() => {
+  let d = '';
+  for (let x = -40; x <= 720; x += 80) d += `M${pt(x, -10)}L${pt(x, 290)}`;
+  for (let y = -10; y <= 290; y += 75) d += `M${pt(-40, y)}L${pt(720, y)}`;
+  return d;
+})();
+const laneMark = (y: number, z: number) => [pt(46, y, z), pt(454, y, z)].join(' ');
 
 /* every in-scene label uses this one pill; only "Held" swaps in the red variant */
 function Chip({ x, y, text, cls = '' }: { x: number; y: number; text: string; cls?: string }) {
@@ -69,6 +108,13 @@ function PaperDoc({ neutral = false }: { neutral?: boolean }) {
   );
 }
 const Tag = ({ tone }: { tone: 'a' | 'b' | 'n' }) => <rect className={`tag-${tone}`} x={-13} y={-13} width={26} height={7} rx={3.5} />;
+const Lock = () => (
+  <g className="lock" transform="translate(19 -55)">
+    <circle className="lock-bg" r={7.5} />
+    <path className="lock-fg" d="M-2.3 -0.6v-1.7a2.3 2.3 0 0 1 4.6 0v1.7" />
+    <rect className="lock-body" x={-3.6} y={-0.6} width={7.2} height={5.2} rx={1.2} />
+  </g>
+);
 const Tick = () => (
   <g className="tick" transform="translate(19 -55)">
     <circle className="tick-bg" r={7.5} />
@@ -193,13 +239,28 @@ export default function P2PAnimation() {
       <div className="p2p-stage">
         <div className="p2p-view">
         <svg className="p2p-svg" viewBox="0 0 1000 620" aria-hidden="true" focusable="false">
+          <defs>
+            <linearGradient id="p2p-roof" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#8abcfb" /><stop offset="1" stopColor="#5d98f3" /></linearGradient>
+            <filter id="p2p-soft" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="5" /></filter>
+          </defs>
           {/* ───── everything except the payment proposal; dims during the catch ───── */}
           <g className="bg">
             {/* ground plate */}
-                        <Slab x={-40} y={-10} w={760} d={300} h={10} z={-10} tone="g" />
+            <Slab x={-40} y={-10} w={760} d={300} h={10} z={-10} tone="g" />
+            <path className="grid" d={grid} />
+            <g className="soft" filter="url(#p2p-soft)">
+              <Face cls="bshadow" pts={[[6, 152, 0], [146, 152, 0], [146, 252, 0], [6, 252, 0]]} />
+              <Face cls="bshadow" pts={[[296, 24, 0], [420, 24, 0], [420, 176, 0], [296, 176, 0]]} />
+              <Face cls="bshadow" pts={[[622, 24, 0], [740, 24, 0], [740, 126, 0], [622, 126, 0]]} />
+              <Face cls="bshadow" pts={[[636, 150, 0], [726, 150, 0], [726, 216, 0], [636, 216, 0]]} />
+            </g>
             <Slab x={-40} y={258} w={250} d={30} h={1} tone="r" />
             <Slab x={40} y={LANE_PO - 12} w={420} d={24} h={2} tone="lp" />
             <Slab x={40} y={LANE_NON - 12} w={420} d={24} h={2} tone="lq" />
+            <polyline className="mark" points={[pt(-30, 273, 1), pt(200, 273, 1)].join(' ')} />
+            <polyline className="mark" points={laneMark(LANE_PO, 2)} />
+            <polyline className="mark" points={laneMark(LANE_NON, 2)} />
+            {TREES_BACK.map(([x, y, t], i) => <Plant key={`b${i}`} x={x} y={y} tree={t} n={i} />)}
 
             {/* warehouse + truck */}
             <Slab x={10} y={148} w={120} d={84} h={62} tone="w" />
@@ -236,6 +297,15 @@ export default function P2PAnimation() {
             <Face cls="door" pts={[[400, LANE_PO - 10, 0], [400, LANE_PO + 10, 0], [400, LANE_PO + 10, 28], [400, LANE_PO - 10, 28]]} />
             <Face cls="door" pts={[[400, LANE_NON - 10, 0], [400, LANE_NON + 10, 0], [400, LANE_NON + 10, 28], [400, LANE_NON - 10, 28]]} />
 
+            {/* analyst desk beside the held bay */}
+            <g className="desk">
+              {[[374, 194], [412, 194], [374, 216], [412, 216]].map(([lx, ly]) => <Slab key={`${lx}-${ly}`} x={lx} y={ly} w={3} d={3} h={12} tone="k" />)}
+              <Slab x={372} y={192} w={46} d={28} h={3} z={12} tone="w" />
+              <Slab x={386} y={196} w={20} d={3} h={12} z={15} tone="k" />
+              <Face cls="screen" pts={[[388, 199, 17], [404, 199, 17], [404, 199, 25], [388, 199, 25]]} />
+            </g>
+            {TREES_MID.map(([x, y, t], i) => <Plant key={`m${i}`} x={x} y={y} tree={t} n={i + 3} />)}
+
             {/* truck, crates */}
             <g className="truck" style={mv([47, 274, 3], [-53, 274, 3])}>
               <Slab x={14} y={264} w={48} d={20} h={24} z={3} tone="w" />
@@ -256,10 +326,12 @@ export default function P2PAnimation() {
             <Slab x={642} y={150} w={64} d={46} h={34} tone="w" />
             <Slab x={638} y={146} w={72} d={54} h={5} z={34} tone="b" />
             <Face cls="door" pts={[[666, 196, 0], [682, 196, 0], [682, 196, 20], [666, 196, 20]]} />
-            {[0, 1, 2].map((i) => (
-              <g key={i} transform={at(674, 112, 36)}>
-                <g className={`coin coin--${i}`} style={mv([674, 112, 36], [674, 160, 52])}>
-                  <circle className="coin-c" r={7} /><circle className="coin-in" r={3.4} />
+            {TREES_FRONT.map(([x, y, t], i) => <Plant key={`f${i}`} x={x} y={y} tree={t} n={i + 1} />)}
+            {[0, 1, 2, 3].map((i) => (
+              <g key={i} transform={at(674, 108, 24)}>
+                <g className={`coin coin--${i}`} style={mv([674, 108, 24], [674, 168, 50])}>
+                  <circle className="coin-c" r={9} /><circle className="coin-in" r={6.4} />
+                  <text className="coin-t" y={3.4}>₹</text>
                 </g>
               </g>
             ))}
@@ -280,7 +352,8 @@ export default function P2PAnimation() {
             <g transform={at(172, 148, 4)}><Chip x={0} y={0} text="non-PO" /></g>
             <g transform={`translate(${r(X(350, 88))} ${r(Y(350, 88, 100))})`}><Chip x={0} y={0} text="ERP" /></g>
             <g transform={`translate(${r(X(674, 64))} ${r(Y(674, 64, 82))})`}><Chip x={0} y={0} text="Bank" /></g>
-            <g transform="translate(800 574)"><g className="credit-lbl"><Chip x={0} y={0} text="Payment credited to supplier" /></g></g>
+            <g transform="translate(862 530)"><Chip x={0} y={0} text="Supplier" /></g>
+            <g transform="translate(878 566)"><g className="credit-lbl"><Chip x={0} y={0} text="Payment credited to supplier" /></g></g>
           </g>
 
           {/* ───── payment proposal: stays in focus during the catch ───── */}
@@ -307,7 +380,7 @@ export default function P2PAnimation() {
               <g className="held-move" style={mv(HELD, [C0, LANE_NON, TRAY_Z])}>
                 <g className="a-b2" style={mv([C0, LANE_NON, TRAY_Z], [EXIT_X, LANE_NON, 4])}>
                   <ellipse className="ring" cx={0} cy={0} rx={22} ry={9} />
-                  <PaperDoc /><Tag tone="b" /><Tick />
+                  <PaperDoc /><Tag tone="b" /><Lock />
                   <g className="pin"><path className="pin-body" d="M0 -60L-8 -74A10 10 0 1 1 8 -74Z" /><circle className="pin-dot" cx={0} cy={-80} r={3.6} /></g>
                 </g>
               </g>
@@ -329,7 +402,6 @@ export default function P2PAnimation() {
         </div>
 
         <ul className="p2p-kpis" aria-label="Illustrative figures">
-          <li className="p2p-kpis__tag">Illustrative</li>
           <li className="p2p-kpi"><span className="p2p-kpi__label">Invoices scanned</span><span className="p2p-kpi__value">2,000</span></li>
           <li className="p2p-kpi"><span className="p2p-kpi__label">Duplicates flagged</span><span className="p2p-kpi__value">25</span></li>
           <li className="p2p-kpi p2p-kpi--held">
