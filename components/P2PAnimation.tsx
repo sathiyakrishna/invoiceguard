@@ -34,12 +34,13 @@ function Slab({ x, y, w, d, h, z = 0, tone = 'w' }: { x: number; y: number; w: n
 /* a flat polygon on a face or the floor */
 const Face = ({ cls, pts }: { cls: string; pts: [number, number, number][] }) => <polygon className={cls} points={pts.map((p) => pt(...p)).join(' ')} />;
 
-function Chip({ x, y, w, text, cls = '', ok = false }: { x: number; y: number; w: number; text: string; cls?: string; ok?: boolean }) {
+/* every in-scene label uses this one pill; only "Held" swaps in the red variant */
+function Chip({ x, y, text, cls = '' }: { x: number; y: number; text: string; cls?: string }) {
+  const w = Math.round(text.length * 6.9 + 26);
   return (
-    <g className={`chip p2p-lbl ${cls}`} transform={`translate(${r(x)} ${r(y)})`}>
+    <g className={`chip ${cls}`} transform={`translate(${r(x)} ${r(y)})`}>
       <rect x={-w / 2} y={-11} width={w} height={22} rx={11} />
-      {ok && <path className="chip-ok" d={`M${-w / 2 + 9} 0l3.2 3.4 6-6.6`} />}
-      <text y={4.2} x={ok ? 7 : 0}>{text}</text>
+      <text y={4.2}>{text}</text>
     </g>
   );
 }
@@ -94,8 +95,41 @@ const Icon = {
   cursor: <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3l14 8-6 1.8L10 19z" fill="#0b1f4d" stroke="#fff" strokeWidth="1.6" strokeLinejoin="round" /></svg>
 };
 
-const STEPS = ['Goods & invoices arrive', 'Posted in ERP', 'InvoiceGuard catches duplicate', 'Eligible invoices paid'];
+const STEPS = ['Supplier delivers goods & invoice', 'Posted in ERP', 'InvoiceGuard catches duplicate', 'Payment credited to supplier'];
+const MOBILE_STEPS = ['Supplier delivers goods & invoice', 'Posted in ERP (PO and non-PO)', 'InvoiceGuard catches the duplicate', 'Payment credited to supplier'];
 const ODO = ['₹0', '₹1,06,802', '₹2,13,603', '₹3,20,405', '₹4,27,206', '₹5,34,008'];
+
+function Evidence({ variant }: { variant: 'd' | 'm' }) {
+  return (
+    <article className={`p2p-card p2p-card--${variant}`} aria-label="Duplicate evidence">
+      <h3 className="p2p-card__head">
+        <span className="p2p-card__ico">{Icon.warn}</span>
+        <span className="p2p-card__title">Potential duplicate — review required</span>
+      </h3>
+      <dl className="p2p-card__rows">
+        <div className="p2p-card__row"><dt>Invoice no.</dt><dd>AS-4471<span className="p2p-eq">=</span>AS-4471</dd></div>
+        <div className="p2p-card__row"><dt>Amount</dt><dd>₹5,34,008<span className="p2p-eq">=</span>₹5,34,008</dd></div>
+        <div className="p2p-card__row">
+          <dt>Supplier</dt>
+          <dd><span className="p2p-nm">Acme Steel Ltd</span><span className="p2p-sl">/</span><span className="p2p-nm">ACME STEEL LIMITED</span><span className="p2p-card__note">two vendor accounts</span></dd>
+        </div>
+        <div className="p2p-card__row"><dt>Route</dt><dd><span className="p2p-nm">PO invoice</span><span className="p2p-sl">/</span><span className="p2p-nm">non-PO invoice</span></dd></div>
+      </dl>
+      <div className="p2p-card__foot">
+        <span className="p2p-analyst"><span className="p2p-analyst__av">{Icon.user}</span>AP analyst</span>
+        <span className="p2p-btn">
+          <span className="p2p-btn__idle">Confirm</span>
+          <span className="p2p-btn__done">{Icon.check}Confirmed</span>
+        </span>
+        {variant === 'd' && <span className="p2p-cursor">{Icon.cursor}</span>}
+      </div>
+    </article>
+  );
+}
+
+const ConfirmChip = ({ variant }: { variant: 'd' | 'm' }) => (
+  <p className={`p2p-chip-html p2p-chip-html--confirm p2p-chip-html--${variant}`}>{Icon.lock}<span>Confirmed → payment block set in ERP</span></p>
+);
 
 function readSeconds(el: HTMLElement, name: string, fallback: number) {
   const v = getComputedStyle(el).getPropertyValue(name).trim();
@@ -173,9 +207,6 @@ export default function P2PAnimation() {
             <Face cls="door" pts={[[50, 232, 0], [84, 232, 0], [84, 232, 36], [50, 232, 36]]} />
             <Face cls="win" pts={[[96, 232, 26], [120, 232, 26], [120, 232, 44], [96, 232, 44]]} />
             <Face cls="win" pts={[[18, 232, 26], [38, 232, 26], [38, 232, 44], [18, 232, 44]]} />
-            <g transform={`translate(${r(X(72, 190))} ${r(Y(72, 190, 104))})`}>
-              <g className="grn"><Chip x={0} y={0} w={104} text="GRN posted" ok /></g>
-            </g>
 
             {/* OCR gate (left post, documents pass under the beam, right post) */}
             <Slab x={194} y={32} w={12} d={10} h={78} tone="w" />
@@ -195,9 +226,6 @@ export default function P2PAnimation() {
             </g>
             <Slab x={194} y={142} w={12} d={10} h={78} tone="w" />
             <Slab x={192} y={30} w={16} d={124} h={9} z={78} tone="b" />
-            <g transform={`translate(${r(X(200, 92))} ${r(Y(200, 92, 112))})`}><Chip x={0} y={0} w={52} text="OCR" /></g>
-            <g transform={`translate(${r(X(262, 30))} ${r(Y(262, 30, 6))})`}><Chip x={0} y={0} w={44} text="PO" /></g>
-            <g transform={`translate(${r(X(262, 148))} ${r(Y(262, 148, 6))})`}><Chip x={0} y={0} w={72} text="non-PO" /></g>
 
             {/* ERP */}
             <Slab x={300} y={20} w={100} d={134} h={74} tone="w" />
@@ -207,7 +235,6 @@ export default function P2PAnimation() {
             <Face cls="win" pts={[[352, 154, 30], [376, 154, 30], [376, 154, 52], [352, 154, 52]]} />
             <Face cls="door" pts={[[400, LANE_PO - 10, 0], [400, LANE_PO + 10, 0], [400, LANE_PO + 10, 28], [400, LANE_PO - 10, 28]]} />
             <Face cls="door" pts={[[400, LANE_NON - 10, 0], [400, LANE_NON + 10, 0], [400, LANE_NON + 10, 28], [400, LANE_NON - 10, 28]]} />
-            <g transform={`translate(${r(X(350, 88))} ${r(Y(350, 88, 100))})`}><Chip x={0} y={0} w={52} text="ERP" /></g>
 
             {/* truck, crates */}
             <g className="truck" style={mv([47, 274, 3], [-53, 274, 3])}>
@@ -226,7 +253,6 @@ export default function P2PAnimation() {
             {[0, 1, 2, 3].map((i) => <Slab key={i} x={638 + i * 24} y={88} w={8} d={8} h={46} z={6} tone="w" />)}
             <Slab x={624} y={20} w={100} d={88} h={10} z={52} tone="b" />
             <polygon className="glow bank-glow" points={[pt(624, 20, 62), pt(724, 20, 62), pt(724, 108, 62), pt(624, 108, 62)].join(' ')} />
-            <g transform={`translate(${r(X(674, 64))} ${r(Y(674, 64, 82))})`}><Chip x={0} y={0} w={56} text="Bank" /></g>
             <Slab x={642} y={150} w={64} d={46} h={34} tone="w" />
             <Slab x={638} y={146} w={72} d={54} h={5} z={34} tone="b" />
             <Face cls="door" pts={[[666, 196, 0], [682, 196, 0], [682, 196, 20], [666, 196, 20]]} />
@@ -245,15 +271,27 @@ export default function P2PAnimation() {
             </g>
           </g>
 
+          {/* ───── labels: one style, never dimmed so they stay readable ───── */}
+          <g className="lbls">
+            <g transform="translate(140 304)"><g className="deliver"><Chip x={0} y={0} text="Supplier delivers goods" /></g></g>
+            <g transform={`translate(${r(X(72, 190))} ${r(Y(72, 190, 104))})`}><g className="grn"><Chip x={0} y={0} text="GRN posted" /></g></g>
+            <g transform={`translate(${r(X(200, 92))} ${r(Y(200, 92, 112))})`}><Chip x={0} y={0} text="OCR" /></g>
+            <g transform={at(160, 30, 4)}><Chip x={0} y={0} text="PO" /></g>
+            <g transform={at(172, 148, 4)}><Chip x={0} y={0} text="non-PO" /></g>
+            <g transform={`translate(${r(X(350, 88))} ${r(Y(350, 88, 100))})`}><Chip x={0} y={0} text="ERP" /></g>
+            <g transform={`translate(${r(X(674, 64))} ${r(Y(674, 64, 82))})`}><Chip x={0} y={0} text="Bank" /></g>
+            <g transform="translate(800 574)"><g className="credit-lbl"><Chip x={0} y={0} text="Payment credited to supplier" /></g></g>
+          </g>
+
           {/* ───── payment proposal: stays in focus during the catch ───── */}
           <g className="focus" style={{ transformOrigin: `${r(X(520, 100))}px ${r(Y(520, 100, 30))}px` }}>
             <g className="bay">
               <Slab x={428} y={178} w={86} d={56} h={2} tone="rd" />
               <polygon className="bay-edge" points={[pt(432, 182, 2), pt(510, 182, 2), pt(510, 230, 2), pt(432, 230, 2)].join(' ')} />
-              <g transform={`translate(${r(X(500, 234))} ${r(Y(500, 234, 12))})`}><Chip x={0} y={0} w={54} text="Held" cls="chip--held" /></g>
+              <g transform={`translate(${r(X(500, 234))} ${r(Y(500, 234, 12))})`}><Chip x={0} y={0} text="Held" cls="chip--held" /></g>
             </g>
             <Slab x={455} y={26} w={125} d={126} h={TRAY_Z} tone="bl" />
-            <g transform={`translate(664 462)`}><Chip x={0} y={0} w={116} text="Payment proposal" /></g>
+            <g transform={`translate(678 466)`}><Chip x={0} y={0} text="Payment proposal" /></g>
             <polygon className="sweep" style={mv([455, 90, TRAY_Z], [565, 90, TRAY_Z])} points={[pt(455, 26, TRAY_Z), pt(471, 26, TRAY_Z), pt(471, 152, TRAY_Z), pt(455, 152, TRAY_Z)].join(' ')} />
 
             {/* original (email): pays in phase D */}
@@ -303,31 +341,8 @@ export default function P2PAnimation() {
           </li>
         </ul>
 
-        <article className="p2p-card" aria-label="Duplicate evidence">
-          <h3 className="p2p-card__head">
-            <span className="p2p-card__ico">{Icon.warn}</span>
-            <span className="p2p-card__title">Potential duplicate — review required</span>
-          </h3>
-          <dl className="p2p-card__rows">
-            <div className="p2p-card__row"><dt>Invoice no.</dt><dd>AS-4471<span className="p2p-eq">=</span>AS-4471</dd></div>
-            <div className="p2p-card__row"><dt>Amount</dt><dd>₹5,34,008<span className="p2p-eq">=</span>₹5,34,008</dd></div>
-            <div className="p2p-card__row">
-              <dt>Supplier</dt>
-              <dd>Acme Steel Ltd<span className="p2p-sl">/</span>ACME STEEL LIMITED<span className="p2p-card__note">two vendor accounts</span></dd>
-            </div>
-            <div className="p2p-card__row"><dt>Route</dt><dd>PO invoice<span className="p2p-sl">/</span>non-PO invoice</dd></div>
-          </dl>
-          <div className="p2p-card__foot">
-            <span className="p2p-analyst"><span className="p2p-analyst__av">{Icon.user}</span>AP analyst</span>
-            <span className="p2p-btn">
-              <span className="p2p-btn__idle">Confirm</span>
-              <span className="p2p-btn__done">{Icon.check}Confirmed</span>
-            </span>
-            <span className="p2p-cursor">{Icon.cursor}</span>
-          </div>
-        </article>
-
-        <p className="p2p-chip-html p2p-chip-html--confirm">{Icon.lock}<span>Confirmed → payment block set in ERP</span></p>
+        <Evidence variant="d" />
+        <ConfirmChip variant="d" />
         <p className="p2p-chip-html p2p-chip-html--paid">{Icon.bank}<span>Payment executed for eligible invoices</span></p>
       </div>
 
@@ -338,6 +353,21 @@ export default function P2PAnimation() {
             <span className="p2p-step__n" aria-hidden="true">{i + 1}</span>
             <span>{s}</span>
             <span className="p2p-step__bar" aria-hidden="true" />
+          </li>
+        ))}
+      </ol>
+
+      <ol className="p2p-tl" aria-label="Steps">
+        {MOBILE_STEPS.map((t, i) => (
+          <li key={t} className={`p2p-tl__item${i === 2 ? ' is-open' : ''}`}>
+            <span className="p2p-tl__n" aria-hidden="true">{i + 1}</span>
+            <span className="p2p-tl__t">{t}</span>
+            {i === 2 && (
+              <div className="p2p-tl__body">
+                <Evidence variant="m" />
+                <ConfirmChip variant="m" />
+              </div>
+            )}
           </li>
         ))}
       </ol>
