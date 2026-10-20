@@ -16,7 +16,9 @@ so an eval always tests the prompt that ships. `evals/vendors/provider.cjs` call
 ## Labels
 - `evals/detection/cases.ts`: each scenario lists the document pairs that must be flagged; everything else must not be.
   Labels are written from the rule table and from what an AP analyst would expect, not copied from the engine's output.
-  A scenario with `gap: '...'` is a known limitation: it is reported but does not fail the run. When one starts passing the report says so.
+  A scenario with `gap: '...'` is a known limitation: it is reported but does not fail the run. When one starts passing the report says so. There are none right now:
+  the three gaps the first run found (the currency column was ignored, and placeholder invoice numbers such as `N/A` or `TBD` matched each other) are fixed in `lib/detect.ts` and gated.
+- Currency and placeholders: a pair in two different currencies is never flagged (a blank currency counts as unknown). Blank, `-`, `0`, `N/A`, `NA`, `NIL`, `TBD`, `XXXX` and similar are not invoice numbers for matching. Real numbers that merely start with such a word (`NA-1001`) still match.
 - `evals/vendors/pairs.ts`: the gated set is 19 same-supplier and 31 different-supplier pairs (50 in all), shuffled into batches of up to 20 as production sends them.
   `AMBIGUOUS` in the same file is a short report-only list, see below.
 

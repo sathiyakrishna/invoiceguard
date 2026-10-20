@@ -66,6 +66,31 @@ export function normalizeRef(ref: string): string {
   return cleaned.replace(/(^|[A-Z])0+(?=\d)/g, '$1');
 }
 
+// Words people type when there is no invoice number. After normalizing, "N/A", "n.a." and "NA" are all NA.
+const PLACEHOLDER_REFS = new Set([
+  'NA', 'NIL', 'NONE', 'NULL', 'NAN', 'TBD', 'TBC', 'TBA', 'NOTAVAILABLE', 'NOTAPPLICABLE', 'NOREF', 'NOINVOICE', 'NOINVOICENO',
+  'NOREFERENCE', 'NOTPROVIDED', 'UNKNOWN', 'MISSING', 'PENDING', 'REF', 'TEST'
+]);
+
+/**
+ * True when an invoice number is empty or a placeholder (blank, "-", "0", "N/A", "NIL", "TBD", "XXXX" ...).
+ * Two invoices that both carry such a "number" share nothing, so it must never count as an invoice-number match.
+ */
+export function isPlaceholderRef(ref: string): boolean {
+  const n = normalizeRef(ref);
+  return !n || PLACEHOLDER_REFS.has(n) || /^0+$/.test(n) || /^X+$/.test(n);
+}
+
+/** Invoice number used for matching: normalized, or '' when it is only a placeholder. */
+const matchRef = (ref: string) => (isPlaceholderRef(ref) ? '' : normalizeRef(ref));
+
+/** Two different currencies are never duplicate evidence (10,000 INR is not 10,000 USD). A blank currency matches anything. */
+function sameCurrency(a: string | undefined, b: string | undefined): boolean {
+  const x = (a ?? '').trim().toUpperCase();
+  const y = (b ?? '').trim().toUpperCase();
+  return !x || !y || x === y;
+}
+
 const VENDOR_NOISE = /\b(PVT|PRIVATE|LTD|LIMITED|LLP|INC|CORP|CORPORATION|CO|COMPANY|INDIA|THE|AND|M\/S)\b/g;
 
 export function normalizeVendor(name: string): string {
@@ -252,10 +277,11 @@ export function findVendorCandidates(rows: InvoiceRow[], max = 20): Array<{ a: s
       if (rj.amount > ri.amount * (1 + AMOUNT_TOLERANCE) + 0.01) break;
       if (!ri.vendor_id || !rj.vendor_id || ri.vendor_id === rj.vendor_id) continue;
       if (ri.clearing_date && rj.clearing_date) continue; // both already paid: never a pair, so no need to ask the AI
+      if (!sameCurrency(ri.currency, rj.currency)) continue;
       const key = vendorPairKey(ri.vendor_id, rj.vendor_id);
       if (seen.has(key)) continue;
-      const refA = normalizeRef(ri.invoice_ref);
-      if (!refA || refA !== normalizeRef(rj.invoice_ref)) continue;
+      const refA = matchRef(ri.invoice_ref);
+      if (!refA || refA !== matchRef(rj.invoice_ref)) continue;
       const na = normalizeVendor(ri.vendor_name);
       const nb = normalizeVendor(rj.vendor_name);
       if (!na || !nb) continue;
@@ -275,7 +301,7 @@ export function findVendorCandidates(rows: InvoiceRow[], max = 20): Array<{ a: s
  * @param ignoredKeys pair keys the user previously marked Ignore
  */
 export function detect(rows: InvoiceRow[], sameSupplier: Set<string> = new Set(), ignoredKeys: Set<string> = new Set()): Candidate[] {
-  const refs = rows.map((r) => normalizeRef(r.invoice_ref));
+  const refs = rows.map((r) => matchRef(r.invoice_ref));
   // reversed invoices, their reversal credits and all other credit lines never take part in a pair
   const reversed = findReversals(rows);
   const order = rows.map((_, i) => i).filter((i) => rows[i].amount > 0 && !reversed[i]).sort((x, y) => rows[x].amount - rows[y].amount);
@@ -298,6 +324,9 @@ export function detect(rows: InvoiceRow[], sameSupplier: Set<string> = new Set()
       const iPaid = !!ri.clearing_date;
       const jPaid = !!rj.clearing_date;
       if (iPaid && jPaid) continue;
+
+      // the same figure in two currencies is a coincidence, not a repeat
+      if (!sameCurrency(ri.currency, rj.currency)) continue;
 
       const sameVendor = !!ri.vendor_id && ri.vendor_id === rj.vendor_id;
       const altVendor = !sameVendor && !!ri.vendor_id && !!rj.vendor_id && sameSupplier.has(vendorPairKey(ri.vendor_id, rj.vendor_id));
