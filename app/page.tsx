@@ -3,6 +3,7 @@ import { Logo } from '@/components/Logo';
 import { RiskBadge } from '@/components/RiskBadge';
 import Faq from '@/components/Faq';
 import P2PAnimation from '@/components/P2PAnimation';
+import Testimonials from '@/components/Testimonials';
 
 const PREVIEW = [
   { band: 'High' as const, vendor: 'Bosch Ltd', refs: 'INV-0012 · INV0012', amt: '₹1,25,000.00' },
@@ -194,6 +195,12 @@ export default function Landing() {
             ))}
           </div>
         </div>
+      </section>
+
+      <section aria-labelledby="testih" className="mx-auto max-w-[1240px] px-6 py-20 sm:px-8">
+        <h2 id="testih" className={`mb-3 max-w-3xl ${H2}`}>What early testers are saying</h2>
+        <p className={`mb-10 max-w-2xl ${BODY}`}>Feedback from professionals who tried the InvoiceGuard prototype.</p>
+        <Testimonials />
       </section>
 
       <section id="faq" aria-labelledby="faqh" className="mx-auto max-w-3xl px-6 py-20 sm:px-8">
