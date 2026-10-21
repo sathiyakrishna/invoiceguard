@@ -1,7 +1,9 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { CASES, REAL } from '@/evals/explain/fixtures';
 import { runCodeChecks } from '@/evals/explain/code-checks';
 import { buildQuestions, judge, mockTransport, toAnswer } from '@/evals/explain/jev';
+import type { Judged } from '@/evals/explain/judge-core';
+import { printSummary } from '@/evals/explain/summary';
 import { agreement, atThreshold, brier, confusion, parseLabels, wilson, type Item } from '@/evals/explain/calibration';
 
 const names = (cs: ReturnType<typeof runCodeChecks>) => cs.filter((c) => !c.pass).map((c) => c.name);
@@ -118,5 +120,53 @@ describe('calibration maths', () => {
     const rows = parseLabels('n,risk,action,a,b1,b2,c,d\n1,High,"Block the open invoice",P,F,NA,,P\n');
     expect(rows[0].labels).toEqual({ a: 'P', b1: 'F', b2: 'NA', c: '', d: 'P' });
     expect(() => parseLabels('n,risk,action,a,b1,b2,c,d\n1,High,x,Y,,,,\n')).toThrow(/not P, F or NA/);
+  });
+});
+
+describe('explain gate summary', () => {
+  const input = REAL[0];
+  const base = { input, explanation: 'x', code: [], failedChecks: [] as string[] };
+  const real = (n: number): Judged => ({ ...base, n, kind: 'real', pass: true });
+  const flawedCaught = (n: number): Judged => ({ ...base, n, kind: 'flawed', flaw: 'invented_fact', failedChecks: ['jev:a'], pass: false });
+  const flawedMissed = (n: number): Judged => ({ ...base, n, kind: 'flawed', flaw: 'invented_fact', pass: true });
+  const flawedError = (n: number): Judged => ({ ...base, n, kind: 'flawed', flaw: 'invented_fact', error: 'Jev 500: boom', pass: false });
+  const run = (records: Judged[]) => {
+    const lines: string[] = [];
+    const spy = vi.spyOn(console, 'log').mockImplementation((...a) => void lines.push(a.join(' ')));
+    try {
+      return { ok: printSummary(records, { title: 't' }), out: lines.join('\n') };
+    } finally {
+      spy.mockRestore();
+    }
+  };
+  const reals = Array.from({ length: 10 }, (_, i) => real(i + 1));
+
+  it('passes when every flawed explanation is judged and rejected', () => {
+    const r = run([...reals, ...Array.from({ length: 10 }, (_, i) => flawedCaught(11 + i))]);
+    expect(r.ok).toBe(true);
+    expect(r.out).toContain('rejected: 10/10');
+  });
+
+  it('does not count a judge error as a rejection, and fails the gate', () => {
+    // 9 genuinely rejected + 1 errored: the old code reported 10/10 (100%)
+    const r = run([...reals, ...Array.from({ length: 9 }, (_, i) => flawedCaught(11 + i)), flawedError(20)]);
+    expect(r.out).toContain('rejected: 9/10');
+    expect(r.out).toContain('JUDGE ERROR');
+    expect(r.out).not.toContain('rejected: 10/10');
+    expect(r.out).toMatch(/FAIL REASON: 1 judge error/);
+    expect(r.ok).toBe(false);
+  });
+
+  it('reports 0% caught when every judge call errors', () => {
+    const r = run([...reals, ...Array.from({ length: 10 }, (_, i) => flawedError(11 + i))]);
+    expect(r.out).toContain('rejected: 0/10');
+    expect(r.out).toContain('FAIL:');
+    expect(r.ok).toBe(false);
+  });
+
+  it('still counts a flawed explanation the judge passed as not caught', () => {
+    const r = run([...reals, ...Array.from({ length: 5 }, (_, i) => flawedCaught(11 + i)), ...Array.from({ length: 5 }, (_, i) => flawedMissed(16 + i))]);
+    expect(r.out).toContain('rejected: 5/10');
+    expect(r.ok).toBe(false);
   });
 });
