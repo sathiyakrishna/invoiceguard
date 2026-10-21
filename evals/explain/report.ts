@@ -13,11 +13,13 @@ const rows: any[] = data.results?.results ?? data.results ?? [];
 
 const records: Judged[] = [];
 let generationErrors = 0;
+const errorMessages = new Set<string>();
 for (const r of rows) {
-  if (r.error || !r.response) { generationErrors++; continue; }
+  if (r.error || !r.response) { generationErrors++; errorMessages.add(String(r.error ?? r.response?.error ?? 'no response').slice(0, 300)); continue; }
   try { records.push(recordFromResult(r)); } catch { generationErrors++; }
 }
 
+for (const m of errorMessages) console.log(`generation error: ${m}`);
 const mock = records.some((r) => r.jev?.mock);
 const judgeErrors = records.filter((r) => r.error);
 const real = records.filter((r) => r.kind === 'real');
