@@ -17,6 +17,8 @@ jobs:
       - run: npm ci
       - run: npx tsc --noEmit
       - run: npm test
+      # Production build on Linux: catches build and prerender errors that tsc and the tests cannot.
+      - run: npm run build
       # Rules only: no API keys, no network, free. Fails if precision or recall drops below the thresholds in evals/detection/run.ts.
       - run: npm run eval:detection
       - uses: actions/upload-artifact@v4
