@@ -1,4 +1,5 @@
-// Freezes the 40 explanations from an eval run so the hand labels always refer to the same text.
+// Freezes the explanations from an eval run so the hand labels always refer to the same text.
+// Cases above LABELLED (the extra flawed ones, #41 and up) are frozen too but get no row to label, because they are wrong by construction.
 //   tsx evals/explain/freeze.ts [results.json] [--force]
 // Writes explanations.json, labeling-sheet.md (what you read) and human-labels.csv (what you fill in).
 // It refuses to overwrite existing files unless --force, because labels are tied to the frozen text.
@@ -8,6 +9,7 @@ import { recordFromResult } from './judge-core';
 const args = process.argv.slice(2);
 const force = args.includes('--force');
 const file = args.find((a) => !a.startsWith('--')) ?? 'evals/explain/results.json';
+const LABELLED = 40;
 const OUT = { json: 'evals/explain/explanations.json', sheet: 'evals/explain/labeling-sheet.md', csv: 'evals/explain/human-labels.csv' };
 if (!force && [OUT.json, OUT.csv].some(existsSync)) {
   console.error('explanations.json or human-labels.csv already exists. They are tied together; pass --force to replace both (your labels will be lost).');
@@ -19,7 +21,7 @@ const rows: any[] = data.results?.results ?? data.results ?? [];
 const frozen = rows.map((r) => recordFromResult(r))
   .sort((x, y) => x.n - y.n)
   .map((r) => ({ n: r.n, kind: r.kind, flaw: r.flaw, input: r.input, explanation: r.explanation }));
-if (frozen.length !== 40) { console.error(`expected 40 cases, found ${frozen.length}`); process.exit(1); }
+if (frozen.length !== 50) { console.error(`expected 50 cases, found ${frozen.length}`); process.exit(1); }
 writeFileSync(OUT.json, JSON.stringify(frozen, null, 2));
 
 const field = (s: Record<string, string>) => [`vendor ${s.vendor_name} (${s.vendor_id})`, `invoice ${s.invoice_no}`, `date ${s.invoice_date}`, `amount ${s.amount}`,
@@ -41,7 +43,7 @@ const sheet: string[] = [
   ''
 ];
 const csv: string[] = ['n,risk,action,a,b1,b2,c,d'];
-for (const r of frozen) {
+for (const r of frozen.filter((x) => x.n <= LABELLED)) {
   const i = r.input;
   sheet.push(`## #${r.n} · ${i.risk} risk (score ${i.score}) · suggested action: ${i.action}`, '',
     `Rules: ${i.rules.join('; ')}`, `- A: ${field(i.a)}`, `- B: ${field(i.b)}`, '', `> ${r.explanation}`, '');

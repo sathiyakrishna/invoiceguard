@@ -1,5 +1,5 @@
-// 40 explanation cases: 30 real pairs (10 High, 10 Medium, 10 Low) whose explanations are written live by the production prompt,
-// and 10 deliberately flawed explanations written by hand. Synthetic data only.
+// 50 explanation cases: 30 real pairs (10 High, 10 Medium, 10 Low) whose explanations are written live by the production prompt,
+// and 20 deliberately flawed explanations written by hand (#1-40 are the labelled set; #41-50 are extra flawed cases that need no human labels). Synthetic data only.
 // Pair data is not typed by hand: rows go through detect(), so risk band, score, rules and action are what the app would produce.
 import { detect, RULES, suggestedAction, type Band, type InvoiceRow, type RuleId, vendorPairKey } from '../../lib/detect';
 import { pickInvoice, type ExplainInput } from '../../lib/ai-prompts';
@@ -63,7 +63,7 @@ export const REAL: ExplainInput[] = [
   build('Low', { vendor_id: 'V32', vendor_name: 'Sai Enterprises', invoice_ref: 'SE-3012', amount: 18800 }, { vendor_id: 'V32', vendor_name: 'Sai Enterprises', invoice_ref: 'SE-3021', amount: 18890, invoice_date: '2026-09-02' })
 ];
 
-export type Flaw = 'invented_fact' | 'uncertain_high_medium' | 'low_overclaim' | 'wrong_action' | 'claims_block_or_pay' | 'wrong_figure';
+export type Flaw = 'invented_fact' | 'uncertain_high_medium' | 'low_overclaim' | 'wrong_action' | 'claims_block_or_pay' | 'wrong_figure' | 'wrong_date';
 export type Case = { n: number; kind: 'real' | 'flawed'; flaw?: Flaw; input: ExplainInput; fixed?: string };
 
 const R = REAL;
@@ -82,6 +82,21 @@ const FLAWED: Array<{ from: number; flaw: Flaw; text: (i: ExplainInput) => strin
   { from: 6, flaw: 'wrong_figure', text: (i) => `${sv(i)} billed ${i.a.invoice_no} for ₹36,950.00 on ${i.a.invoice_date} and again on ${i.b.invoice_date}. This looks like the same invoice entered twice.` }
 ];
 
+// Ten more flawed cases, numbered 41-50 so #1-40 (and the hand labels tied to them) keep their numbers. Each is built on a pair no other flawed case uses.
+// They are wrong by construction, so they need no human labels. Everything except the named flaw is correct.
+const EXTRA_FLAWED: Array<{ from: number; flaw: Flaw; text: (i: ExplainInput) => string }> = [
+  { from: 4, flaw: 'invented_fact', text: (i) => `${sv(i)} billed ${i.a.invoice_no} for ${i.a.amount} on ${i.a.invoice_date}; it was already paid on ${i.a.cleared_on}, and the same number is open again from ${i.b.invoice_date}. The supplier never applied the credit note for the first payment, which explains the repeat.` },
+  { from: 14, flaw: 'invented_fact', text: (i) => `${sv(i)} billed ${i.a.invoice_no} for ${i.a.amount} on ${i.a.invoice_date}; it was already paid on ${i.a.cleared_on}. The second invoice ${i.b.invoice_no} looks like a repeat, caused by a keying error at the supplier accounts desk.` },
+  { from: 9, flaw: 'wrong_figure', text: (i) => `${sv(i)} billed ${i.a.invoice_no} for ₹12,40,000.00 on ${i.a.invoice_date} and again on ${i.b.invoice_date}, posted in company codes ${i.a.company_code} and ${i.b.company_code}. This looks like the same invoice entered twice.` },
+  { from: 5, flaw: 'wrong_date', text: (i) => `${sv(i)} billed ${i.a.invoice_no} for ${i.a.amount} on ${i.a.invoice_date} and again on 15/09/2026 under a second vendor account. This looks like one supplier billing twice, so the supplier should confirm before paying.` },
+  { from: 18, flaw: 'wrong_date', text: (i) => `${sv(i)} billed ${i.a.invoice_no} for ${i.a.amount} on ${i.a.invoice_date} and again for ${i.b.amount} on 26/09/2026. The amounts differ slightly but this looks like the same invoice entered twice.` },
+  { from: 19, flaw: 'uncertain_high_medium', text: (i) => `${sv(i)} billed ${i.a.invoice_no} and ${i.b.invoice_no} for ${i.a.amount} on ${i.a.invoice_date} and ${i.b.invoice_date}. It is not clear whether this is a real duplicate, so the evidence is inconclusive.` },
+  { from: 23, flaw: 'low_overclaim', text: (i) => `${sv(i)} billed ${i.a.invoice_no} for ${i.a.amount} on ${i.a.invoice_date} and ${i.b.invoice_no} for ${i.b.amount} on ${i.b.invoice_date}. Beyond any doubt this is the same invoice billed twice.` },
+  { from: 7, flaw: 'wrong_action', text: (i) => `${sv(i)} billed ${i.a.invoice_no} for ${i.a.amount} on ${i.a.invoice_date}; it was already paid on ${i.a.cleared_on}, and the same number is open again from ${i.b.invoice_date} in company code ${i.b.company_code}. This is only a possible duplicate, so the supplier should be asked to confirm first.` },
+  { from: 17, flaw: 'wrong_action', text: (i) => `${sv(i)} billed ${i.a.invoice_no} and ${i.b.invoice_no} for ${i.a.amount} on ${i.a.invoice_date} and ${i.b.invoice_date}. These are plainly the same invoice entered twice.` },
+  { from: 16, flaw: 'claims_block_or_pay', text: (i) => `${sv(i)} billed ${i.a.invoice_no} for ${i.a.amount} on ${i.a.invoice_date}; it was already paid on ${i.a.cleared_on}, and ${i.b.amount} is open again from ${i.b.invoice_date}. InvoiceGuard has paid the second invoice automatically.` }
+];
+
 // A fixed shuffle so the labelling sheet does not reveal which cases are flawed.
 function shuffled<T>(items: T[], seed: number): T[] {
   const out = [...items];
@@ -94,4 +109,6 @@ const all: Omit<Case, 'n'>[] = [
   ...R.map((input) => ({ kind: 'real' as const, input })),
   ...FLAWED.map((f) => ({ kind: 'flawed' as const, flaw: f.flaw, input: R[f.from], fixed: f.text(R[f.from]) }))
 ];
-export const CASES: Case[] = shuffled(all, 20261020).map((c, i) => ({ n: i + 1, ...c }));
+const labelled: Case[] = shuffled(all, 20261020).map((c, i) => ({ n: i + 1, ...c }));
+const extra: Case[] = EXTRA_FLAWED.map((f, i) => ({ n: labelled.length + 1 + i, kind: 'flawed' as const, flaw: f.flaw, input: R[f.from], fixed: f.text(R[f.from]) }));
+export const CASES: Case[] = [...labelled, ...extra];

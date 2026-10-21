@@ -9,15 +9,23 @@ const open = REAL[0]; // High, exact match, nothing paid
 const paid = REAL[4]; // High, invoice A already paid on 18/09/2026
 
 describe('explanation fixtures', () => {
-  it('has 40 cases: 30 real (10 High, 10 Medium, 10 Low) and 10 flawed, numbered 1..40', () => {
-    expect(CASES.map((c) => c.n)).toEqual(Array.from({ length: 40 }, (_, i) => i + 1));
+  it('has 50 cases: 30 real (10 High, 10 Medium, 10 Low) and 20 flawed, numbered 1..50', () => {
+    expect(CASES.map((c) => c.n)).toEqual(Array.from({ length: 50 }, (_, i) => i + 1));
     expect(CASES.filter((c) => c.kind === 'real')).toHaveLength(30);
-    expect(CASES.filter((c) => c.kind === 'flawed')).toHaveLength(10);
+    expect(CASES.filter((c) => c.kind === 'flawed')).toHaveLength(20);
+    expect(CASES.filter((c) => c.n > 40).every((c) => c.kind === 'flawed')).toBe(true);
     for (const band of ['High', 'Medium', 'Low']) expect(REAL.filter((r) => r.risk === band)).toHaveLength(10);
   });
   it('takes risk, rules and action from detect(), never typed by hand', () => {
     expect(open.action).toBe('Block the open invoice');
     expect(REAL.filter((r) => r.risk === 'Low').every((r) => r.action === 'Check with supplier')).toBe(true);
+  });
+});
+
+describe('extra flawed cases', () => {
+  it('each flawed case uses a pair no other flawed case uses', () => {
+    const keys = CASES.filter((c) => c.kind === 'flawed').map((c) => `${c.input.a.invoice_no}|${c.input.b.invoice_no}`);
+    expect(new Set(keys).size).toBe(keys.length);
   });
 });
 

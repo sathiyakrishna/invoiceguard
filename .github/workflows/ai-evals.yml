@@ -53,7 +53,7 @@ jobs:
           if-no-files-found: ignore
 
   explain-gate:
-    # Blocking. Judges the 40 frozen explanations (evals/explain/explanations.json) with code checks plus TypeSafe Jev. No OpenAI call, so the text under test never changes.
+    # Blocking. Judges the 50 frozen explanations (evals/explain/explanations.json) with code checks plus TypeSafe Jev. No OpenAI call, so the text under test never changes.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     env:
