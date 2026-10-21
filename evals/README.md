@@ -47,9 +47,30 @@ so an eval always tests the prompt that ships. `evals/vendors/provider.cjs` call
 - Pinned to `jev-1.13.0`; override with `JEV_MODEL`. Aliases move when TypeSafe ships a release, so re-run calibration before changing the pin.
 - A Noul has only a probability p. The label is p >= 0.5; confidence is |2p - 1|.
 - Questions: a (unsupported fact), b1 (High/Medium called uncertain or legitimate), b2 (Low pair claimed with certainty), c (conclusion fits the suggested action), d (claims InvoiceGuard blocks or pays). One condition per question, as TypeSafe recommends. Amounts, dates and identifiers are checked in code, not by Jev.
-- `JEV_MOCK=1` runs the whole pipeline with a crude word-matching stand-in so it can be tried without a key. Every report prints a loud banner when the stand-in was used, and the explain run never fails on mock numbers. **No Jev numbers exist yet.** Until `TYPESAFE_API_KEY` is available the Jev part of the pipeline has only been exercised with the stand-in and with unit tests against the documented request and reply shapes.
+- `JEV_MOCK=1` runs the whole pipeline with a crude word-matching stand-in so it can be tried without a key. Every report prints a loud banner when the stand-in was used, and the explain run never fails on mock numbers. Real Jev numbers are in the calibration section below.
 - Do your hand labels before looking at any judge output, so the calibration is honest.
-- `EVAL_MIN_EXPLAIN_PASS` (default 0.85) and `EVAL_MIN_FLAW_CATCH` (default 0.8) are placeholders until calibration shows what Jev can do.
+- `EVAL_MIN_EXPLAIN_PASS` (default 0.85) and `EVAL_MIN_FLAW_CATCH` (default 0.9) are set from the calibration below. Both can still be overridden by environment variable.
+
+### Calibration against human labels
+40 explanations (30 real, 10 planted flaws) were labelled by hand (`human-labels.xlsx` / `.csv`) before any judge output was seen, then compared with `jev-1.13.0` (`npm run eval:judge`, `npm run eval:calibrate`). 160 labelled cells, with NA where a check does not apply.
+
+| Check | Independent labels | Final labels |
+|---|---|---|
+| a (facts) | 34/40 = 85% | 35/40 = 88% |
+| b1 | 26/29 = 90% | 27/29 = 93% |
+| b2 | 5/11 = 45% | 5/11 = 45% |
+| c | 33/40 = 83% | 34/40 = 85% |
+| d | 39/40 = 98% | 40/40 = 100% |
+| **All** | **137/160 = 86%** (95% CI 79-90%) | **141/160 = 88%** (95% CI 82-92%) |
+
+- The final labels differ from the independent ones in one row: #21 (a, b1, c, d changed from F to P). A second review of the other rows in question (#8, #13, #14, #15, #24, #38 and the b2 labels on #18, #19, #23, #28, #30, #37) kept the labels as they were. The independent set was saved before this review.
+- With 160 cells the intervals are wide, so differences of a few points are noise.
+- **Planted flaws:** Jev rejected 10 of 10 (the code checks also caught #15, #25 and #26). The hand labels flagged 4 of the 10 (#16, #25, #26, #36). The other six (#8, #13, #14, #15, #24, #38) are **unresolved human-judge disagreements**: the labels mark them as passing every check and Jev fails them, with confidence 0.90-0.96 on #8 (a), #13 (b1), #14 (b1) and #15 (a). This has not been settled either way, so the 10/10 catch rate is Jev's own result and is not confirmed by the labels.
+- **b2 is the main disagreement area** (45% agreement on 11 cells). On six real Low-risk explanations (#18, #19, #23, #28, #30, #37) the labels fail b2 and Jev passes it, with confidence 0.88-0.96. Treat Jev's b2 verdicts with caution and do not use them alone to gate a change. Excluding b2, agreement is 136/149 = 91%.
+- Other remaining disagreements (cell, human / Jev): #3 c P/F, #14 c P/F, #16 c P/F, #24 c P/F, #38 c P/F, #36 c F/P, #25 a P/F, #26 a P/F, #36 a P/F. Jev's confidence is below 0.1 on #3 c, #24 c and #25 a.
+- Real explanations: Jev passes 28 of 30 on every check (the exceptions are #3 on c and #27 on the sentence-count code check). The thresholds are 0.85 for real pass rate, which leaves room for about four failures, and 0.9 for flaw catch, which tolerates one miss. With only 10 planted flaws the true catch rate could be around 70%, so add more flawed cases before raising it.
+- Jev's confidence is a rough guide only: answers with confidence of 0.9 or more covered 25% of cells and agreed with the labels 80% of the time.
 
 ## Known findings (tracked, not fixed)
 - **Explanation #27 has three sentences.** The production prompt says "at most two short sentences". For the Low pair "Allied Rubber Products" (AR-3300 vs AR-33000, invoice A already paid) `gpt-4o-mini` writes three, caught by the `at_most_two_sentences` code check. The frozen text is in `explanations.json`. No prompt change yet; this is recorded so a later prompt edit can be measured against it.
+- **Explanation #3 (possible prompt improvement).** Pair: Eastern Gaskets Pvt Ltd (V10) vs Eastern Gaskets Private Limited (V11), same number EG-3345, same amount, action "Check with supplier". The explanation says "This looks like a repeat of an invoice already paid" and does not say why the supplier should confirm (one supplier under two vendor accounts). Jev's c check fails it at p = 0.47 (confidence 0.06, effectively a coin flip); the hand label passes it. Both readings are defensible. If the production prompt asked "Check with supplier" explanations to state the reason for the supplier check, this case would be unambiguous. No prompt change yet; frozen text is in `explanations.json`.

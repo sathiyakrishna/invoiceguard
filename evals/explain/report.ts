@@ -1,12 +1,12 @@
 // Reads the Promptfoo output and reports how the explanations did.
 //   real cases    : the production prompt's explanations. Reports pass rate per check; gate EVAL_MIN_EXPLAIN_PASS (default 0.85).
-//   flawed cases  : explanations written to be wrong. The judge should reject them; gate EVAL_MIN_FLAW_CATCH (default 0.8).
+//   flawed cases  : explanations written to be wrong. The judge should reject them; gate EVAL_MIN_FLAW_CATCH (default 0.9).
 // With the stand-in judge (JEV_MOCK=1) a banner is printed and the run never fails, because those numbers say nothing about Jev.
 import { readFileSync } from 'node:fs';
 import { recordFromResult, type Judged } from './judge-core';
 
 const MIN_PASS = Number(process.env.EVAL_MIN_EXPLAIN_PASS ?? 0.85);
-const MIN_CATCH = Number(process.env.EVAL_MIN_FLAW_CATCH ?? 0.8);
+const MIN_CATCH = Number(process.env.EVAL_MIN_FLAW_CATCH ?? 0.9);
 const file = process.argv[2] ?? 'evals/explain/results.json';
 const data = JSON.parse(readFileSync(file, 'utf8'));
 const rows: any[] = data.results?.results ?? data.results ?? [];

@@ -1,41 +1,41 @@
 n,risk,action,a,b1,b2,c,d
-1,High,"Block the open invoice",,,NA,,
-2,High,"Block the open invoice",,,NA,,
-3,High,"Check with supplier",,,NA,,
-4,High,"Block the open invoice",,,NA,,
-5,Low,"Check with supplier",,NA,,,
-6,Low,"Check with supplier",,NA,,,
-7,Low,"Check with supplier",,NA,,,
-8,High,"Block the open invoice",,,NA,,
-9,Medium,"Check with supplier",,,NA,,
-10,High,"Block the open invoice",,,NA,,
-11,High,"Block the open invoice",,,NA,,
-12,Medium,"Block the open invoice",,,NA,,
-13,Medium,"Check with supplier",,,NA,,
-14,High,"Block the open invoice",,,NA,,
-15,High,"Block the open invoice",,,NA,,
-16,Low,"Check with supplier",,NA,,,
-17,Medium,"Check with supplier",,,NA,,
-18,Low,"Check with supplier",,NA,,,
-19,Low,"Check with supplier",,NA,,,
-20,High,"Block the open invoice",,,NA,,
-21,Medium,"Block the open invoice",,,NA,,
-22,High,"Block the open invoice",,,NA,,
-23,Low,"Check with supplier",,NA,,,
-24,Medium,"Check with supplier",,,NA,,
-25,High,"Block the open invoice",,,NA,,
-26,Medium,"Block the open invoice",,,NA,,
-27,Low,"Check with supplier",,NA,,,
-28,Low,"Check with supplier",,NA,,,
-29,High,"Block the open invoice",,,NA,,
-30,Low,"Check with supplier",,NA,,,
-31,Medium,"Check with supplier",,,NA,,
-32,Medium,"Check with supplier",,,NA,,
-33,Medium,"Block the open invoice",,,NA,,
-34,High,"Check with supplier",,,NA,,
-35,Medium,"Check with supplier",,,NA,,
-36,Medium,"Block the open invoice",,,NA,,
-37,Low,"Check with supplier",,NA,,,
-38,High,"Block the open invoice",,,NA,,
-39,Medium,"Block the open invoice",,,NA,,
-40,Medium,"Check with supplier",,,NA,,
+1,High,"Block the open invoice",P,P,NA,P,P
+2,High,"Block the open invoice",P,P,NA,P,P
+3,High,"Check with supplier",P,P,NA,P,P
+4,High,"Block the open invoice",P,P,NA,P,P
+5,Low,"Check with supplier",P,NA,P,P,P
+6,Low,"Check with supplier",P,NA,P,P,P
+7,Low,"Check with supplier",P,NA,P,P,P
+8,High,"Block the open invoice",P,P,NA,P,P
+9,Medium,"Check with supplier",P,P,NA,P,P
+10,High,"Block the open invoice",P,P,NA,P,P
+11,High,"Block the open invoice",P,P,NA,P,P
+12,Medium,"Block the open invoice",P,P,NA,P,P
+13,Medium,"Check with supplier",P,P,NA,P,P
+14,High,"Block the open invoice",P,P,NA,P,P
+15,High,"Block the open invoice",P,P,NA,P,P
+16,Low,"Check with supplier",P,NA,F,P,P
+17,Medium,"Check with supplier",P,P,NA,P,P
+18,Low,"Check with supplier",P,NA,F,P,P
+19,Low,"Check with supplier",P,NA,F,P,P
+20,High,"Block the open invoice",P,P,NA,P,P
+21,Medium,"Block the open invoice",P,P,NA,P,P
+22,High,"Block the open invoice",P,P,NA,P,P
+23,Low,"Check with supplier",P,NA,F,P,P
+24,Medium,"Check with supplier",P,P,NA,P,P
+25,High,"Block the open invoice",P,P,NA,P,F
+26,Medium,"Block the open invoice",P,P,NA,P,F
+27,Low,"Check with supplier",P,NA,P,P,P
+28,Low,"Check with supplier",P,NA,F,P,P
+29,High,"Block the open invoice",P,P,NA,P,P
+30,Low,"Check with supplier",P,NA,F,P,P
+31,Medium,"Check with supplier",P,P,NA,P,P
+32,Medium,"Check with supplier",P,P,NA,P,P
+33,Medium,"Block the open invoice",P,P,NA,P,P
+34,High,"Check with supplier",P,P,NA,P,P
+35,Medium,"Check with supplier",P,P,NA,P,P
+36,Medium,"Block the open invoice",P,P,NA,F,P
+37,Low,"Check with supplier",P,NA,F,P,P
+38,High,"Block the open invoice",P,P,NA,P,P
+39,Medium,"Block the open invoice",P,P,NA,P,P
+40,Medium,"Check with supplier",P,P,NA,P,P
