@@ -1,57 +1,22 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { requireUser } from '@/lib/supabase/server';
-import { listFlags, onlySampleData } from '@/lib/flags';
+import { CLASSES, MIN_REVIEWS, RANGES, computeSummary, loadDashboardData, parseRange } from '@/lib/dashboard-summary';
 import { RiskIcon } from '@/components/RiskBadge';
 import { count, duration, rupees, rupees0 } from '@/lib/format';
 import ShareSummary from './ShareSummary';
+import DownloadSummary from './DownloadSummary';
 import InfoTip from './InfoTip';
 
 export const metadata: Metadata = { title: 'Dashboard' };
 
-const RANGES = [['7', '7 days'], ['30', '30 days'], ['90', '90 days'], ['365', 'This year'], ['all', 'All time']] as const;
-const CLASSES = [
-  { key: 'pending', label: 'Pending', color: '#CBD2DC' }, // light grey (line-input)
-  { key: 'yes', label: 'Yes · duplicate', color: '#1D4ED8' }, // brand blue (accent)
-  { key: 'no', label: 'No · not duplicate', color: '#4F9D7D' }, // muted green, a softer step of low-fg
-  { key: 'ignore', label: 'Ignored', color: '#334155' } // dark grey
-] as const;
-
 export default async function Dashboard({ searchParams }: { searchParams: { range?: string } }) {
   const { supabase } = await requireUser();
-  const range = RANGES.some(([k]) => k === searchParams.range) ? searchParams.range! : '30';
-  const since = range === 'all' ? null : new Date(Date.now() - Number(range) * 86_400_000).toISOString();
-
-  let scansQ = supabase.from('scans').select('id, file_name, row_count, created_at');
-  if (since) scansQ = scansQ.gte('created_at', since);
-  const [allFlags, { data: scans }] = await Promise.all([listFlags(supabase), scansQ]);
-  const flags = since ? allFlags.filter((f) => f.created_at >= since) : allFlags;
-
-  const scanned = (scans ?? []).reduce((s, x) => s + x.row_count, 0);
-  const by = (k: string) => flags.filter((f) => f.status === k);
-  const yes = by('yes');
-  const no = by('no');
-  const pending = by('pending');
-  const prevented = yes.reduce((s, f) => s + Number(f.amount), 0);
-  const sampleOnly = onlySampleData(yes, new Map((scans ?? []).map((s) => [s.id as string, s.file_name as string])));
-  const MIN_REVIEWS = 5; // a rate from fewer reviewed pairs is noise
-  const fpRate = yes.length + no.length >= MIN_REVIEWS ? Math.round((no.length / (yes.length + no.length)) * 100) : null;
-  const timed = flags.filter((f) => f.review_seconds !== null && f.status !== 'pending');
-  const avgReview = timed.length ? timed.reduce((s, f) => s + (f.review_seconds ?? 0), 0) / timed.length : null;
-
-  const risk = (['High', 'Medium', 'Low'] as const).map((band) => {
-    const list = pending.filter((f) => f.risk_band === band);
-    return { band, n: list.length, amt: list.reduce((s, f) => s + Number(f.amount), 0) };
-  });
-  const classes = CLASSES.map((c) => {
-    const list = by(c.key);
-    return { ...c, n: list.length, amt: list.reduce((s, f) => s + Number(f.amount), 0) };
-  });
-  const total = classes.reduce((s, c) => s + c.amt, 0);
-  const types = Object.entries(yes.reduce<Record<string, number>>((m, f) => ({ ...m, [f.dup_type]: (m[f.dup_type] ?? 0) + 1 }), {})).sort((a, b) => b[1] - a[1]);
+  const range = parseRange(searchParams.range);
+  const { flags, scans } = await loadDashboardData(supabase, range);
+  const { scanned, scanCount, yes, pending, prevented, sampleOnly, fpRate, avgReview, risk, classes, total, types, decided, rangeLabel } = computeSummary(flags, scans, range);
   const maxType = Math.max(1, ...types.map(([, n]) => n));
-  const recent = flags.filter((f) => f.decided_at).sort((a, b) => (b.decided_at ?? '').localeCompare(a.decided_at ?? '')).slice(0, 6);
-  const rangeLabel = RANGES.find(([k]) => k === range)![1];
+  const recent = decided.slice(0, 6);
 
   // donut geometry
   const R = 60, C = 2 * Math.PI * R;
@@ -87,10 +52,13 @@ export default async function Dashboard({ searchParams }: { searchParams: { rang
             <InfoTip label="What counts as payment value prevented">Total amount of duplicate invoices you confirmed (marked Yes) in this period. These open invoices would have been paid twice. Pairs marked No, Ignored or still pending are not counted.</InfoTip>
           </div>
           <div className="mt-1 text-[40px] tracking-tight tnum">{rupees0(prevented)}</div>
-          <div className="text-[13px] text-[#C9D2E3]">from {yes.length} confirmed duplicate{yes.length === 1 ? '' : 's'} across {scans?.length ?? 0} scan{scans?.length === 1 ? '' : 's'}</div>
+          <div className="text-[13px] text-[#C9D2E3]">from {yes.length} confirmed duplicate{yes.length === 1 ? '' : 's'} across {scanCount} scan{scanCount === 1 ? '' : 's'}</div>
           {sampleOnly && <div className="mt-1 text-xs text-[#A9B3C6]">Sample data: shows what InvoiceGuard would prevent on a real register.</div>}
         </div>
-        <ShareSummary text={`InvoiceGuard summary (${rangeLabel.toLowerCase()}): ${count(scanned)} invoices scanned, ${yes.length} duplicate invoices blocked before payment, ${rupees0(prevented)} prevented.`} />
+        <div className="flex flex-wrap items-start gap-3">
+          <ShareSummary text={`InvoiceGuard summary (${rangeLabel.toLowerCase()}): ${count(scanned)} invoices scanned, ${yes.length} duplicate invoices blocked before payment, ${rupees0(prevented)} prevented.`} />
+          <DownloadSummary range={range} />
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
