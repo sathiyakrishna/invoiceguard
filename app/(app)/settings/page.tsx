@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import { requireUser } from '@/lib/supabase/server';
 import { usageSummary } from '@/lib/limits';
-import { DeleteData, SignOut } from './SettingsButtons';
+import { SignOut } from './SettingsButtons';
+import DeleteAccount from './DeleteAccount';
 
 export const metadata: Metadata = { title: 'Settings' };
 
@@ -28,9 +29,9 @@ export default async function Settings() {
         <p className="mt-2 text-[13px] text-ink-500">Daily limits reset at midnight IST, monthly limits on the 1st. Rule-based checks never use credits.</p>
       </section>
       <section className="card flex flex-col gap-3 p-5">
-        <h2>Delete my data</h2>
-        <p className="text-sm text-ink-700">Permanently deletes every scan, invoice, duplicate pair and decision in your account. This cannot be undone. Your daily usage limits are not reset.</p>
-        <DeleteData />
+        <h2>Delete my account</h2>
+        <p className="text-sm text-ink-700">Permanently deletes your InvoiceGuard account and all your scans, invoices, duplicate pairs and decisions. This cannot be undone. If you sign in with Google again, a new empty account is created. Your daily usage limits are not reset.</p>
+        <DeleteAccount />
       </section>
     </div>
   );

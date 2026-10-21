@@ -1,9 +1,11 @@
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { Logo } from '@/components/Logo';
 import { RiskBadge } from '@/components/RiskBadge';
 import Faq from '@/components/Faq';
 import P2PAnimation from '@/components/P2PAnimation';
 import Testimonials from '@/components/Testimonials';
+import AccountDeletedNotice from '@/components/AccountDeletedNotice';
 
 const PREVIEW = [
   { band: 'High' as const, vendor: 'Bosch Ltd', refs: 'INV-0012 · INV0012', amt: '₹1,25,000.00' },
@@ -54,6 +56,7 @@ export default function Landing() {
   return (
     <div className="overflow-x-clip bg-white text-ink">
       <div className="bg-gradient-to-b from-[#EEF3FF] to-white">
+        <div className="px-4 pt-4 sm:px-6 sm:pt-6 empty:hidden"><Suspense fallback={null}><AccountDeletedNotice /></Suspense></div>
         <header className="px-4 pt-4 sm:px-6 sm:pt-6">
           <div className="mx-auto flex max-w-[1240px] items-center gap-4 rounded-2xl bg-[#0B1F4D] px-5 py-3 shadow-[0_12px_28px_rgba(11,31,77,0.30)] sm:gap-6 sm:px-7">
             <Link href="/" aria-label="InvoiceGuard home"><Logo /></Link>
