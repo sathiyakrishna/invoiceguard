@@ -14,6 +14,7 @@
     "eval:vendors": "node --env-file-if-exists=.env.local node_modules/promptfoo/dist/src/entrypoint.js eval -c evals/vendors/promptfooconfig.yaml --no-cache --no-share --no-table --no-progress-bar -o evals/vendors/results.json && tsx evals/vendors/report.ts",
     "eval:vendors:check": "tsx evals/vendors/check-pairs.ts",
     "eval:explain": "node --env-file-if-exists=.env.local node_modules/promptfoo/dist/src/entrypoint.js eval -c evals/explain/promptfooconfig.yaml --no-cache --no-share --no-table --no-progress-bar -o evals/explain/results.json && tsx evals/explain/report.ts",
+    "eval:explain:gate": "node --env-file-if-exists=.env.local --import tsx evals/explain/gate.ts",
     "eval:explain:freeze": "tsx evals/explain/freeze.ts",
     "eval:judge": "node --env-file-if-exists=.env.local --import tsx evals/explain/judge.ts",
     "eval:calibrate": "tsx evals/explain/calibrate.ts"

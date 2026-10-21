@@ -52,17 +52,12 @@ jobs:
           path: evals/vendors/results.json
           if-no-files-found: ignore
 
-  explain:
-    # OpenAI writes 30 explanations with the production prompt; 10 flawed ones are added; code checks plus TypeSafe Jev judge all 40.
+  explain-gate:
+    # Blocking. Judges the 40 frozen explanations (evals/explain/explanations.json) with code checks plus TypeSafe Jev. No OpenAI call, so the text under test never changes.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     env:
-      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       TYPESAFE_API_KEY: ${{ secrets.TYPESAFE_API_KEY }}
-      PROMPTFOO_DISABLE_TELEMETRY: '1'
-      PROMPTFOO_DISABLE_UPDATE: '1'
-      # Promptfoo exits 100 when a test fails or errors, which would skip the report that prints why. The report sets the exit code.
-      PROMPTFOO_FAILED_TEST_EXIT_CODE: '0'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -72,14 +67,47 @@ jobs:
       - run: npm ci
       - name: Skip when the Jev key is not set
         if: env.TYPESAFE_API_KEY == ''
-        run: echo "::warning::TYPESAFE_API_KEY is not set, so the explanation eval was skipped."
-      # Fails when real explanations pass fewer than EVAL_MIN_EXPLAIN_PASS of their checks or Jev rejects fewer than EVAL_MIN_FLAW_CATCH of the flawed ones.
-      - name: Explanation eval
+        run: echo "::warning::TYPESAFE_API_KEY is not set, so the explanation gate was skipped."
+      # Fails when fewer than EVAL_MIN_EXPLAIN_PASS of the real explanations pass or Jev rejects fewer than EVAL_MIN_FLAW_CATCH of the flawed ones. Jev answers with confidence below 0.2 are reported and not counted.
+      - name: Explanation gate
+        if: env.TYPESAFE_API_KEY != ''
+        run: npm run eval:explain:gate
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: explain-gate
+          path: evals/explain/judgements.json
+          if-no-files-found: ignore
+
+  explain-monitor:
+    # Never blocks. Nightly or by hand: OpenAI regenerates the 30 real explanations with the production prompt, the 10 flawed ones are added, and the pass rate is reported.
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      TYPESAFE_API_KEY: ${{ secrets.TYPESAFE_API_KEY }}
+      PROMPTFOO_DISABLE_TELEMETRY: '1'
+      PROMPTFOO_DISABLE_UPDATE: '1'
+      # Promptfoo exits 100 when a test fails or errors, which would skip the report that prints why.
+      PROMPTFOO_FAILED_TEST_EXIT_CODE: '0'
+      EVAL_EXPLAIN_MONITOR: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Skip when the Jev key is not set
+        if: env.TYPESAFE_API_KEY == ''
+        run: echo "::warning::TYPESAFE_API_KEY is not set, so the explanation monitor was skipped."
+      - name: Explanation monitor
         if: env.TYPESAFE_API_KEY != ''
         run: npm run eval:explain
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: explain-eval
+          name: explain-monitor
           path: evals/explain/results.json
           if-no-files-found: ignore
