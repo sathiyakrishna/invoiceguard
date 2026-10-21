@@ -77,6 +77,18 @@ Set `DEMO_PASSWORD_1..3` in `.env.local` (12+ characters), then:
 npm run demo-users   # creates judge1/2/3@invoiceguard.app with higher limits
 ```
 
+### 6b. Shared test account (for human testers and AI browsing agents)
+An email + password account that needs no Google sign-in. It has its own capped limits (below), cannot delete itself and shows normal "x of y" usage.
+1. Run `supabase/migrations/008_profiles_is_tester.sql` in the SQL editor.
+2. Set `TESTER_EMAIL` in `.env.local` to an inbox **you own** (a plus-alias such as `you+tester@gmail.com` works). The scripts refuse to run without it; there is no default.
+3. In your own terminal, run `npm run tester-user`. It creates the account (or rotates an existing test account's password) and prints a random 20-character password **once**. It is stored nowhere, so copy it then. Run it yourself rather than through a tool or CI so the password does not land in a log.
+4. Rotate later by running `npm run tester-user` again. Sessions signed in with the old password stay valid until they expire; to cut them off at once run `delete from auth.sessions where user_id = (select id from auth.users where email = 'YOUR_TESTER_EMAIL');` in the SQL editor.
+5. Start each tester fresh with `npm run tester-reset`. It deletes the test account's scans, invoices, flagged pairs, decisions and vendor matches (never the account, and never the usage counts, so the limits cannot be reset this way). It refuses to touch any account that is not flagged as a test account.
+
+Password change is **"no UI, not enforced"**: the app has no change-password screen, but Supabase lets any signed-in user call its API from the browser, and it has no per-user switch to forbid that. If a tester changes it, other testers are locked out until you re-run `npm run tester-user`. Nothing else is affected.
+
+The account is shared, so its limits are shared by everyone using it.
+
 ### 7. GitHub and Vercel
 ```bash
 git init && git add . && git commit -m "InvoiceGuard"
@@ -88,7 +100,7 @@ Vercel › Add New Project › import the repo › add every variable from `.env
 
 ## Limits (env variables)
 
-Per user: 3 scans and 50 AI calls a day, 10 scans and 200 AI calls a month. Demo accounts: 10 scans and 300 AI calls a day. All users together: 1,500 AI calls a day. Checked and counted in one database transaction (`consume_quota`), callable only by the server. Rule checks never use credits.
+Per user: 3 scans and 50 AI calls a day, 10 scans and 200 AI calls a month. Demo accounts: 10 scans and 300 AI calls a day. Test account: 10 scans and 100 AI calls a day, 30 scans and 300 AI calls a month (`TESTER_LIMIT_*`). All users together: 1,500 AI calls a day. Checked and counted in one database transaction (`consume_quota`), callable only by the server. Rule checks never use credits.
 
 ## Security
 

@@ -31,7 +31,7 @@ export default function LoginForm({ googleError }: { googleError: boolean }) {
         {busy ? 'Opening Google…' : 'Continue with Google'}
       </button>
       <div className="flex items-center gap-3 text-[13px] text-ink-500">
-        <span className="h-px flex-1 bg-line" />or use a demo account<span className="h-px flex-1 bg-line" />
+        <span className="h-px flex-1 bg-line" />or sign in with email<span className="h-px flex-1 bg-line" />
       </div>
       <form action={action} className="flex flex-col gap-3.5">
         <label className="flex flex-col gap-1.5 text-sm font-medium">Email

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireUser } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { isDemoUser } from '@/lib/limits';
+import { profileFlags } from '@/lib/limits';
 import { retainUsage } from '@/lib/usage-retention';
 
 export const dynamic = 'force-dynamic';
@@ -22,9 +22,16 @@ export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
   if (body?.confirm !== 'DELETE') return fail('Type DELETE to confirm.', 400);
 
+  // fail closed: if the account type can't be read, never assume a regular account
+  let flags;
   try {
-    if (await isDemoUser(user.id)) return fail('Demo accounts can’t be deleted here. Contact the account owner instead.', 403);
+    flags = await profileFlags(user.id);
+  } catch {
+    return fail('We couldn’t verify your account type, so nothing was deleted. Please try again.', 500);
+  }
+  if (flags.isDemo || flags.isTester) return fail('Demo and test accounts can’t be deleted here. Contact the account owner instead.', 403);
 
+  try {
     const admin = createAdminClient();
     // keep this month's usage counts first, so a failure later can never lose them
     if (user.email) await retainUsage(admin, user.id, user.email);

@@ -9,6 +9,8 @@ const deleted: string[] = [];
 let deleteError: Error | null = null;
 let session: { id: string; email: string | null } | null = null;
 let demo = false;
+let tester = false;
+let profileFails = false;
 const signOut = vi.fn(async () => ({ error: null }));
 
 function from(table: string) {
@@ -50,7 +52,7 @@ vi.mock('@/lib/supabase/admin', () => ({
 vi.mock('@/lib/supabase/server', () => ({
   requireUser: async () => ({ supabase: { auth: { signOut } }, user: session })
 }));
-vi.mock('@/lib/limits', () => ({ isDemoUser: async () => demo, istToday: () => '2026-04-20' }));
+vi.mock('@/lib/limits', () => ({ profileFlags: async () => { if (profileFails) throw new Error('Could not read the account type: boom'); return { isDemo: demo, isTester: tester }; }, istToday: () => '2026-04-20' }));
 
 import { POST } from '@/app/api/account/delete/route';
 import { emailHash, restoreUsage, retainUsage, purgeExpiredRetained } from '@/lib/usage-retention';
@@ -63,6 +65,8 @@ beforeEach(() => {
   deleted.length = 0;
   deleteError = null;
   demo = false;
+  tester = false;
+  profileFails = false;
   session = { id: 'user-1', email: 'Alice@Example.com' };
   signOut.mockClear();
   process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-key';
@@ -105,8 +109,28 @@ describe('POST /api/account/delete', () => {
     demo = true;
     const res = await call({ confirm: 'DELETE' });
     expect(res.status).toBe(403);
-    expect((await res.json()).error).toMatch(/Demo accounts/);
+    expect((await res.json()).error).toMatch(/Demo and test accounts/);
     expect(deleted).toEqual([]);
+  });
+
+  it('refuses test accounts too, and keeps no usage for them', async () => {
+    tester = true;
+    const res = await call({ confirm: 'DELETE' });
+    expect(res.status).toBe(403);
+    expect((await res.json()).error).toMatch(/Demo and test accounts/);
+    expect(deleted).toEqual([]);
+    expect(db.usage_retained ?? []).toEqual([]);
+  });
+
+  it('fails closed when the account type cannot be read: 500, nothing deleted, nothing retained, still signed in', async () => {
+    profileFails = true;
+    demo = true; // a demo account must not be deleted just because its flag could not be read
+    const res = await call({ confirm: 'DELETE' });
+    expect(res.status).toBe(500);
+    expect((await res.json()).error).toMatch(/couldn’t verify your account type, so nothing was deleted/);
+    expect(deleted).toEqual([]);
+    expect(db.usage_retained ?? []).toEqual([]);
+    expect(signOut).not.toHaveBeenCalled();
   });
 
   it('returns 500 and keeps the user signed in when deletion fails', async () => {

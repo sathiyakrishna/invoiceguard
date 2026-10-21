@@ -14,6 +14,8 @@
     "test": "vitest run",
     "sample": "node scripts/generate-sample.mjs",
     "demo-users": "node scripts/create-demo-users.mjs",
+    "tester-user": "node scripts/create-tester.mjs",
+    "tester-reset": "node scripts/reset-tester.mjs",
     "eval:detection": "tsx evals/detection/run.ts",
     "eval:vendors": "node --env-file-if-exists=.env.local node_modules/promptfoo/dist/src/entrypoint.js eval -c evals/vendors/promptfooconfig.yaml --no-cache --no-share --no-table --no-progress-bar -o evals/vendors/results.json && tsx evals/vendors/report.ts",
     "eval:vendors:check": "tsx evals/vendors/check-pairs.ts",
